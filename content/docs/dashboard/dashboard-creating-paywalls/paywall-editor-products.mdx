@@ -1,0 +1,59 @@
+---
+title: "Products"
+---
+
+To add products to your paywall, click the **Products** button from the **sidebar**:
+
+<Frame>![](/images/pe-editor-products-sidebar.png)</Frame>
+
+<br />
+<Note>
+  If you haven't added products to your app, do that first. Check out this [doc](/products) for
+  more.
+</Note>
+
+### Choosing products 
+
+You can display as many products as you see fit on your paywall. Superwall will automatically fill in a name for the first three added ("primary", "secondary", and "tertiary") but you're free to name them anything else. Regardless, the name is used to reference them using Liquid Syntax in the editor. For example, `products.primary.price`.
+
+<Tip>
+It's important to remember that _you_ retain full control over which of your products show in a paywall, and how. For example, use them along with [dynamic values](/paywall-editor-dynamic-values) to hide or show them to create any U.X. your design calls for.
+</Tip>
+### Understanding the selected product and selected product index variables
+
+The `products.selected` variable will always represent any product the user has selected on your paywall. By default, it will be the _first_ product you've added. In addition, the `products.selectedIndex` variable will also be updated as products are selected. This opens up many patterns to use, such as customizing copy, images, videos, or anything else based on which product the user has tapped on. 
+
+Many of our [built-in elements](/paywall-editor-layout#adding-elements) which display products will update these values. If you wish to add a custom element which selects a product, **click** on the element and add a **[tap behavior](/paywall-editor-styling-elements#tap-behaviors)** to choose a product (the selected index will update automatically as a result).
+
+### Customizing pricing copy
+
+In my most cases, Superwall will format your product's price in a localized manner. For example, look at this paywall from left-to-right:
+
+1. The primary product is displayed in the button.
+2. Below it, the call-to-action button formats its text as `Subscribe for {{ products.selected.price }} / {{ products.selected.period }} `.
+3. That means any selected product's price will display with a similar pattern in the call-to-action button.
+
+<Frame>![](/images/pe-editor-products-template.png)</Frame>
+
+You can use [Liquid syntax](https://shopify.github.io/liquid/) to format prices in several different ways. For example, if you wanted to show an annual price differently, you could write `Subscribe for only {{ products.primary.monthlyPrice }} / month.` to display the localized price in monthly terms. If a product cost \$120.00 a year, then the text would read as "Subscribe for only \$10.00 / month."
+
+Copy like this is achieved by using variables. To learn more about them, visit this [page](/paywall-editor-variables).
+
+### Offer pricing copy 
+
+A common use-case is showing copy that reflects the selected product's trial or offer terms. Consider this example product:
+
+| Product Identifier     | Trial  | Trial Price | Price  | Period |
+| ---------------------- | -------|-------------| -------|--------|
+| myapp.annual40.1wkFree | 1 week | Free        | $39.99 | 1 year |
+
+In Superwall, all data for the one-week free trial is found in the `trial` liquid variables, which are a part of a `product`. Below, critical details about its duration, offer price and more are shown in the example paywall. Take note of the text box on the right, which shows how these variables can be used:
+
+<Frame>![](/images/offerVars.png)</Frame>
+
+### Products missing App Store Connect API 
+When using Apple-based products, Superwall will automatically fetch the product information from App Store Connect. However, if you haven't set up the App Store Connect API, you may see a message indicating that the product information is missing:
+
+<Frame>![](/images/asc_invalid_pw.png)</Frame>
+
+To resolve this, follow the steps in our [App Store Connect API setup guide](/overview-settings-revenue-tracking#app-store-connect-api).

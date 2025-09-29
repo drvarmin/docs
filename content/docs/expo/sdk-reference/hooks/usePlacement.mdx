@@ -1,0 +1,94 @@
+---
+title: "usePlacement"
+description: "A React hook that registers a placement so it can remotely trigger a paywall, gate feature access, and expose paywall-lifecycle state."
+---
+
+## Purpose
+Registers a placement so that, when it’s added to a campaign on the Superwall Dashboard, it can trigger a paywall and optionally gate access to a feature while exposing the paywall lifecycle as React state.
+
+## Signature
+```ts
+function usePlacement(
+  callbacks?: usePlacementCallbacks
+): {
+  /** Registers the placement and potentially presents a paywall. */
+  registerPlacement: (args: RegisterPlacementArgs) => Promise<void>
+  /** Current paywall-lifecycle state. */
+  state: PaywallState
+}
+```
+
+## Parameters
+<ParamTable>
+| Name | Type | Description |
+|------|------|-------------|
+| `callbacks` | `usePlacementCallbacks?` | Optional callbacks that fire at each stage of the paywall lifecycle. |
+</ParamTable>
+
+### usePlacementCallbacks
+<ParamTable>
+| Name | Type | Description |
+|------|------|-------------|
+| `onPresent` | `(paywallInfo: PaywallInfo) => void` | Called when a paywall is presented. |
+| `onDismiss` | `(paywallInfo: PaywallInfo, result: PaywallResult) => void` | Called when a paywall is dismissed. |
+| `onSkip` | `(reason: PaywallSkippedReason) => void` | Called when presentation is skipped (e.g., hold-out, no audience match). |
+| `onError` | `(error: string) => void` | Called when the paywall fails to present or another SDK error occurs. |
+</ParamTable>
+
+### RegisterPlacementArgs
+<ParamTable>
+| Name | Type | Description |
+|------|------|-------------|
+| `placement` | `string` | Placement name as defined on the Superwall Dashboard. |
+| `params` | `Record<string, any>?` | Optional parameters passed to the placement. |
+| `feature` | `() => void` | Function executed **only** if no paywall is shown (the user is allowed through). |
+</ParamTable>
+
+## Returns / State
+The hook returns an object with:
+
+• `registerPlacement` — `(args: RegisterPlacementArgs) => Promise<void>`  
+• `state` — `PaywallState`
+
+`PaywallState` union:
+- `{ status: "idle" }`
+- `{ status: "presented"; paywallInfo: PaywallInfo }`
+- `{ status: "dismissed"; result: PaywallResult }`
+- `{ status: "skipped"; reason: PaywallSkippedReason }`
+- `{ status: "error"; error: string }`
+
+## Usage
+```tsx
+import { Button, Text } from "react-native"
+import { usePlacement } from "expo-superwall"
+
+export default function PremiumButton() {
+  const { registerPlacement, state } = usePlacement({
+    onPresent: (info) => console.log("Paywall presented:", info.name),
+    onDismiss: (_, result) =>
+      console.log("Paywall dismissed:", result.type),
+    onSkip: (reason) =>
+      console.log("Paywall skipped:", reason.type),
+    onError: (error) => console.error("Paywall error:", error),
+  })
+
+  const unlockFeature = async () => {
+    await registerPlacement({
+      placement: "MyFeaturePlacement",
+      feature: () => {
+        // User was allowed through without a paywall
+        navigateToPremiumFeature()
+      },
+    })
+  }
+
+  return (
+    <>
+      <Button title="Unlock Feature" onPress={unlockFeature} />
+      <Text>Current paywall state: {state.status}</Text>
+    </>
+  )
+}
+```
+
+See also: [Present a paywall](/expo/getting-started/present-first-paywall)

@@ -1,0 +1,9 @@
+{
+    "title": "Web Checkout",
+    "collapsed": true,
+    "pages": [
+        "post-checkout-redirecting",
+        "using-revenuecat",
+        "linking-membership-to-iOS-app"
+    ]
+}

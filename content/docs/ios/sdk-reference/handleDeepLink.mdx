@@ -1,0 +1,67 @@
+---
+title: "handleDeepLink()"
+description: "A function that handles deep links and triggers paywalls based on configured campaigns."
+---
+
+<Tip>
+Configure deep link campaigns on the Superwall dashboard by adding the `deepLink` event to a campaign trigger.
+</Tip>
+
+<Info>
+Deep link events are also tracked via [`SuperwallEvent.deepLink`](/ios/sdk-reference/SuperwallEvent) and sent to your [`SuperwallDelegate`](/ios/sdk-reference/SuperwallDelegate).
+</Info>
+
+## Purpose
+Processes a deep link URL and triggers any associated paywall campaigns configured on the Superwall dashboard.
+
+## Signature
+```swift
+public func handleDeepLink(_ url: URL)
+```
+
+## Parameters
+<ParamTable>
+| Name | Type | Description |
+|------|------|-------------|
+| `url` | `URL` | The deep link URL to process for paywall triggers. |
+</ParamTable>
+
+## Returns / State
+This function returns `Void`. If the URL matches a campaign configured on the dashboard, it may trigger a paywall presentation.
+
+## Usage
+
+In your SceneDelegate or AppDelegate:
+```swift
+func scene(_ scene: UIScene, openURLContexts URLContexts: Set<UIOpenURLContext>) {
+  guard let url = URLContexts.first?.url else { return }
+  
+  // Handle the deep link with Superwall
+  Superwall.shared.handleDeepLink(url)
+  
+  // Continue with your app's deep link handling
+  handleAppDeepLink(url)
+}
+```
+
+iOS 13+ SceneDelegate:
+```swift
+func scene(_ scene: UIScene, willConnectTo session: UISceneSession, options connectionOptions: UIScene.ConnectionOptions) {
+  // Handle deep link on app launch
+  if let url = connectionOptions.urlContexts.first?.url {
+    Superwall.shared.handleDeepLink(url)
+    handleAppDeepLink(url)
+  }
+}
+```
+
+Legacy AppDelegate:
+```swift
+func application(_ app: UIApplication, open url: URL, options: [UIApplication.OpenURLOptionsKey : Any] = [:]) -> Bool {
+  // Handle the deep link with Superwall
+  Superwall.shared.handleDeepLink(url)
+  
+  // Continue with your app's deep link handling
+  return handleAppDeepLink(url)
+}
+```

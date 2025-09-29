@@ -1,0 +1,96 @@
+---
+title: "register()"
+description: "A function that registers a placement that can be remotely configured to show a paywall and gate feature access."
+---
+
+## Purpose
+Registers a placement so that when it's added to a campaign on the Superwall Dashboard, it can trigger a paywall and optionally gate access to a feature.
+
+## Signature
+```kotlin
+fun Superwall.register(
+    placement: String,
+    params: Map<String, Any>? = null,
+    handler: PaywallPresentationHandler? = null,
+    feature: () -> Unit,
+)
+```
+
+```kotlin
+fun Superwall.register(
+    placement: String,
+    params: Map<String, Any>? = null,
+    handler: PaywallPresentationHandler? = null,
+)
+```
+
+## Parameters
+<ParamTable>
+| Name | Type | Description |
+|------|------|-------------|
+| `placement` | `String` | The name of the placement you wish to register. |
+| `params` | `Map<String, Any>?` | Optional parameters to pass with your placement. These can be referenced within campaign rules. Keys beginning with `$` are reserved for Superwall and will be dropped. Arrays and nested maps are currently unsupported and will be ignored. Defaults to `null`. |
+| `handler` | `PaywallPresentationHandler?` | A handler whose functions provide status updates for the paywall lifecycle. Defaults to `null`. |
+| `feature` | `() -> Unit` | A completion block representing the gated feature. It is executed based on the paywall's gating mode: called immediately for **Non-Gated**, called after the user subscribes or if already subscribed for **Gated**. |
+</ParamTable>
+
+## Returns / State
+This function returns `Unit`. If you supply a `feature` lambda, it will be executed according to the paywall's gating configuration, as described above.
+
+## Usage
+
+<CodeGroup>
+
+```swift iOS
+func pressedWorkoutButton() {
+  // remotely decide if a paywall is shown and if
+  // navigation.startWorkout() is a paid-only feature
+  Superwall.shared.register(placement: "StartWorkout") {
+    navigation.startWorkout()
+  }
+}
+```
+
+```kotlin Android
+fun pressedWorkoutButton() {
+  // remotely decide if a paywall is shown and if
+  // navigation.startWorkout() is a paid-only feature
+  Superwall.instance.register("StartWorkout") {
+    navigation.startWorkout()
+  }
+}
+```
+
+```dart Flutter
+void pressedWorkoutButton() {
+  // remotely decide if a paywall is shown and if
+  // navigation.startWorkout() is a paid-only feature
+  Superwall.shared.registerPlacement('StartWorkout', feature: () {
+      navigation.startWorkout();
+  });
+}
+```
+
+```typescript React Native
+// remotely decide if a paywall is shown and if
+// navigation.startWorkout() is a paid-only feature
+Superwall.shared.register({
+  placement: 'StartWorkout',
+  feature: () => {
+    navigation.navigate('LaunchedFeature', {
+      value: 'Non-gated feature launched',
+    });
+  } 
+});
+```
+
+</CodeGroup>
+
+Register without feature gating:
+```kotlin
+Superwall.instance.register(
+    placement = "onboarding_complete",
+    params = mapOf("source" to "onboarding"),
+    handler = this
+)
+``` 

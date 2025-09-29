@@ -1,0 +1,90 @@
+---
+title: "General"
+description: "Use the Settings area to set up API keys, metadata and more."
+---
+
+To access settings for your Superwall account, **click** the **Settings** button in the sidebar:
+
+<Frame>![](/images/overview-settings-sidebar.png)</Frame>
+
+<br />
+<Tabs>
+<Tab title="For mobile apps">
+Under the General section, you can set or edit metadata and some integration API keys for your app:
+
+<Frame>![](/images/overview-settings-general.png)</Frame>
+
+<Note>
+  Some sections will hide or show depending on the platform your app is on. For example, for an
+  Android app, Superwall will hide Apple-specific items.
+</Note>
+
+**Name**<br />
+The name for your application in Superwall. This isn't user-facing and only used within Superwall. You can change it anytime.
+
+**Revenue Cat Public API Key**<br />
+Add in your Revenue Cat [public API key](https://www.revenuecat.com/docs/welcome/authentication) to have Superwall automatically pull in product identifiers. Note that you'll need to create products in Superwall along with their pricing — this just makes it a bit easier to do by fetching identifiers for you.
+
+**Apple App ID**<br />
+Fill in your app's Apple identifier here. You can find it by going to **App Store Connect -> General -> App Information**.
+
+**Apple Custom URL Scheme**<br />
+We use URL schemes to perform deep link logic and for in-app previews of paywalls for iOS apps. To learn more about setting up deep links, visit this [doc](/in-app-paywall-previews#using-deep-links-to-present-paywalls).
+
+**Google Custom URL Scheme**<br />
+We use URL schemes to perform deep link logic and for in-app previews of paywalls for Android apps. To learn more about setting up deep links, visit this [doc](/in-app-paywall-previews#using-deep-links-to-present-paywalls).
+
+**Apple Small Business Program**<br />
+If you are a part of Apple's small business program, add in the date you were accepted into it. Optionally, add the date you were removed (if applicable). We'll use this to accurately report revenue metrics.
+
+<Note>
+  If you added your Apple Small Business program status later on, Superwall will accurately reflect
+  revenue for any new data. It doesn't backfill existing revenue metrics.
+</Note>
+</Tab>
+<Tab title="For Stripe apps">
+
+### Application settings
+Here, you can enter metadata about your iOS app that corresponds to your Stripe integration.
+
+<Frame>![](/images/web2app_settings.png)</Frame>
+
+1. **Icon:** An icon to represent your app, we recommend using the same one that your iOS app does. This will appear on the checkout and subscription management pages.
+
+2. **Web Paywall Domain:** The domain your paywalls will be shown from. This was set when the Stripe app was created, and cannot be changed.
+
+3. **Application Name:** The name of your app, we recommend using the same name as your iOS app.
+
+4. **Support URL:** A URL to your support page. This will be shown on the checkout and subscription management pages.
+
+5. **Support Email:** An email you provide customers for support questions and general reach out
+
+6. **Redeemable on Desktop:** If your app is an iPad app on Mac, enable this option so that users can redeem products on their Mac. If you aren't using iPads Apps on the Mac, you can disable this. If this is disabled, Superwall enforces redemption on an iOS device.
+
+
+### Stripe Live Configuration
+This section allows you to connect Stripe keys with Superwall. You will need a:
+
+1. **Publishable Key:** A Stripe publishable key. Stripe creates this key for you, you don't need to generate it yourself.
+2. **Secret Key:** A Stripe secret key that you create. Once you've made one, paste it here.
+
+You can find these keys [in your Stripe account](https://dashboard.stripe.com/apikeys). If you need help getting set up, check out the docs [here](/web-checkout-configuring-stripe-keys-and-settings).
+
+### Stripe Sandbox Configuration
+
+The sandbox configuration allows you to test purchasing flows with your web checkout integration. If you need to find these keys, you can find them in [your Stripe account](https://dashboard.stripe.com/test/apikeys).
+
+1. **Publishable Key:** A Stripe publishable key. Stripe creates this key for you, you don't need to generate it yourself.
+2. **Secret Key:** A Stripe secret key that you create. Once you've made one, paste it here.
+
+### iOS configuration
+
+This section has critical information for your iOS app. Without it, web checkout won't work.
+
+1. **Apple Custom URL Scheme (no slashes)**: Your custom URL scheme. If you haven't set this up, view the [documentation](/in-app-paywall-previews).
+2. **Apple App ID**: Your app's Apple ID. You can find this in **App Store Connect -> General -> App Information**.
+
+<Frame>![](/images/web2app_app_id.png)</Frame>
+
+</Tab>
+</Tabs>

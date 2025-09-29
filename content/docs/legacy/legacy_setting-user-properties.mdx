@@ -1,0 +1,86 @@
+---
+title: "Setting User Attributes (Legacy)"
+sidebarTitle: "Setting User Attributes"
+description: "By setting user attributes, you can display information about the user on the paywall. You can also define [audiences](/campaigns-audience) in a campaign to determine which paywall to show to a user, based on their user attributes."
+---
+
+You do this by passing a `[String: Any?]` dictionary of attributes to `Superwall.shared.setUserAttributes(_:)`:
+
+<CodeGroup>
+
+```swift Swift
+let attributes: [String: Any] = [
+  "name": user.name,
+  "apnsToken": user.apnsTokenString,
+  "email": user.email,
+  "username": user.username,
+  "profilePic": user.profilePicUrl
+]
+Superwall.shared.setUserAttributes(attributes) // (merges existing attributes)
+```
+
+```swift Objective-C
+NSDictionary *attributes = @{
+    @"name": user.name,
+    @"apnsToken": user.apnsTokenString,
+    @"email": user.email,
+    @"username": user.username,
+    @"profilePic": user.profilePicUrl
+};
+
+[[Superwall sharedInstance] setUserAttributes:attributes]; // (merges existing attributes)
+```
+
+```kotlin Kotlin
+val attributes = mapOf(
+    "name" to user.name,
+    "apnsToken" to user.apnsTokenString,
+    "email" to user.email,
+    "username" to user.username,
+    "profilePic" to user.profilePicUrl
+)
+
+Superwall.instance.setUserAttributes(attributes) // (merges existing attributes)
+```
+
+```dart Flutter
+Map<String, dynamic> attributes = {
+  "name": user.name,
+  "apnsToken": user.apnsTokenString,
+  "email": user.email,
+  "username": user.username,
+  "profilePic": user.profilePicUrl
+};
+
+Superwall.shared.setUserAttributes(attributes); // (merges existing attributes)
+```
+
+```typescript React Native
+const attributes = {
+  name: user.name,
+  apnsToken: user.apnsTokenString,
+  email: user.email,
+  username: user.username,
+  profilePic: user.profilePicUrl,
+};
+
+Superwall.shared.setUserAttributes(attributes);
+```
+
+</CodeGroup>
+
+This is a merge operation, such that if the existing user attributes dictionary
+already has a value for a given property, the old value is overwritten. Other
+existing properties will not be affected. To unset/delete a value, you can pass `nil`
+for the value.
+
+You can reference user attributes in [campaign filters](/campaigns-audience) to help decide when to display your paywall. When you configure your paywall, you can also reference the user attributes in its text variables. For more information on how to that, see [Configuring a Paywall](/paywall-editor-overview).
+
+In the future, you'll be able to use user attributes to email/notify users about
+discounts.
+
+<CardGroup cols={1}>
+  <Card title="Next Up" icon="forward" href="/feature-gating">
+    Begin showing paywalls!
+  </Card>
+</CardGroup>

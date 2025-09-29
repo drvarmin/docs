@@ -1,0 +1,13 @@
+{
+    "title": "Troubleshooting",
+    "pages": [
+        "troubleshooting-products-not-loading",
+        "troubleshooting-debug-paywalls-production",
+        "troubleshooting-sandbox-free-trial-not-showing",
+        "troubleshooting-storekit-transaction-stuck",
+        "troubleshooting-unexpected-paywall-behavior",
+        "troubleshooting-paywall-memory-usage-on-iOS",
+        "troubleshooting-testflight-subscriptions",
+        "..."
+    ]
+}

@@ -1,0 +1,89 @@
+---
+title: "User Management (Legacy)"
+sidebarTitle: "Identity Management"
+description: "It is necessary to uniquely identify users to track their journey within Superwall."
+---
+
+### Anonymous Users
+
+Superwall automatically generates a random user ID that persists internally until the user deletes/reinstalls your app.
+
+You can call `Superwall.shared.reset()` to reset this ID and clear any paywall assignments.
+
+### Identified Users
+
+If you use your own user management system, call `identify(userId:options:)` when you have a user's identity. This will alias your `userId` with the anonymous Superwall ID enabling us to load the user’s assigned paywalls.
+
+Calling `Superwall.shared.reset()` will reset the on-device userId to a random ID and clear the paywall assignments.
+
+Note that for Android apps, if you want the `userId` passed to the Play Store when making purchases, you'll also need to set `passIdentifiersToPlayStore` via `SuperwallOptions`. Be aware of Google's rules that the `userId` must not contain any personally identifiable information, otherwise the purchase could [be rejected](https://developer.android.com/reference/com/android/billingclient/api/BillingFlowParams.Builder#setObfuscatedAccountId).
+
+<CodeGroup>
+
+```swift Swift
+// After retrieving a user's ID, e.g. from logging in or creating an account
+Superwall.shared.identify(userId: user.id)
+
+// When the user signs out
+Superwall.shared.reset()
+```
+
+```swift Objective-C
+// After retrieving a user's ID, e.g. from logging in or creating an account
+[[Superwall sharedInstance] identifyWithUserId:user.id];
+
+// When the user signs out
+[[Superwall sharedInstance] resetWithCompletionHandler:completion];
+```
+
+```kotlin Kotlin
+// After retrieving a user's ID, e.g. from logging in or creating an account
+Superwall.instance.identify(user.id)
+
+// When the user signs out
+Superwall.instance.reset()
+```
+
+```typescript React Native
+// After retrieving a user's ID, e.g. from logging in or creating an account
+Superwall.shared.identify(user.id);
+
+// When the user signs out
+Superwall.shared.reset();
+```
+
+```dart Flutter
+// After retrieving a user's ID, e.g. from logging in or creating an account
+Superwall.shared.identify(user.id);
+
+// When the user signs out
+Superwall.shared.reset();
+```
+
+</CodeGroup>
+<br/>
+<Note>
+    **Advanced Use Case**
+
+    You can supply an `IdentityOptions` object, whose property `restorePaywallAssignments` you can set to `true`. This tells the SDK to wait to restore paywall assignments from the server before presenting any paywalls. This should only be used in advanced use cases. If you expect users of your app to switch accounts or delete/reinstall a lot, you'd set this when users log in to an existing account.
+
+</Note>
+
+### Best Practices for a Unique User ID
+
+- Do NOT make your User IDs guessable – they are public facing.
+- Do NOT set emails as User IDs – this isn't GDPR compliant.
+- Do NOT set IDFA or DeviceIds as User IDs – these are device specific / easily rotated by the operating system.
+- Do NOT hardcode strings as User IDs – this will cause every user to be treated as the same user by Superwall.
+
+<Note>
+**Identifying users from App Store server events**
+
+On iOS, Superwall will set the value from `identify(userId:options:)` as the `applicationUsername` on `SKPayment`, which later comes back as the [appAccountToken](https://developer.apple.com/documentation/storekit/product/purchaseoption/3749440-appaccounttoken) in the notification to your server. Note that your application ID must be in a UUID format.
+</Note>
+
+<CardGroup cols={1}>
+  <Card title="Next Up" icon="forward" href="/feature-gating">
+    Begin showing paywalls!
+  </Card>
+</CardGroup>

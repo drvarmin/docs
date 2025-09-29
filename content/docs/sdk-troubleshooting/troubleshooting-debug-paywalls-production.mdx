@@ -1,0 +1,17 @@
+---
+title: "How to Debug Paywall Issues in Production"
+description: "Learn how to use the dashboard’s event logs to debug paywall behavior for real users."
+---
+
+If you're seeing unexpected behavior in production and know the `userId`, here's how to debug:
+
+1. **Search for the user in the dashboard.**
+   Go to the Users tab and enter their `userId`. Click the result to see their event log.
+
+2. **Check the `paywallPresentationRequest` event.**
+   Look for this event in the log. It includes a `status` and `status_reason` that explains why a paywall did or didn’t show.
+
+3. **Common error: `subscription_status_timeout`**
+   This means it took longer than 5 seconds to retrieve the subscription status. Check if `Superwall.shared.subscriptionStatus` is being set correctly or if there's an internet issue.
+
+4. **Tip:** Use the same `userId` across analytics and Superwall via `identify(userId:)`.

@@ -1,0 +1,13 @@
+---
+title: "Sandbox Free Trial Isn’t Appearing"
+description: "Why free trials sometimes don’t show up in sandbox testing and what to do about it."
+---
+
+This can happen when you've previously purchased a subscription and then reinstall the app during sandbox testing. The issue:
+
+- The on-device receipt is used to determine trial availability.
+- In sandbox, this receipt isn’t retrieved until after a purchase or restore.
+- So the SDK can’t determine if a free trial is available at app start.
+
+**Fix:**
+Restore purchases first, then try again. This won’t happen in production.

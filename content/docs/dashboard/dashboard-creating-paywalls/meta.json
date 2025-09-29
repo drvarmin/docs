@@ -1,0 +1,30 @@
+{
+    "title": "Creating Paywalls",
+    "pages": [
+        "paywall-editor-overview",
+        "paywall-editor-layout",
+        "paywall-editor-styling-elements",
+        "paywall-editor-stacks",
+        "paywall-editor-drawer-component",
+        "paywall-editor-navigation-component",
+        "paywall-editor-autoscroll-component",
+        "paywall-editor-slides-component",
+        "paywall-editor-carousel-component",
+        "paywall-editor-dynamic-values",
+        "paywall-editor-products",
+        "paywall-editor-theme",
+        "paywall-editor-variables",
+        "paywall-editor-liquid",
+        "paywall-editor-localization",
+        "paywall-editor-surveys",
+        "paywall-editor-notifications",
+        "paywall-editor-settings",
+        "paywall-editor-debugger",
+        "paywall-editor-floating-toolbar",
+        "paywall-editor-publishing",
+        "paywall-editor-previewing",
+        "paywall-editor-duplicating-paywalls",
+        "paywall-editor-renaming-paywalls",
+        "..."
+    ]
+}

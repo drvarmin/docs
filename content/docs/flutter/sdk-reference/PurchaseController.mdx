@@ -1,0 +1,49 @@
+---
+title: "PurchaseController"
+description: "An abstract class for handling custom purchase flows and subscription management."
+---
+
+<Warning>
+Implementing a custom PurchaseController is advanced functionality. Most developers should use the default purchase controller with RevenueCat integration.
+</Warning>
+
+<Info>
+For RevenueCat integration, see the [Using RevenueCat guide](/flutter/guides/using-revenuecat) instead of implementing a custom PurchaseController.
+</Info>
+
+## Purpose
+Allows custom implementation of purchase flows, subscription validation, and cross-platform purchase handling.
+
+## Signature
+```dart
+abstract class PurchaseController {
+  Future<PurchaseResult> purchaseFromAppStore(String productId);
+  Future<PurchaseResult> purchaseFromGooglePlay(
+    String productId,
+    String? basePlanId,
+    String? offerId,
+  );
+  Future<RestorationResult> restorePurchases();
+}
+```
+
+## Parameters
+<ParamTable>
+| Method | Parameters | Description |
+|--------|------------|-------------|
+| `purchaseFromAppStore` | `productId: String` | Handles iOS App Store purchases. |
+| `purchaseFromGooglePlay` | `productId: String`, `basePlanId: String?`, `offerId: String?` | Handles Google Play Store purchases with optional base plan and offer. |
+| `restorePurchases` | None | Restores previous purchases across platforms. |
+</ParamTable>
+
+## Returns / State
+- `purchaseFromAppStore` and `purchaseFromGooglePlay` return `Future<PurchaseResult>`
+- `restorePurchases` returns `Future<RestorationResult>`
+
+## Usage
+
+For most use cases, use RevenueCat integration instead:
+
+See the [Using RevenueCat guide](/flutter/guides/using-revenuecat) for complete setup instructions.
+
+Custom implementation is only needed for advanced use cases where you have your own purchase handling system.

@@ -1,0 +1,105 @@
+---
+title: "SuperwallDelegate"
+description: "An abstract class that receives global SDK events for analytics and lifecycle management."
+---
+
+<Info>
+Use this delegate for global events across your entire app. For events specific to individual [`registerPlacement()`](/flutter/sdk-reference/registerPlacement) calls, use [`PaywallPresentationHandler`](/flutter/sdk-reference/PaywallPresentationHandler) instead.
+</Info>
+
+## Purpose
+Receives global SDK events including paywall lifecycle, subscription changes, and custom actions.
+
+## Signature
+```dart
+abstract class SuperwallDelegate {
+  void subscriptionStatusDidChange(SubscriptionStatus newValue);
+  void handleSuperwallEvent(SuperwallEventInfo eventInfo);
+  void handleCustomPaywallAction(String name);
+  void willDismissPaywall(PaywallInfo paywallInfo);
+  void willPresentPaywall(PaywallInfo paywallInfo);
+  void didDismissPaywall(PaywallInfo paywallInfo);
+  void didPresentPaywall(PaywallInfo paywallInfo);
+  void paywallWillOpenURL(Uri url);
+  void paywallWillOpenDeepLink(Uri url);
+}
+```
+
+## Implementation
+Extend the abstract class and implement the methods you need:
+
+```dart
+class MySuperwallDelegate extends SuperwallDelegate {
+  @override
+  void subscriptionStatusDidChange(SubscriptionStatus newValue) {
+    print('Subscription status changed to: $newValue');
+    // Update user interface, send analytics, etc.
+  }
+  
+  @override
+  void handleSuperwallEvent(SuperwallEventInfo eventInfo) {
+    print('Superwall event: ${eventInfo.event}');
+    // Send to your analytics platform
+    Analytics.track(eventInfo.event.rawName, eventInfo.params);
+  }
+  
+  @override
+  void willPresentPaywall(PaywallInfo paywallInfo) {
+    print('About to present paywall: ${paywallInfo.identifier}');
+    // Pause video, hide overlays, etc.
+  }
+  
+  @override
+  void didDismissPaywall(PaywallInfo paywallInfo) {
+    print('Paywall dismissed: ${paywallInfo.identifier}');
+    // Resume video, show overlays, etc.
+  }
+  
+  @override
+  void handleCustomPaywallAction(String name) {
+    print('Custom action triggered: $name');
+    
+    switch (name) {
+      case 'contact_support':
+        _openSupportChat();
+        break;
+      case 'share_app':
+        _shareApp();
+        break;
+    }
+  }
+}
+```
+
+## Usage
+
+Set up the delegate:
+```dart
+void main() async {
+  WidgetsFlutterBinding.ensureInitialized();
+  
+  await Superwall.configure('pk_your_api_key');
+  
+  // Set the delegate
+  Superwall.shared.setDelegate(MySuperwallDelegate());
+  
+  runApp(MyApp());
+}
+```
+
+Minimal delegate implementation:
+```dart
+class MinimalDelegate extends SuperwallDelegate {
+  @override
+  void subscriptionStatusDidChange(SubscriptionStatus newValue) {
+    // Required: Handle subscription status changes
+  }
+  
+  @override
+  void handleSuperwallEvent(SuperwallEventInfo eventInfo) {
+    // Required: Handle SDK events
+  }
+  
+  // All other methods have default implementations
+}
+```

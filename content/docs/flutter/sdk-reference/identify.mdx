@@ -1,0 +1,64 @@
+---
+title: "identify()"
+description: "Associates a user ID with the current user for analytics and user tracking."
+---
+
+<Info>
+Call this method after a user logs in to track their subscription status and user attributes across devices.
+</Info>
+
+## Purpose
+Associates a user ID with the current user to enable cross-device tracking and user-specific analytics.
+
+## Signature
+```dart
+Future<void> identify(String userId, [IdentityOptions? options])
+```
+
+## Parameters
+<ParamTable>
+| Name | Type | Description |
+|------|------|-------------|
+| `userId` | `String` | A unique identifier for the user. |
+| `options` | `IdentityOptions?` | Optional configuration for identity behavior. |
+</ParamTable>
+
+## Returns / State
+Returns a `Future<void>` that completes when the user identification is finished.
+
+## Usage
+
+Basic identification:
+```dart
+await Superwall.shared.identify('user_123');
+```
+
+After user login:
+```dart
+Future<void> _onUserLogin(String email, String password) async {
+  // Authenticate user
+  final user = await AuthService.login(email, password);
+  
+  // Identify user to Superwall
+  await Superwall.shared.identify(user.id);
+  
+  // Set additional user attributes
+  await Superwall.setUserAttributes({
+    'email': user.email,
+    'plan': user.subscriptionPlan,
+    'signupDate': user.createdAt.toIso8601String(),
+  });
+}
+```
+
+With error handling:
+```dart
+Future<void> _identifyUser(String userId) async {
+  try {
+    await Superwall.shared.identify(userId);
+    print('User identified successfully');
+  } catch (e) {
+    print('Failed to identify user: $e');
+  }
+}
+```

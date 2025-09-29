@@ -1,0 +1,108 @@
+---
+title: "Cohorting in 3rd Party Tools (Legacy)"
+sidebarTitle: "Cohorting in 3rd Party Tools"
+description: "To easily view Superwall cohorts in 3rd party tools, we recommend you set user attributes based on the experiments that users are included in. You can also use custom placements for creating analytic events for actions such as interacting with an element on a paywall."
+---
+
+<CodeGroup>
+```swift Swift
+extension SuperwallService: SuperwallDelegate {
+  func handleSuperwallEvent(withInfo eventInfo: SuperwallEventInfo) {
+    if eventInfo.event.description == "trigger_fire" {
+      MyAnalyticsService.shared.setUserAttributes([
+        "sw_experiment_\(eventInfo.event.params["experiment_id"])": true,
+        "sw_variant_\(eventInfo.event.params["variant_id"])": true
+      ])
+    }
+  }
+}
+```
+
+```kotlin Kotlin
+override fun handleSuperwallEvent(eventInfo: SuperwallEventInfo) {
+  when(eventInfo.event) {
+    is SuperwallEvent.TriggerFire -> {
+      MyAnalyticsService.shared.setUserAttributes(
+        mapOf(
+          "sw_experiment_${eventInfo.params.get("experiment_id").toString()}" to true,
+          "sw_variant_${eventInfo.params.get("variant_id").toString()}" to true
+        )
+      )
+    }
+    else -> {}
+  }
+}
+```
+
+```dart Flutter
+@override
+void handleSuperwallEvent(SuperwallEventInfo eventInfo) async {
+  final experimentId = eventInfo.params?['experiment_id'];
+  final variantId = eventInfo.params?['variant_id'];
+
+  switch (eventInfo.event.type) {
+    case EventType.triggerFire:
+      MyAnalyticsService.shared.setUserAttributes({
+        "sw_experiment_$experimentId": true,
+        "sw_variant_$variantId": true
+      });
+      break;
+    default:
+      break;
+  }
+}
+```
+
+```typescript React Native
+handleSuperwallEvent(eventInfo: SuperwallEventInfo) {
+  const experimentId = eventInfo.params?['experiment_id']
+  const variantId = eventInfo.params?['variant_id']
+
+  if (!experimentId || !variantId) {
+    return
+  }
+
+  switch (eventInfo.event.type) {
+    case EventType.triggerFire:
+      MyAnalyticsService.shared.setUserAttributes({
+        `sw_experiment_${experimentId}`: true,
+        `sw_variant_${variantId}`: true
+      });
+      break;
+    default:
+      break;
+  }
+}
+```
+</CodeGroup>
+
+Once you've set this up, you can easily ask for all users who have an attribute `sw_experiment_1234` and breakdown by both variants to see how users in a Superwall experiment behave in other areas of your app.
+
+### Creating custom analytics tracking using custom placements 
+
+By using custom placements, you can create analytic events for actions such as interacting with an element on a paywall. This can be useful for tracking how users interact with your paywall and how that affects their behavior in other areas of your app. 
+
+For example, in the paywall below, perhaps you're interested in tracking when people switch the plan from "Standard" and "Pro": 
+
+<Frame>![](/../images/3pa_cp_2.jpeg)</Frame>
+
+You could create a custom placement [tap behavior](/paywall-editor-styling-elements#tap-behaviors) which fires when a segment is tapped:
+
+<Frame>![](/../images/3pa_cp_1.jpeg)</Frame>
+
+Then, you can listen for this event and forward it to your analytics service:
+
+```swift Swift
+extension SuperwallService: SuperwallDelegate {
+  func handleSuperwallEvent(withInfo eventInfo: SuperwallEventInfo) {
+    switch eventInfo.event {
+      case let .customPlacement(name, params, paywallInfo):
+        // Prints out didTapPro or didTapStandard
+        print("\(name) - \(params) - \(paywallInfo)")
+        MyAnalyticsService.shared.send(event: name, params: params)
+      default:
+        print("Default event: \(eventInfo.event.description)")
+    }
+  }
+}
+```

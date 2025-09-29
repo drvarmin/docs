@@ -1,0 +1,74 @@
+---
+title: "SuperwallOptions"
+description: "A configuration class for customizing paywall appearance and behavior."
+---
+
+<Warning>
+Only modify `networkEnvironment` if explicitly instructed by the Superwall team. Use `.RELEASE` (default) for production apps.
+</Warning>
+
+<Tip>
+Use different `SuperwallOptions` configurations for debug and release builds to optimize logging and behavior for each environment.
+</Tip>
+
+## Purpose
+Configures various aspects of Superwall behavior including paywall presentation, networking, and logging.
+
+## Signature
+```kotlin
+class SuperwallOptions {
+    var paywalls: PaywallOptions = PaywallOptions()
+    var networkEnvironment: NetworkEnvironment = NetworkEnvironment.RELEASE
+    var logging: LoggingOptions = LoggingOptions()
+    var localeIdentifier: String? = null
+}
+```
+
+```java
+// Java
+public class SuperwallOptions {
+    public PaywallOptions paywalls = new PaywallOptions();
+    public NetworkEnvironment networkEnvironment = NetworkEnvironment.RELEASE;
+    public LoggingOptions logging = new LoggingOptions();
+    public String localeIdentifier = null;
+}
+```
+
+## Parameters
+<ParamTable>
+| Property | Type | Description |
+|----------|------|-------------|
+| `paywalls` | [`PaywallOptions`](/android/sdk-reference/PaywallOptions) | Configuration for paywall appearance and behavior. |
+| `networkEnvironment` | `NetworkEnvironment` | Network environment (`.RELEASE`, `.RELEASE_CANDIDATE`, `.DEVELOPER`, `.CUSTOM(String)`). **Use only if instructed by Superwall team.** |
+| `logging` | `LoggingOptions` | Logging configuration including level and scopes. |
+| `localeIdentifier` | `String?` | Override locale for paywall localization (e.g., "en_GB"). |
+</ParamTable>
+
+## Returns / State
+This is a configuration object used when calling [`configure()`](/android/sdk-reference/configure).
+
+## Usage
+
+Basic options setup:
+```kotlin
+val options = SuperwallOptions().apply {
+    // Configure paywall behavior
+    paywalls.shouldShowPurchaseFailureAlert = false
+    
+    // Configure logging
+    logging.level = LogLevel.WARN
+    
+    // Set locale for testing
+    localeIdentifier = "en_GB"
+}
+
+// Use with configure
+Superwall.configure(
+    application = this,
+    apiKey = "pk_your_api_key",
+    options = options
+)
+```
+
+## Related
+- [`PaywallOptions`](/android/sdk-reference/PaywallOptions)

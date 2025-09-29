@@ -1,0 +1,144 @@
+---
+title: "Migrating from v2 to v3 - iOS"
+description: "SuperwallKit 3.0 is a major release of Superwall's iOS SDK, previously known as `Paywall`. This introduces breaking changes."
+---
+
+<Note>Note that the minimum deployment target has changed for v3 from iOS 11 to iOS 13</Note>
+
+This is so that we can use newer APIs internally and externally.
+
+## Migration steps
+
+### 1\. Update Swift Package Manager dependency (if needed)
+
+Our GitHub URL has changed. Although you can keep using the old one, its best if you replace it with the newer one. If you're using Swift Package Manager to handle dependencies:
+
+- Select your project from the **Project Navigator**, select your project under **Project** and click **Package Dependencies**.
+- Remove the old dependency for `paywall-ios`.
+- Click **+** and search for our new url [https://github.com/superwall/Superwall-iOS](https://github.com/superwall/Superwall-iOS) in the search bar.
+- Set the **Dependency Rule** to **Up to Next Major Version** with the lower bound set to **3.0.0**.
+- Make sure your project name is selected in **Add to Project**.
+- Then, **Add Package**.
+
+Sometimes Xcode keeps the old framework reference around by accident, so select your target in Xcode, then go to Build Phases, and ensure that your target’s Link Binary with Libraries section references SuperwallKit, and remove the reference to Paywall if it was still there.
+
+![](/images/02c9746-Screenshot_2022-11-10_at_18.21.27.png)
+
+<Note>
+  If you have any Xcode issues during building you might need to clean the build folder by going to
+  **Product** \> **Clean Build Folder** and then restart Xcode.
+</Note>
+
+### 1.1 Update CocoaPods dependency (if needed)
+
+If instead you're using CocoaPods to manage dependencies, in your Podfile update the reference to the Pod from `Paywall` to `SuperwallKit` then run `pod install`:
+
+| Before                   | After                         |
+| ------------------------ | ----------------------------- |
+| pod 'Paywall', '< 3.0.0' | pod 'SuperwallKit', '< 4.0.0' |
+
+### 1.2 Update Framework References
+
+Since our framework is now called `SuperwallKit`, you'll now need to explicitly import `SuperwallKit` instead of `Paywall` throughout your code:
+
+#### Swift
+
+| Before         | After               |
+| -------------- | ------------------- |
+| import Paywall | import SuperwallKit |
+
+#### Objective-C
+
+| Before           | After                 |
+| ---------------- | --------------------- |
+| @import Paywall; | @import SuperwallKit; |
+
+## 2\. Update code references
+
+In some cases, you should be able to update references using the automatic renaming suggestions that Xcode provides. For other cases where this hasn't been possible, you'll need to run through this list to manually update your code.
+
+### 2.1 Update references to `Paywall.foo` to `Superwall.shared.foo`
+
+You'll see errors saying `Cannot find 'Paywall' in scope`. This is because the main class for interacting with our API is now called `Superwall`. All variables and functions (apart from configure) are now instance functions. This means you'll need to use the shared instance `Superwall.shared`.
+
+### 2.2 Triggering is now registering
+
+Previously you'd use `Paywall.track(...)` to implicitly trigger a paywall, and `Paywall.trigger(...)` to explicitly trigger a paywall. This was confusing as they essentially did the same thing. `Paywall.track` provided completion blocks for what happened on the paywall when really you needed to know what to do next. We wanted to make this simpler so at the heart of this release is `Superwall.shared.register(event:params:handler:feature:)`. This allows you to register an event to access a feature that may or may not be paywalled later in time. It also allows you to choose whether the user can access the feature even if they don't make a purchase.
+
+You can read our docs on [how register works](/docs/feature-gating) to learn more.
+
+Given the low cost nature of how register works, we strongly recommend wrapping all core functionality in a register `feature` block in order to remotely configure which features you want to gate – without an app update.
+
+For SwiftUI apps, we have removed the `.triggerPaywall` view modifier in favor of this register function.
+
+### **2.3 Rename `PaywallDelegate` to `SuperwallDelegate`**
+
+The following method has changed:
+
+| Before                                                                   | After                                                                 |
+| ------------------------------------------------------------------------ | --------------------------------------------------------------------- |
+| func trackAnalyticsEvent(withName name: String, params: \[String: Any\]) | func handleSuperwallEventInfo(withInfo eventInfo: SuperwallEventInfo) |
+
+This has a `SuperwallEventInfo` parameter. This has a `params` dictionary and an `event` enum whose cases contain associated values. Note that the methods for handling subscription-related logic no longer exist inside `SuperwallDelegate`, as discussed in the next section.
+
+### 2.4 Handling subscription-related logic
+
+SuperwallKit now handles all subscription-related logic by default making integration super easy. We track the user's subscription status for you and expose the published property `Superwall.shared.subscriptionStatus`. This means that if you were previously using StoreKit you can simply delete that code and let SuperwallKit handle it.
+
+However, if you're using RevenueCat or still want to keep control over subscription-related logic, you'll need to conform to the `PurchaseController` protocol. This is a protocol that handles purchasing and restoring, much like the `PaywallDelegate` did in v2.x of the SDK. You set the purchase controller when you configure the SDK. You can read more about that in our [Purchases and Subscription Status](/docs/advanced-configuration) guide.
+
+The following methods were previously in the `PaywallDelegate` but are now in the `PurchaseController` and have changed slightly:
+
+#### Purchasing
+
+| Before                            | After                                                     |
+| --------------------------------- | --------------------------------------------------------- |
+| func purchase(product: SKProduct) | func purchase(product: SKProduct) async -> PurchaseResult |
+
+Here, you purchase the product but then return the result of the purchase as a `PurchaseResult` enum case. Make sure you handle all cases of `PurchaseResult`.
+
+#### Restoring
+
+| Before                                                      | After                                              |
+| ----------------------------------------------------------- | -------------------------------------------------- |
+| func restorePurchases(completion: @escaping (Bool) -> Void) | func restorePurchases() async -> RestorationResult |
+
+This has changed to an async function that returns the result of restoring a purchase. If you need help converting between completion blocks and async, [check out this article](https://wwdcbysundell.com/2021/wrapping-completion-handlers-into-async-apis/).
+
+#### Subscription Status
+
+| Before                          | After                                                        |
+| ------------------------------- | ------------------------------------------------------------ |
+| func isUserSubscribed() -> Bool | Superwall.shared.subscriptionStatus = .active (or .inactive) |
+
+`isUserSubscribed()` has been removed in favor of a `subscriptionStatus` variable which you **must** set every time the user's subscription status changes. On first app install this starts off as `.unknown` until you determine the user's subscription status and set it to `.active` when they have an active subscription, or `.inactive` when they don't. Paywalls will not show until the user's subscription status is set.
+
+You can [check out our docs](/docs/advanced-configuration) for detailed info about implementing the `PurchaseController`.
+
+### 2.5 Rename `PaywallOptions` to `SuperwallOptions`
+
+This now clearly defines which of the options are explicit to paywalls vs other configuration options within the SDK.
+
+### 2.6 Configuring and Identity management
+
+When configuring the API, you now no longer provide a userId or delegate.
+
+| Before                                     | After                                                    |
+| ------------------------------------------ | -------------------------------------------------------- |
+| configure(apiKey:userId:delegate:options:) | configure(apiKey:purchaseController:options:completion:) |
+
+To use the optional delegate, set `Superwall.shared.delegate`. To identify a user, use `Superwall.shared.identify(userId:options:)`.
+
+You can [read more](/docs/identity-management) about identity management in our docs.
+
+## 3\. Check out the full change log
+
+You can view this on [our GitHub page](https://github.com/superwall/Superwall-iOS/blob/master/CHANGELOG.md).
+
+## 4\. Check out our updated example apps
+
+All of our example apps have been updated to use the latest SDK. We have created a dedicated app that shows you how to integrate Superwall with RevenueCat. In addition, we have added an Objective-C app.
+
+## 5\. Read our docs and view the updated iOS SDK documentation
+
+Visit the links in the sidebar or [click here to go to the iOS SDK docs](https://sdk.superwall.me/documentation/superwallkit/).

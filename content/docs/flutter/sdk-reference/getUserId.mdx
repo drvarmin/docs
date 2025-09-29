@@ -1,0 +1,53 @@
+---
+title: "getUserId()"
+description: "Gets the current user ID that was set via identify()."
+---
+
+## Purpose
+Retrieves the current user ID that was previously set using [`identify()`](/flutter/sdk-reference/identify).
+
+## Signature
+```dart
+Future<String> getUserId()
+```
+
+## Returns / State
+Returns a `Future<String>` containing the current user ID, or an empty string if no user has been identified.
+
+## Usage
+
+Basic usage:
+```dart
+final userId = await Superwall.shared.getUserId();
+print('Current user ID: $userId');
+```
+
+Conditional logic:
+```dart
+Future<void> _checkUserStatus() async {
+  final userId = await Superwall.shared.getUserId();
+  
+  if (userId.isNotEmpty) {
+    print('User is logged in: $userId');
+    // Show personalized content
+    _loadUserSpecificData();
+  } else {
+    print('No user logged in');
+    // Show login prompt
+    _showLoginDialog();
+  }
+}
+```
+
+With user attributes:
+```dart
+Future<Map<String, dynamic>> _getCurrentUserInfo() async {
+  final userId = await Superwall.shared.getUserId();
+  final attributes = await Superwall.shared.getUserAttributes();
+  
+  return {
+    'userId': userId,
+    'attributes': attributes,
+  };
+}
+```

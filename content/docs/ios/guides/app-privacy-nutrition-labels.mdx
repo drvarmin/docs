@@ -1,0 +1,90 @@
+---
+title: "App Store Privacy Labels"
+---
+
+When submitting your app for review, you'll need to fill out an App Store Privacy label. When using the Superwall SDK, there are a few choices you may need to consider.
+
+### App Store Privacy Labels
+
+Privacy disclosures in regards to how data is processed or otherwise used are required when submitting an app for review on the App Store. When using the Superwall SDK, there are a few options you'll need to select to comply with this requirement.
+
+**At a minimum, you'll need to select "Purchases":**
+
+<Frame>![](/images/app-privacy-purchases.png "App Store Privacy - Purchases")</Frame>
+
+When you select "Purchases", you'll need to scroll down finish setup. When you do, there are two options you'll need to select:
+
+1. Analytics
+2. App Functionality
+
+<Frame>![](/images/app-privacy-purchase-history.png "App Store Privacy - Purchase History")</Frame>
+
+### Identifying Users
+
+How you proceed with the next prompt depends on how you are identifying users. If you _are_ identifying users via their email or any other means, disclose that here. Note that the Superwall SDK does not do this.
+
+Finally, Superwall does not track purchase history of users for advertising purposes — so you can choose "No" here (unless you're using other SDKs which do this, or you're performing any purchase history tracking for advertising purposes on your own ):
+
+<Frame>![](/images/app-privacy-tagging-users.png "App Store Privacy - User Identification")</Frame>
+
+In terms of the Superwall SDK, that's all you need to choose. But again, remember that your privacy label could look different depending on how you process data, how other SDKs are used and more.
+
+### Collected Data
+
+Here is a detailed list of anything that might be collected in the Superwall SDK:
+
+| Property                  | Description                                                                 |
+|----------------------------|-----------------------------------------------------------------------------|
+| `publicApiKey`             | The API key for accessing the public API.                                   |
+| `platform`                 | The operating system of the device (e.g., iOS, Android).                      |
+| `appUserId`                | A unique identifier for the app user.                                       |
+| `aliases`                  | List of aliases associated with the app user.                               |
+| `vendorId`                 | The vendor ID of the device.                                                |
+| `appVersion`               | The version of the app.                                                     |
+| `osVersion`                | The operating system version running on the device.                         |
+| `deviceModel`              | The model of the device (e.g., iPhone or Android device model).                            |
+| `deviceLocale`             | The current locale set on the device.                                       |
+| `preferredLocale`          | The preferred locale of the user.                                           |
+| `deviceLanguageCode`       | The language code of the device's system language.                          |
+| `preferredLanguageCode`     | The preferred language code set by the user.                               |
+| `regionCode`               | The region code set on the device.                                          |
+| `preferredRegionCode`      | The preferred region code of the user.                                      |
+| `deviceCurrencyCode`       | The currency code for transactions on the device.                           |
+| `deviceCurrencySymbol`     | The currency symbol based on the device’s settings.                         |
+| `interfaceType`            | The type of user interface (e.g., vision, ipad, etc).                |
+| `timezoneOffset`           | The device’s current timezone offset in minutes.                            |
+| `radioType`                | The network radio type (e.g., WiFi, Cellular).                              |
+| `interfaceStyle`           | The interface style (e.g., light or dark mode).                             |
+| `isLowPowerModeEnabled`    | Indicates whether low power mode is enabled.                                |
+| `bundleId`                 | The bundle identifier of the app.                                           |
+| `appInstallDate`           | The date the app was installed.                                             |
+| `isMac`                    | A boolean indicating if the device is a Mac.                                |
+| `daysSinceInstall`         | The number of days since the app was installed.                             |
+| `minutesSinceInstall`      | The number of minutes since the app was installed.                          |
+| `daysSinceLastPaywallView` | The number of days since the last paywall view.                             |
+| `minutesSinceLastPaywallView` | The number of minutes since the last paywall view.                        |
+| `totalPaywallViews`        | The total number of paywall views.                                          |
+| `utcDate`                  | The current UTC date.                                                       |
+| `localDate`                | The local date of the device.                                               |
+| `utcTime`                  | The current UTC time.                                                       |
+| `localTime`                | The local time on the device.                                               |
+| `utcDateTime`              | The UTC date and time combined.                                             |
+| `localDateTime`            | The local date and time combined.                                           |
+| `isSandbox`                | Indicates if the app is running in a sandbox environment.                   |
+| `subscriptionStatus`       | The subscription status of the app user.                                    |
+| `isFirstAppOpen`           | Boolean indicating if it is the user’s first app open.                      |
+| `sdkVersion`               | The current version of the SDK.                                             |
+| `sdkVersionPadded`         | The padded version of the SDK (e.g. 001.002.003-beta.001).                      |
+| `appBuildString`           | The app’s build string identifier.                                          |
+| `appBuildStringNumber`     | The numeric value of the app’s build number.                                |
+| `interfaceStyleMode`       | The current interface style mode (e.g., dark, light).                       |
+| `ipRegion`                 | The region derived from the device's IP address.                            |
+| `ipRegionCode`             | The region code derived from the device's IP.                               |
+| `ipCountry`                | The country derived from the device's IP address.                           |
+| `ipCity`                   | The city derived from the device's IP address.                              |
+| `ipContinent`              | The continent derived from the device's IP address.                         |
+| `ipTimezone`               | The timezone derived from the device's IP address.                          |
+| `capabilities`             | A string indicating any Superwall-SDK specific capabilities.                             |
+| `capabilitiesConfig`       | A JSON configuration of the above capabilities.                         |
+| `platformWrapper`          | The platform wrapper (e.g., React Native).                                  |
+| `platformWrapperVersion`   | The version of the platform wrapper.                                        |

@@ -1,0 +1,62 @@
+---
+title: "configure()"
+description: "A static function that configures a shared instance of Superwall for use throughout your app."
+---
+
+<Note>
+This is a static method called on the `Superwall` class itself, not on the shared instance.
+</Note>
+
+## Purpose
+Configures the shared instance of Superwall with your API key and optional configurations, making it ready for use throughout your app.
+
+## Signature
+```swift
+public static func configure(
+  apiKey: String,
+  purchaseController: PurchaseController? = nil,
+  options: SuperwallOptions? = nil,
+  completion: (() -> Void)? = nil
+) -> Superwall
+```
+
+## Parameters
+<ParamTable>
+| Name | Type | Description |
+|------|------|-------------|
+| `apiKey` | `String` | Your Public API Key from the Superwall dashboard settings. |
+| `purchaseController` | `PurchaseController?` | Optional object for handling all subscription-related logic yourself. If `nil`, Superwall handles subscription logic. Defaults to `nil`. |
+| `options` | `SuperwallOptions?` | Optional configuration object for customizing paywall appearance and behavior. See [`SuperwallOptions`](/ios/sdk-reference/SuperwallOptions) for details. Defaults to `nil`. |
+| `completion` | `(() -> Void)?` | Optional completion handler called when Superwall finishes configuring. Defaults to `nil`. |
+</ParamTable>
+
+## Returns / State
+Returns the configured `Superwall` instance. The instance is also accessible via [`Superwall.shared`](/ios/sdk-reference/Superwall).
+
+## Usage
+
+Basic configuration:
+```swift
+Superwall.configure(apiKey: "pk_your_api_key")
+```
+
+With custom options:
+```swift
+let options = SuperwallOptions()
+options.paywalls.shouldShowPurchaseFailureAlert = false
+
+Superwall.configure(
+  apiKey: "pk_your_api_key",
+  options: options
+) {
+  print("Superwall configured successfully")
+}
+```
+
+With custom purchase controller:
+```swift
+Superwall.configure(
+  apiKey: "pk_your_api_key",
+  purchaseController: MyPurchaseController()
+)
+```

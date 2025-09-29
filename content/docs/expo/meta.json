@@ -1,0 +1,37 @@
+{
+    "title": "Expo SDK",
+    "icon": "Expo",
+    "root": true,
+    "pages": [
+        "[Dashboard Docs](https://superwall.com/docs/dashboard)",
+        "index",
+
+        "---Quickstart---",
+        "quickstart/install",
+        "quickstart/configure",
+        "quickstart/present-first-paywall",
+        "quickstart/user-management",
+        "quickstart/feature-gating",
+        "quickstart/tracking-subscription-state",
+        "quickstart/setting-user-properties",
+        "quickstart/in-app-paywall-previews",
+
+        "---SDK Reference---",
+        "sdk-reference/index",
+        "sdk-reference/components",
+        "sdk-reference/hooks",
+
+        "---Guides---",
+        "guides/vibe-coding",
+        "guides/using-revenuecat",
+        "guides/using-expo-sdk-in-bare-react-native",
+        "guides/migrating-react-native",
+        "guides/managing-users",
+        "guides/experimental-flags",
+        "guides/advanced",
+        "guides/migrations",
+        "guides/3rd-party-analytics",
+        "[Troubleshooting](https://support.superwall.com/articles/4780985851-troubleshooting-expo-sdk)",
+        "[Example App](https://github.com/superwall/expo-superwall/tree/main/example)"
+    ]
+}

@@ -1,0 +1,13 @@
+{
+    "title": "Advanced",
+    "collapsed": true,
+    "pages": [
+        "presenting-paywalls",
+        "using-the-presentation-handler",
+        "viewing-purchased-products",
+        "custom-paywall-actions",
+        "observer-mode",
+        "direct-purchasing",
+        "game-controller-support"
+    ]
+}

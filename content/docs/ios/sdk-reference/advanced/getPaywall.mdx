@@ -1,0 +1,87 @@
+---
+title: "getPaywall()"
+description: "A function that retrieves a PaywallViewController for custom presentation."
+---
+
+<Warning>
+You're responsible for the deallocation of the returned PaywallViewController. Do not present the same PaywallViewController in multiple places simultaneously.
+</Warning>
+
+<Note>
+The remotely configured presentation style is ignored when using this method. You must handle presentation styling programmatically.
+</Note>
+
+## Purpose
+Retrieves a PaywallViewController that you can present however you want, bypassing Superwall's automatic presentation logic.
+
+## Signature
+```swift
+// Async/await version
+@MainActor
+public func getPaywall(
+  forPlacement placement: String,
+  params: [String: Any]? = nil,
+  paywallOverrides: PaywallOverrides? = nil,
+  delegate: PaywallViewControllerDelegate
+) async throws -> PaywallViewController
+
+// Completion handler version
+public func getPaywall(
+  forPlacement placement: String,
+  params: [String: Any]? = nil,
+  paywallOverrides: PaywallOverrides? = nil,
+  delegate: PaywallViewControllerDelegate,
+  completion: @escaping (PaywallViewController?, PaywallSkippedReason?, Error?) -> Void
+)
+```
+
+## Parameters
+<ParamTable>
+| Name | Type | Description |
+|------|------|-------------|
+| `placement` | `String` | The name of the placement as defined on the Superwall dashboard. |
+| `params` | `[String: Any]?` | Optional parameters to pass with your placement for audience filters. Keys beginning with `$` are reserved and will be dropped. Defaults to `nil`. |
+| `paywallOverrides` | `PaywallOverrides?` | Optional overrides for products and presentation style. Defaults to `nil`. |
+| `delegate` | `PaywallViewControllerDelegate` | A delegate to handle user interactions with the retrieved PaywallViewController. |
+| `completion` | `@escaping (PaywallViewController?, PaywallSkippedReason?, Error?) -> Void` | Completion block for the callback version. |
+</ParamTable>
+
+## Returns / State
+Returns a `PaywallViewController` that you can present. If presentation should be skipped, throws a `PaywallSkippedReason` error.
+
+## Usage
+
+Using async/await:
+```swift
+Task {
+  do {
+    let paywallViewController = try await Superwall.shared.getPaywall(
+      forPlacement: "premium_feature",
+      params: ["source": "settings"],
+      delegate: self
+    )
+    
+    present(paywallViewController, animated: true)
+  } catch let reason as PaywallSkippedReason {
+    print("Paywall skipped: \(reason)")
+  } catch {
+    print("Error getting paywall: \(error)")
+  }
+}
+```
+
+Using completion handler:
+```swift
+Superwall.shared.getPaywall(
+  forPlacement: "premium_feature",
+  delegate: self
+) { paywall, skippedReason, error in
+  if let paywall = paywall {
+    present(paywall, animated: true)
+  } else if let reason = skippedReason {
+    print("Paywall skipped: \(reason)")
+  } else if let error = error {
+    print("Error: \(error)")
+  }
+}
+```

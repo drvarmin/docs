@@ -1,0 +1,125 @@
+---
+title: "subscriptionStatus"
+description: "A StateFlow property that indicates the subscription status of the user."
+---
+
+<Info>
+If you're using a custom [`PurchaseController`](/android/sdk-reference/PurchaseController), you must update this property whenever the user's entitlements change.
+</Info>
+
+<Note>
+You can also observe changes via the [`SuperwallDelegate`](/android/sdk-reference/SuperwallDelegate) method `subscriptionStatusDidChange(from, to)`.
+</Note>
+
+## Purpose
+Indicates the current subscription status of the user and can be observed for changes using Kotlin StateFlow.
+
+## Signature
+```kotlin
+val subscriptionStatus: StateFlow<SubscriptionStatus>
+
+// For setting the status (when using custom PurchaseController)
+fun setSubscriptionStatus(status: SubscriptionStatus)
+```
+
+```java
+// Java
+public StateFlow<SubscriptionStatus> getSubscriptionStatus()
+public void setSubscriptionStatus(SubscriptionStatus status)
+```
+
+## Parameters
+This property accepts a `SubscriptionStatus` sealed class value:
+- `SubscriptionStatus.Unknown` - Status is not yet determined
+- `SubscriptionStatus.Active(Set<String>)` - User has active entitlements (set of entitlement identifiers)
+- `SubscriptionStatus.Inactive` - User has no active entitlements
+
+## Returns / State
+Returns a `StateFlow<SubscriptionStatus>` that emits the current subscription status. When using a [`PurchaseController`](/android/sdk-reference/PurchaseController), you must set this property yourself using `setSubscriptionStatus()`. Otherwise, Superwall manages it automatically.
+
+## Usage
+
+Set subscription status (when using PurchaseController):
+```kotlin
+Superwall.instance.setSubscriptionStatus(
+    SubscriptionStatus.Active(setOf("premium", "pro_features"))
+)
+Superwall.instance.setSubscriptionStatus(SubscriptionStatus.Inactive)
+```
+
+Get current subscription status:
+```kotlin
+val status = Superwall.instance.subscriptionStatus.value
+when (status) {
+    is SubscriptionStatus.Unknown -> 
+        println("Subscription status unknown")
+    is SubscriptionStatus.Active -> 
+        println("User has active entitlements: ${status.entitlements}")
+    is SubscriptionStatus.Inactive -> 
+        println("User has no active subscription")
+}
+```
+
+Observe changes with StateFlow:
+```kotlin
+class MainActivity : AppCompatActivity() {
+    override fun onCreate(savedInstanceState: Bundle?) {
+        super.onCreate(savedInstanceState)
+        
+        lifecycleScope.launch {
+            Superwall.instance.subscriptionStatus.collect { status ->
+                updateUI(status)
+            }
+        }
+    }
+    
+    private fun updateUI(status: SubscriptionStatus) {
+        when (status) {
+            is SubscriptionStatus.Active -> showPremiumContent()
+            is SubscriptionStatus.Inactive -> showFreeContent()
+            is SubscriptionStatus.Unknown -> showLoadingState()
+        }
+    }
+}
+```
+
+Jetpack Compose observation:
+```kotlin
+@Composable
+fun ContentScreen() {
+    val subscriptionStatus by Superwall.instance.subscriptionStatus
+        .collectAsState()
+    
+    Column {
+        when (subscriptionStatus) {
+            is SubscriptionStatus.Active -> {
+                Text("Premium user with: ${subscriptionStatus.entitlements.joinToString()}")
+            }
+            is SubscriptionStatus.Inactive -> {
+                Text("Free user")
+            }
+            is SubscriptionStatus.Unknown -> {
+                Text("Loading...")
+            }
+        }
+    }
+}
+```
+
+Java usage:
+```java
+// Get current status
+SubscriptionStatus status = Superwall.getInstance()
+    .getSubscriptionStatus().getValue();
+
+// Observe changes
+Superwall.getInstance().getSubscriptionStatus()
+    .observe(this, status -> {
+        updateUI(status);
+    });
+
+// Set status (when using PurchaseController)
+Superwall.getInstance().setSubscriptionStatus(
+    new SubscriptionStatus.Active(Set.of("premium"))
+);
+```

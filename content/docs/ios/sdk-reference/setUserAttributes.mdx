@@ -1,0 +1,74 @@
+---
+title: "setUserAttributes()"
+description: "A function that sets user attributes for use in paywalls and analytics on the Superwall dashboard."
+---
+
+<Warning>
+These attributes should not be used as a source of truth for sensitive information.
+</Warning>
+
+<Info>
+Keys beginning with `$` are reserved for Superwall internal use and will be ignored. Arrays and dictionaries are not supported as values.
+</Info>
+
+## Purpose
+Sets custom user attributes that can be used in paywall personalization, audience filters, and analytics on the Superwall dashboard.
+
+## Signature
+```swift
+public func setUserAttributes(_ attributes: [String: Any?])
+```
+
+## Parameters
+<ParamTable>
+| Name | Type | Description |
+|------|------|-------------|
+| `attributes` | `[String: Any?]` | A dictionary of custom attributes to store for the user. Values can be any JSON encodable value, URLs, or Dates. |
+</ParamTable>
+
+## Returns / State
+This function returns `Void`. If an attribute already exists, its value will be overwritten while other attributes remain unchanged.
+
+## Usage
+
+Set multiple user attributes:
+```swift
+let attributes: [String: Any] = [
+  "name": "John Doe",
+  "email": "john@example.com",
+  "plan": "premium",
+  "signUpDate": Date(),
+  "profilePicUrl": URL(string: "https://example.com/pic.jpg")!,
+  "isVip": true,
+  "loginCount": 42
+]
+
+Superwall.shared.setUserAttributes(attributes)
+```
+
+Set individual attributes over time:
+```swift
+Superwall.shared.setUserAttributes(["lastActiveDate": Date()])
+Superwall.shared.setUserAttributes(["featureUsageCount": 15])
+```
+
+Remove an attribute by setting it to nil:
+```swift
+Superwall.shared.setUserAttributes(["temporaryFlag": nil])
+```
+
+Real-world example after user updates profile:
+```swift
+func updateUserProfile(user: User) {
+  Superwall.shared.setUserAttributes([
+    "name": user.displayName,
+    "avatar": user.avatarURL,
+    "preferences": user.notificationPreferences,
+    "lastUpdated": Date()
+  ])
+}
+```
+
+<Tip>
+Use these attributes in campaign audience filters on the Superwall dashboard to show targeted paywalls to specific user segments.
+</Tip>

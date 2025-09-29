@@ -1,0 +1,294 @@
+---
+title: "Liquid"
+---
+
+Liquid is a templating language that you can use to easily build text in your paywall. The simplest way to get started is simply by referencing a variable
+with curly brackets. `{{ user.firstName }}` will output the user's first name. (Assuming you've called `setUserAttributes` with `firstName` previously in the SDK).
+
+However, Liquid is much more flexible then simple curly brackets. It also offers "filters" which allow you to operate on the
+variables before outputting them. Ex: `{{ 1 | plus: 3 }}` will output `4`. They work left to right and do not support order of
+operations. (You can get around this limitation by using `assign`).
+
+<Frame>![](/images/pe-editor-vars-usage.png)</Frame>
+
+### Liquid syntax formatting
+
+In text, you can use [Liquid filters](https://shopify.github.io/liquid/filters/abs/) to modify output. To use filters, add a pipe after the variable. Then, add in one or more filters:
+
+```
+// Results in 17, the absolute value of -17
+{{ -17 | abs }}
+```
+
+For example, to capitalize a text variable, you would write:
+
+```
+// If the name was "jordan", this results in "JORDAN"
+{{ user.name | upcase }}
+```
+
+## Working with Product Prices
+
+When working with product prices in your paywall, you have two options depending on whether you need the raw numeric value or a pre-formatted price string.
+
+### Formatted vs. Raw Prices
+
+**Formatted Price (`{{ products.selected.price }}`)**
+This provides a pre-formatted price string that includes the currency symbol and is formatted according to the user's locale with two decimal places.
+
+```liquid
+{{ products.selected.price }}
+// Output -> "$0.99" (for US users)
+// Output -> "€0.99" (for EU users)
+// Output -> "¥99" (for Japanese users)
+```
+
+**Raw Price (`{{ products.selected.rawPrice }}`)**
+This provides the raw numeric value without any formatting, which is useful when you need to perform mathematical operations.
+
+```liquid
+{{ products.selected.rawPrice }}
+// Output -> 0.99
+// Output -> 9.99
+// Output -> 99
+```
+
+### Formatting Numbers to Two Decimal Places
+
+If you're working with raw prices or performing calculations, you may need to format the result to show exactly two decimal places. You can use Liquid's `round` filter combined with number formatting:
+
+```liquid
+// Format a raw price to two decimal places
+${{ products.selected.rawPrice | round: 2 }}
+// Output -> "$0.99"
+
+// Calculate a discount and format to two decimal places
+{% assign discounted_price = products.selected.rawPrice | times: 0.8 %}
+Sale Price: ${{ discounted_price | round: 2 }}
+// Output -> "Sale Price: $0.79" (for a $0.99 product with 20% discount)
+
+// Calculate savings and format to two decimal places
+{% assign original_price = 9.99 %}
+{% assign current_price = products.selected.rawPrice %}
+{% assign savings = original_price | minus: current_price %}
+You save: ${{ savings | round: 2 }}!
+// Output -> "You save: $5.00!" (if current price is $4.99)
+```
+
+<Note>
+  Use `{{ products.selected.price }}` when you want a properly formatted price string that respects the user's currency and locale. Use `{{ products.selected.rawPrice }}` when you need to perform calculations or custom formatting.
+</Note>
+
+## Liquid inside Image URLs
+You can use Liquid for any image URL in the Superwall editor. It can either be the entire URL, or interpolated with an existing one:
+
+```javascript 
+// As the entire URL...
+{{ user.profilePicture1 }}
+
+// Or interpolated within one...
+https://myApp.cdn.{{ events.activeEvent }}
+```
+
+You can access any variable available too ([including user created ones](https://superwall.com/docs/feature-gating#placement-parameters)), which makes it the right tool to display dynamic content for your images. Here are some examples:
+
+- **User Profile Picture in a Dating App:** Display the profile image of a user that someone has tapped on:
+`https://datingApp.cdn.{{ user.profilePicture1 }}`
+- **Event-Specific Banners for Sports Apps:** Pull in images like team logos or event banners for ongoing or upcoming games: `https://sportsApp.cdn.{{ events.currentGame.teamLogo }}`
+
+Here's an example:
+
+<Frame>![](/images/liquidImageExample.jpeg)</Frame>
+
+## Custom Liquid filters
+
+To make it easier to express dates & countdowns we've added several non-standard filters to our Liquid engine.
+
+### `date_add`
+
+Add a specified amount of time to a date.
+
+**Usage**:
+
+`[date string] | date_add: [number|ms string], (unit)`
+
+There are two ways to specify the amount of time
+to add:
+
+1. By passing a number and a unit as arguments. The unit can be one of `seconds`, `minutes`, `hours`, `days`, `weeks`,
+   `months`, or `years`. For example, `{{ "2024-08-06T07:16:26.802Z" | date_add: 1, "days" }}` adds one day to the
+   date.
+
+2. By using the ['ms'](https://github.com/vercel/ms?tab=readme-ov-file#ms) style of specifying a duration. This format is flexible
+   but generally you specify a number followed by a unit as part of a single string. Ex: `1d` (1 day), `2h` (2 hours), `30m` (30 minutes), etc.
+   For example, `{{ "2024-08-06T07:16:26.802Z" | date_add: "1d" }}` adds one day to the date.
+
+<Note>
+  You can chain multiple `date_add` and `date_subtract` filters together to add or subtract multiple units of time.
+  Ex: `{{ "2024-08-06T07:16:26.802Z" | date_add: 1, "days" | date_add: 2, "hours" }}` adds one day and two hours to the date.
+</Note>
+
+**More Examples**:
+
+```liquid
+{{ "2024-08-06T07:16:26.802Z" | date_add_minutes: 30  }}
+// Output -> '2024-08-06T07:46:26.802Z'
+```
+
+### `date_subtract`
+
+Subtract a specified amount of time from a date.
+
+**Usage**:
+
+`[date string] | date_subtract: [number|ms string], (unit)`
+
+There are two ways to specify the amount of time
+to subtract:
+
+1. By passing a number and a unit as arguments. The unit can be one of `seconds`, `minutes`, `hours`, `days`, `weeks`,
+   `months`, or `years`. For example, `{{ "2024-08-06T07:16:26.802Z" | date_subtract: 1, "days" }}` subtracts one day from the
+   date.
+
+2. By using the ['ms'](https://github.com/vercel/ms?tab=readme-ov-file#ms) style of specifying a duration. This format is flexible
+   but generally you specify a number followed by a unit as part of a single string. Ex: `1d` (1 day), `2h` (2 hours), `30m` (30 minutes), etc.
+   For example, `{{ "2024-08-06T07:16:26.802Z" | date_subtract: "1d" }}` subtracts one day to the date.
+
+<Note>
+  You can chain multiple `date_add` and `date_subtract` filters together to add or subtract multiple units of time.
+  Ex: `{{ "2024-08-06T07:16:26.802Z" | date_subtract: 1, "days" | date_subtract: 2, "hours" }}` subtracts one day and two hours from the date.
+</Note>
+
+**More Examples**:
+
+```liquid
+{{ "2024-08-06T07:16:26.802Z" | date_subtract_minutes: 30  }}
+// Output -> '2024-08-06T06:46:26.802Z'
+```
+
+### `date`
+
+Format a date in a specific way.
+
+**Usage**:
+
+`[date string] | date: [format string]`
+
+The [`date`](https://liquidjs.com/filters/date.html) filter is a standard Liquid filter that formats a date. You can use it to format a date in any way that
+Javascript's default date utility can parse. For example, `{{ "2024-08-06T07:16:26.802Z" | date: "%s" }}` formats the
+date as a Unix timestamp. Here are some common date formats:
+
+**Common Formats**
+
+| Format              | Example Output            | Description                                                                  |
+| ------------------- | ------------------------- | ---------------------------------------------------------------------------- |
+| `%s`                | `1722929186`              | Unix timestamp                                                               |
+| `%Y-%m-%d %H:%M:%S` | `2024-08-06 07:16:26`     | Year, month, day, hour, minute, second                                       |
+| `%a %b %e %T %Y`    | `Sun Aug 6 07:16:26 2024` | Abbreviated day of the week, abbreviated month, day of the month, time, year |
+| `%m/%d/%y`          | `08/06/24`                | Month, day, year (Common US Format)                                          |
+
+**Format Reference**
+
+| Format | Example    | Description                                   |
+| ------ | ---------- | --------------------------------------------- |
+| %a     | Tue        | Shorthand day of the week                     |
+| %A     | Tuesday    | Full day of the week                          |
+| %b     | Aug        | Shorthand month                               |
+| %B     | August     | Full month                                    |
+| %d     | 06         | Zero padded day of the month                  |
+| %H     | 07         | Zero padded 24-hour hour                      |
+| %I     | 07         | Zero padded 12-hour hour                      |
+| %j     | 219        | Day of the year                               |
+| %m     | 08         | Zero padded month                             |
+| %M     | 16         | Zero padded minute                            |
+| %p     | AM         | AM or PM                                      |
+| %S     | 26         | Zero padded second                            |
+| %U     | 31         | Week number of the year, starting with Sunday |
+| %W     | 31         | Week number of the year, starting with Monday |
+| %x     | 8/6/2024   | Locale date                                   |
+| %X     | 7:16:26 AM | Locale time                                   |
+| %y     | 24         | Two digit year                                |
+| %Y     | 2024       | Four digit year                               |
+| %z     | +0000      | Timezone offset                               |
+| %%     | %          | Literal %                                     |
+
+**More Examples**:
+
+```liquid
+{{ "2024-08-06T07:16:26.802Z" | date: "%Y-%m-%d %H:%M" }}
+// Output ->  '2024-08-06 00:16'
+
+{{ "2024-08-06T07:16:26.802Z" | date: "%B %d, %Y" }}
+// Output ->  'August 06, 2024'
+
+{{ "2024-08-06T07:16:26.802Z" | date: "%I:%M %p" }}
+// Output ->  '12:16 AM'
+
+{{ "2024-08-06T07:16:26.802Z" | date: "%A, %B %d, %Y" }}
+// Output ->  'Tuesday, August 06, 2024'
+```
+
+### `countdown_from`
+
+Calculates and formats the difference between two dates as a countdown.
+
+**Usage**:
+
+`[end_date string] | countdown_from: [start_date string], (style), (max unit)`
+
+- `end_date` (required): The end date of the countdown.
+- `start_date` (required): The start date of the countdown. Almost always `state.now`.
+- `style` (optional): The style of the countdown. Can be one of `digital`, `narrow`, `short`, `long`, `long_most_significant`. The default is `digital`.
+  - `digital`: Displays the countdown in the format `HH:MM:SS`.
+  - `narrow`: Displays the countdown in the format `1d 2h 3m 4s`.
+  - `short`: Displays the countdown in the format `2 hr, 3 min, 4 sec`.
+  - `long`: Displays the countdown in the format `2 hours, 3 minutes, 4 seconds`.
+  - `long_most_significant`: Displays the countdown in the format `2 hours, 3 minutes, 4 seconds`, but only shows the most significant unit. Ex: `2 hours` if the countdown is less than 1 day or `3 days` if the countdown is less than 1 month.
+- `max unit` (optional): The maximum unit to display in the countdown. Can be one of `years`, `months`, `weeks`, `days`, `hours`, `minutes`, or `seconds`. The default is `hours`. This means for a digital countdown of 72 hours would be represented as `72:00:00`, rather than `3 days`.
+- `column` (optional): The column to display in the countdown. Can be one of `years`, `months`, `weeks`, `days`, `hours`, `minutes`, or `seconds`. This means for a digital countdown with the column set to `minutes`, the countdown `47:12:03` would be represented as `12`.
+
+**Common Usage**:
+
+```liquid
+// Simple countdown timer
+{{ device.deviceInstalledAt | date_add: '3d' | countdown_from: state.now }}
+// Output -> '03:00:19'
+
+// Fixed end date, with a message
+Our summer sale ends in {{ "2024-08-06T07:16:26.802Z" | countdown_from: state.now, "long_most_significant" }}!
+// Output -> Our summer sales ends in 3 days!
+
+// Countdown with a custom column
+{{ "2024-08-06T07:16:26.802Z" | countdown_from: state.now, "long", "days", "minutes" }}
+// Output -> 12
+
+// One hour countdown timer, starting from the moment a paywall is opened, formatted with just the hour and minute, i.e. 59:36 for fifty-nine minutes, thirty-six seconds 
+{{ device.localDateTime | date_add: "60m" | countdown_from: state.now, "long", "days", "minutes" }}:{% assign seconds = device.localDateTime | date_add: "60m" | countdown_from: state.now, "long", "days", "seconds" %}{% if seconds < 10 %}0{{ seconds }}{% else %}{{ seconds }}{% endif %}
+```
+
+<Note>
+  In practice you will almost always use `state.now` as the start date. This is a special variable
+  that represents the current time. Referencing it will ensure that the countdown re-renders every
+  second.
+</Note>
+
+### `event_name`
+
+You can add "event_name" as a [variable](/dashboard/dashboard-creating-paywalls/paywall-editor-variables#custom-variables) to get the name of the placement (trigger event) that caused the paywall to be displayed:
+
+<Frame>![](/images/liquid-create-event_name-var.jpeg)</Frame>
+
+Then, it will be available to use as a custom variable. Once created, it should be listed under the **left sidebar -> Variables -> Params -> Event Name**:
+
+<Frame>![](/images/liquid-create-event_name-created.jpeg)</Frame>
+
+**Common Usage**:
+
+You could display the value in any text element:
+```liquid
+Triggered by: {{ event_name }}
+```
+
+But, more commonly, you might use it with a [dynamic value](/dashboard/dashboard-creating-paywalls/paywall-editor-dynamic-values). Then, you can customize your paywall based on the event name:
+
+<Frame>![](/images/liquid-event_name-dynamic-value.jpeg)</Frame>

@@ -1,0 +1,102 @@
+---
+title: "Paywall Settings Sidebar"
+description: "The settings sidebar is split into 3 sections: Products; Design; and Advanced."
+---
+
+<Warning>
+  The legacy editor is deprecated. Please visit the docs covering our new
+  [editor](/paywall-editor-overview).
+</Warning>
+
+### Products
+
+In this section, you choose your products to display on your paywall. You'll need to set up your products via Settings as detailed [here](/docs/products).
+
+<Frame>![](/images/8cf8e67-Screenshot_2023-06-14_at_16.53.22.png) </Frame>
+
+### Settings
+
+These settings determine how the paywall displays and how it behaves.
+
+<Frame>![](/images/93599d2-Screenshot_2023-06-14_at_17.25.08.png) </Frame>
+
+#### Presentation Style
+
+Here, you can set the presentation style to one of the following:
+
+- Modal: Presents the paywall modally that can be swiped away.
+- Full Screen: Presents the paywall over the entire screen.
+- Push: Presents the paywall as if it's being pushed on to a navigation stack. This requires v2.4+ of the SDK.
+- No Animation: Presents the paywall without animation. This requires v2.4+ of the SDK.
+- Drawer: Presents the paywall as a drawer, taking up 70% of the screen. This is an iOS 16 only feature that works with SDK v3+.
+
+#### Presentation Targeting
+
+The default behavior of the SDK presents a paywall only to users who aren't subscribed. However, you can override this to always present regardless of subscription status by setting _Present Paywall_ to _Always_.
+
+#### Feature Gating
+
+Feature gating allows your team to retroactively decide if the paywall is _Gated_ or _Non Gated_.
+
+| Type                    | Behavior                                                                 | Example                                                                                    |
+| ----------------------- | ------------------------------------------------------------------------ | ------------------------------------------------------------------------------------------ |
+| **Non Gated** (default) | Show Paywall → Execute Feature                                           | When "Sign Up" button is pressed, show a paywall, but continue onboarding after it closes. |
+| **Gated**               | Show Paywall → Is user paying?If Yes → Execute FeatureIf No → Do Nothing | When "Start Workout" button is pressed, show a paywall. Only continue if paying.           |
+
+Remember, the [register feature block](/docs/feature-gating) is always executed if:
+
+1. No campaign is configured for the event
+2. The user is already paying
+
+#### Cache on device
+
+Caching is enabled by default on paywalls. This means that after the first load of a paywall, it will be cached on disk for use next time the app is opened unless you make a change to it on the editor. This greatly reduces network load and the time taken to load paywalls. It does of course increase memory usage of your app so you can turn caching off if you wish by setting _Cache on device_ to _Disabled_.
+
+### Fonts
+
+You can set the font and font size and font weight used for your paywall, including custom fonts.
+
+<Frame>![](/images/c514eb7-Screenshot_2023-06-14_at_17.46.28.png) </Frame>
+
+### Sizing, Spacing, and Colors
+
+Set the global design for your paywall.
+
+<Frame>![](/images/bc61385-Screenshot_2023-06-14_at_17.55.16.png) </Frame>
+
+#### Free Trial Reminder
+
+You can add a local notification that fires after a number of days, when a free
+trial has been purchased. After the user starts a free trial, it will ask them
+to enable notifications if they haven't already done so.
+
+<Frame>![](/images/free-trial-reminder.png)</Frame>
+
+<br />
+<Note>
+  **In sandbox mode, the free trial reminder will fire after x minutes, instead
+  of x days.**
+
+</Note>
+
+<Frame>![local-notifications](/images/local-notification.jpg)</Frame>
+
+This is how the title, subtitle, and body appears in a notification:
+
+<Frame>![](/images/notificationExample.png)</Frame>
+
+If you use local notifications within your app, you'll want to use the following functions to clear your app's pending and delivered notifications without affecting Superwall:
+
+- `UNUserNotificationCenter.current().removeAllPendingNonSuperwallNotificationRequests()`
+- `UNUserNotificationCenter.current().removeAllDeliveredNonSuperwallNotifications()`
+
+You can use the following to remove notifications specific to Superwall:
+
+- `UNUserNotificationCenter.current().removeAllDeliveredSuperwallNotifications()`
+- `UNUserNotificationCenter.current().removeAllPendingSuperwallNotificationRequests()`
+
+### Advanced
+
+Here you can apply custom CSS and JS to your paywall.
+
+<Frame>![](/images/88811cb-Screenshot_2023-06-14_at_17.57.21.png)</Frame>

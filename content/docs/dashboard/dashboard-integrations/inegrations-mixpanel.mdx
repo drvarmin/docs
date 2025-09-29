@@ -1,0 +1,286 @@
+---
+title: "Mixpanel"
+description: "The Mixpanel integration allows you to automatically send Superwall subscription and payment events to your Mixpanel project."
+---
+
+In the **Analytics** section within **Integrations**, you can connect your Mixpanel account to Superwall:
+
+<Frame>![](/images/integrations-mixpanel.jpeg)</Frame>
+
+This integration provides two-way data flow:
+1. **Event Tracking**: Sends detailed subscription lifecycle events to Mixpanel.
+2. **User Profile Updates**: Updates user profiles with revenue data and transaction history.
+
+### Required Fields 
+
+Fill out the following fields and **click** the **Enable Mixpanel** button at the bottom right to save your changes:
+
+  <Frame>![](/images/overview-integrations-mp.jpeg)</Frame>
+
+- **Region:** Data residency region for your Mixpanel project.
+- **Project Token:** Your Mixpanel project token (Mixpanel → Settings → Project Settings → Project Token).
+- **Total Spend Property:** The name of the user property to track cumulative spend.
+- **Sales Reporting:** Whether to report Proceeds after store taxes & fees or Revenue. Choose between **Proceeds** (after store taxes & fees) or **Revenue**.
+
+### Features
+
+- **Automatic Event Mapping**: Converts Superwall events to Mixpanel-friendly event names
+- **Revenue Tracking**: Tracks both price (gross) and proceeds (net after fees)
+- **User Profile Enrichment**: Maintains cumulative spend and transaction history
+- **Multi-Region Support**: Works with US, EU, and IN data residency regions
+- **Sandbox Isolation**: Separate tracking for production and sandbox events
+- **Refund Handling**: Automatically adjusts revenue metrics for refunds
+
+## Configuration
+
+### Required Settings
+
+| Field | Description | Example |
+|-------|-------------|---------|
+| `integration_id` | Must be set to `"mixpanel"` | `"mixpanel"` |
+| `region` | Data residency region | `"US"`, `"EU"`, or `"IN"` |
+| `project_token` | Your Mixpanel project token | `"abc123def456..."` |
+| `total_spend_property` | User property name for cumulative spend | `"lifetime_revenue"` |
+| `sales_reporting` | Which value to report | `"Revenue"` or `"Proceeds"` |
+
+### Optional Settings
+
+| Field | Description | Example |
+|-------|-------------|---------|
+| `sandbox_project_token` | Token for sandbox events (leave blank to skip) | `"xyz789..."` |
+
+### Example Configuration
+
+```json
+{
+  "integration_id": "mixpanel",
+  "region": "US",
+  "project_token": "your_production_token_here",
+  "sandbox_project_token": "your_sandbox_token_here",
+  "total_spend_property": "lifetime_revenue",
+  "sales_reporting": "Proceeds"
+}
+```
+
+## Event Mapping
+
+Superwall events are transformed into standardized Mixpanel events with the `sw_` prefix:
+
+### Trial Events
+| Superwall Event | Mixpanel Event | Description |
+|-----------------|----------------|-------------|
+| `initial_purchase` + `periodType: TRIAL` | `sw_trial_start` | Trial period begins |
+| `cancellation` + `periodType: TRIAL` | `sw_trial_cancelled` | Trial cancelled |
+| `uncancellation` + `periodType: TRIAL` | `sw_trial_uncancelled` | Trial reactivated |
+| `expiration` + `periodType: TRIAL` | `sw_trial_expired` | Trial ended |
+| `renewal` + `isTrialConversion: true` | `sw_trial_converted` | Trial converted to paid |
+
+### Intro Offer Events
+| Superwall Event | Mixpanel Event | Description |
+|-----------------|----------------|-------------|
+| `initial_purchase` + `periodType: INTRO` | `sw_intro_offer_start` | Intro offer begins |
+| `cancellation` + `periodType: INTRO` | `sw_intro_offer_cancelled` | Intro offer cancelled |
+| `uncancellation` + `periodType: INTRO` | `sw_intro_offer_uncancelled` | Intro offer reactivated |
+| `expiration` + `periodType: INTRO` | `sw_intro_offer_expired` | Intro offer ended |
+| `renewal` + `periodType: INTRO` | `sw_intro_offer_converted` | Intro converted to regular |
+
+### Subscription Events
+| Superwall Event | Mixpanel Event | Description |
+|-----------------|----------------|-------------|
+| `initial_purchase` + `periodType: NORMAL` | `sw_subscription_start` | Subscription begins |
+| `renewal` + `periodType: NORMAL` | `sw_renewal` | Subscription renewed |
+| `cancellation` + `periodType: NORMAL` | `sw_subscription_cancelled` | Subscription cancelled |
+| `uncancellation` + `periodType: NORMAL` | `sw_subscription_uncancelled` | Subscription reactivated |
+| `expiration` + `periodType: NORMAL` | `sw_subscription_expired` | Subscription ended |
+| `subscription_paused` | `sw_subscription_paused` | Subscription paused |
+| `billing_issue` | `sw_billing_issue` | Payment failed |
+
+### Other Events
+| Superwall Event | Mixpanel Event | Description |
+|-----------------|----------------|-------------|
+| `product_change` | `sw_product_change` | Plan changed |
+| `non_renewing_purchase` | `sw_non_renewing_purchase` | One-time purchase |
+| Any event with `price < 0` | `sw_refund` | Refund processed |
+| `test` | `sw_test` | Test event |
+
+## Event Properties
+
+Every Mixpanel event includes all fields from the Superwall webhook data object as properties:
+
+### Core Properties
+- `distinct_id`: User identifier (uses `originalAppUserId` or falls back to `originalTransactionId`)
+- `time`: Unix timestamp in seconds
+- `$insert_id`: Unique event ID (prevents duplicates)
+- `token`: Your Mixpanel project token
+
+### Webhook Data Properties
+All fields from the webhook are included:
+- `id`, `name`, `cancelReason`, `exchangeRate`
+- `isSmallBusiness`, `periodType`, `countryCode`
+- `price`, `proceeds`, `priceInPurchasedCurrency`
+- `taxPercentage`, `commissionPercentage`, `takehomePercentage`
+- `offerCode`, `isFamilyShare`, `expirationAt`
+- `transactionId`, `originalTransactionId`, `originalAppUserId`
+- `store`, `purchasedAt`, `currencyCode`, `productId`
+- `environment`, `isTrialConversion`, `newProductId`
+- `bundleId`, `ts`
+
+## User Profile Updates
+
+The integration performs two profile updates for revenue events:
+
+### 1. Transaction History
+Appends transaction details to the `$transactions` array:
+```json
+{
+  "$transactions": {
+    "$amount": 9.99,
+    "$time": "2025-01-01T12:00:00.000Z",
+    // Plus all webhook data fields
+  }
+}
+```
+
+### 2. Cumulative Spend
+Updates the total spend property (configurable):
+```json
+{
+  "lifetime_revenue": 129.99  // Incremented by transaction amount
+}
+```
+
+## Revenue Reporting Options
+
+### Price vs Proceeds
+
+The `sales_reporting` setting determines which value is used for revenue:
+
+| Setting | Value Used | Description |
+|---------|------------|-------------|
+| `"Revenue"` | `price` | Gross revenue before store fees and taxes |
+| `"Proceeds"` | `proceeds` | Net revenue after store fees and taxes |
+
+### Examples
+
+**Gross Revenue (Price):**
+- Transaction price: $9.99
+- Store commission (30%): $3.00
+- Your proceeds: $6.99
+- Reported to Mixpanel: **$9.99**
+
+**Net Revenue (Proceeds):**
+- Transaction price: $9.99
+- Store commission (30%): $3.00
+- Your proceeds: $6.99
+- Reported to Mixpanel: **$6.99**
+
+## Sandbox Handling
+
+### With Sandbox Token
+If `sandbox_project_token` is configured:
+- Production events → Production project
+- Sandbox events → Sandbox project
+
+### Without Sandbox Token
+If `sandbox_project_token` is empty:
+- Production events → Production project
+- Sandbox events → **Skipped** (not sent to Mixpanel)
+
+## Refund Handling
+
+Refunds are automatically detected when `price < 0`:
+- Event type: `sw_refund`
+- Transaction amount: Negative value
+- Cumulative spend: Decremented by refund amount
+
+Example:
+- Original purchase: +$9.99
+- Refund event: -$9.99
+- Net effect on lifetime revenue: $0.00
+
+## Data Residency
+
+Mixpanel supports three data residency regions:
+
+| Region | API Endpoint | Use Case |
+|--------|--------------|----------|
+| `US` | api.mixpanel.com | Default, global |
+| `EU` | api-eu.mixpanel.com | GDPR compliance |
+| `IN` | api-in.mixpanel.com | India data residency |
+
+## User Identification
+
+The integration uses the following hierarchy for user identification:
+
+1. **Primary**: `originalAppUserId` (if available)
+2. **Fallback**: `originalTransactionId` (always present)
+
+This ensures consistent user tracking even for:
+- Legacy users without app user IDs
+- Family sharing scenarios
+- Cross-platform subscriptions
+
+## Testing the Integration
+
+### 1. Validate Credentials
+The integration automatically validates your credentials by sending a test event when configured.
+
+### 2. Test Event Properties
+Test events include:
+- Event: `sw_test`
+- Basic properties to verify connection
+- No revenue impact
+
+### 3. Verify in Mixpanel
+Check your Mixpanel project:
+1. Live View → Verify events arriving
+2. Users → Check profile updates
+3. Reports → Confirm revenue tracking
+
+## Troubleshooting
+
+### Events Not Appearing
+
+1. **Check Token**: Verify project token is correct
+2. **Check Region**: Ensure region matches your Mixpanel project
+3. **Check Environment**: Sandbox events need sandbox token
+4. **Check Distinct ID**: User must have valid identifier
+
+### Revenue Not Tracking
+
+1. **Check Sales Reporting**: Verify Price vs Proceeds setting
+2. **Check Property Name**: Confirm `total_spend_property` exists
+3. **Check Event Type**: Only revenue events update spend
+4. **Check Refunds**: Negative amounts decrease total
+
+### Duplicate Events
+
+The integration uses `$insert_id` to prevent duplicates:
+- Format: `eventId-eventName`
+- Example: `abc123-renewal`
+
+Mixpanel automatically deduplicates events with the same `$insert_id`.
+
+## Best Practices
+
+1. **Use Consistent User IDs**: Send user IDs to app stores for better tracking
+2. **Set Up Both Tokens**: Configure sandbox token for complete testing
+3. **Choose Revenue Model**: Decide between gross (Price) vs net (Proceeds)
+4. **Monitor Both Projects**: Check production and sandbox regularly
+5. **Handle Refunds**: Ensure your analytics account for negative revenue
+
+## Rate Limits
+
+Mixpanel has the following limits:
+- **Events**: 2,000 requests/second
+- **Profile Updates**: 2,000 requests/second
+- **Batch Size**: 2MB per request
+
+The integration sends events individually, well within these limits.
+
+## Data Privacy
+
+- **PII Handling**: User IDs are pseudonymous by default
+- **GDPR Compliance**: Use EU region for European users
+- **Data Retention**: Follows your Mixpanel project settings
+- **Deletion Requests**: Handle via Mixpanel's privacy tools

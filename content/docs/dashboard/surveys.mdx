@@ -1,0 +1,129 @@
+---
+title: "Surveys"
+description: "Adding a paywall exit or post-purchase survey is a great way to boost conversion and get feedback on why users declined or purchased from your paywall. Once you've configured a survey, it can be attached to multiple paywalls. A user will only ever see a specific survey once unless you reset its responses."
+---
+
+To attach a survey to a paywall, edit one or manage existing surveys, **click** the **Survey** button found on the sidebar:
+
+<Frame>![](/images/overview-survey-sidebar.png)</Frame>
+
+Once selected, you'll see an overview of all of the surveys you've created:
+
+<Frame>![](/images/overview-survey-overview.png)</Frame>
+
+There are two types of surveys you can present:
+
+- **Close Survey:** When a user declines to transact with a paywall or closes it.
+- **Post-Purchase Survey:** When a user successfully transacts with a paywall.
+
+No matter the type, each one is bound to present within the presentation percentages you set for it (more on that below).
+
+<Note>
+  Our surveys present using the native controls for the given platform (i.e. on iOS, a
+  `UIActionSheet`).
+</Note>
+
+### Creating a new survey or editing existing ones
+
+To create a new survey, click the **+ New Survey** button:
+
+<Frame>![](/images/overview-survey-new.png)</Frame>
+
+If you already have existing surveys, **click** the **+ Add Survey** button located at the top-right to make another one.
+
+The survey editor will appear, and here you can edit all of the data for existing ones, or change the default options for a new one:
+
+<Frame>![](/images/overview-survey-editor.png)</Frame>
+
+<Note>
+  Superwall will provide sensible defaults for a new survey. If you're not quite sure what kind of
+  questions to ask, the default options are a great place to start and will yield insightful data.
+</Note>
+
+All of the edits you make will be reflected in the preview on the right-hand side.
+
+**Title**<br />
+The title of the survey, which will appear at the top.
+
+**Message**<br />
+The message displays below the title, and you can use it to provide more context about the survey.
+
+**Response options**<br />
+Each option you add here will be a response the user can choose. You'll see data about which one was selected once the survey is live. You can remove an option by using the trash icon on the right side of the text field. To add another option, **click** the **Add Option** button at the bottom of the existing options.
+
+<Note>
+  All survey options are shuffled for each user. This helps combat any ordering bias. However, the
+  "Other" button will always appear last.
+</Note>
+
+**Using the "Other" button**<br />
+The "Other" button lets users type in a free text field. This is useful if users are willing to provide more context about why they declined (or purchased from) the paywall. If this is used, it will always display as the _last_ option in the survey.
+
+**Using the "Close" button**<br />
+You can also provide a "Close" button. Here, the user can exit the survey without providing a response. If you omit it, the user can only dismiss the survey by choosing a response.
+
+**Toggling presentation percentages**<br />
+Use the percentage field to control how many users should receive the survey, from 0%-100%.
+
+When you're done editing your survey, **click** the **Save** button at the top-right:
+
+<Frame>![](/images/overview-survey-dupe.png)</Frame>
+
+### Attach a survey to a paywall
+
+Creating a survey _does not_ mean it will start appearing. Instead, you choose which paywalls should present the survey. To attach a survey to a paywall, **click** the **Connect Paywall +** button in the bottom right of the survey editor:
+
+<Frame>![](/images/overview-survey-connect.png)</Frame>
+
+Then, in the modal that's presented, select the paywall you wish to attach it to:
+
+<Frame>![](/images/overview-survey-connect-paywall.png)</Frame>
+
+After you've selected a paywall, **click** the **Connect** button and you're all set. From there, each user will only see the survey **once** per paywall.
+
+<Tip>
+  You can also attach surveys from the paywall editor itself. This is also where you specify whether
+  you want a close or post-purchase survey. Read how in this [doc](/paywall-editor-surveys).
+</Tip>
+
+### Managing surveys
+
+**Deleting surveys**<br />
+To delete a survey, **click** the **Survey** button on the sidebar. Then, for the survey you wish to delete, click the **trashcan** icon:
+
+<Frame>![](/images/overview-survey-delete.png)</Frame>
+
+**Duplicating surveys**<br />
+To duplicate a survey, **click** the **Duplicate** button at the top-right when inside the survey editor:
+
+<Frame>![](/images/overview-survey-dupe.png)</Frame>
+
+### Viewing survey stats and results
+
+To see the results for any survey, click on one and then **click**
+the **Stats** button at the top-right:
+
+<Frame>![](/images/overview-survey-dupe.png)</Frame>
+
+From there, you'll see the survey responses:
+
+<Frame>![](/images/overview-survey-stats.png)</Frame>
+
+**Viewing "Other" responses**<br />
+If you've included the "Other" button in your survey, you can view the responses from users by **clicking** the **"View \"Other\" Responses"** button:
+
+<Frame>![](/images/overview-survey-other.png)</Frame>
+
+**Resetting survey stats**<br />
+Finally, if you wish to reset the survey results, **click** the **Reset Responses** button underneath the results:
+
+<Frame>![](/images/overview-survey-reset.png)</Frame>
+
+<Note>
+  Keep in mind that when you reset survey data, it also means that it will present to everyone once
+  again (within your presentation percentages).
+</Note>
+
+### Tip: showing a paywall based off of a survey response
+
+One particularly useful technique to use with surveys is to show a paywall with a discounted price if the user indicated the pricing was too expensive in their response. You can easily do this using a [standard placement](/campaigns-standard-placements) — and we have a step-by-step guide on how to do exactly this right [here](/campaigns-standard-placements#using-the-survey-response-event).

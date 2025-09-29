@@ -1,0 +1,150 @@
+---
+title: "PaywallPresentationHandler"
+description: "A handler class that provides status updates for paywall presentation in registerPlacement() calls."
+---
+
+<Info>
+Use this handler when you need fine-grained control over paywall events for a specific [`registerPlacement()`](/flutter/sdk-reference/registerPlacement) call, rather than global events via [`SuperwallDelegate`](/flutter/sdk-reference/SuperwallDelegate).
+</Info>
+
+<Note>
+This handler is specific to the individual `registerPlacement()` call. For global paywall events across your app, use [`SuperwallDelegate`](/flutter/sdk-reference/SuperwallDelegate) instead.
+</Note>
+
+## Purpose
+Provides callbacks for paywall lifecycle events when using [`registerPlacement()`](/flutter/sdk-reference/registerPlacement) with a specific handler instance.
+
+## Signature
+```dart
+class PaywallPresentationHandler {
+  void onPresent(Function(PaywallInfo) handler);
+  void onDismiss(Function(PaywallInfo, PaywallResult) handler);
+  void onSkip(Function(PaywallSkippedReason) handler);
+  void onError(Function(String) handler);
+}
+```
+
+## Parameters
+<ParamTable>
+| Method | Parameters | Description |
+|--------|------------|-------------|
+| `onPresent` | `handler: (PaywallInfo) -> void` | Sets a handler called when the paywall is presented. |
+| `onDismiss` | `handler: (PaywallInfo, PaywallResult) -> void` | Sets a handler called when the paywall is dismissed. |
+| `onSkip` | `handler: (PaywallSkippedReason) -> void` | Sets a handler called when paywall presentation is skipped. |
+| `onError` | `handler: (String) -> void` | Sets a handler called when an error occurs during presentation. |
+</ParamTable>
+
+## Returns / State
+Each method returns `void` and configures the handler for the specific paywall lifecycle event.
+
+## Usage
+
+Basic handler setup:
+```dart
+Future<void> _registerFeatureWithHandler() async {
+  final handler = PaywallPresentationHandler();
+  
+  handler.onPresent((paywallInfo) {
+    print('Paywall presented: ${paywallInfo.identifier}');
+    // Pause background tasks, analytics, etc.
+  });
+  
+  handler.onDismiss((paywallInfo, result) {
+    print('Paywall dismissed with result: $result');
+    
+    switch (result) {
+      case PaywallResult.purchased:
+        _showSuccessMessage();
+        break;
+      case PaywallResult.cancelled:
+        _showPromotionalOffer();
+        break;
+      case PaywallResult.restored:
+        _updateUIForActiveSubscription();
+        break;
+    }
+  });
+  
+  await Superwall.shared.registerPlacement(
+    'premium_feature',
+    params: {'source': 'feature_screen'},
+    handler: handler,
+    feature: () {
+      _unlockPremiumFeature();
+    },
+  );
+}
+```
+
+Handle skip and error cases:
+```dart
+Future<void> _setupComprehensiveHandler() async {
+  final handler = PaywallPresentationHandler();
+  
+  handler.onSkip((reason) {
+    print('Paywall skipped: $reason');
+    
+    switch (reason) {
+      case PaywallSkippedReason.userIsSubscribed:
+        _proceedToFeature();
+        break;
+      case PaywallSkippedReason.holdout:
+        _proceedToFeature();
+        break;
+      default:
+        break;
+    }
+  });
+  
+  handler.onError((error) {
+    print('Paywall error: $error');
+    _showErrorDialog(error);
+  });
+  
+  await Superwall.shared.registerPlacement(
+    'remove_ads',
+    handler: handler,
+    feature: () {
+      _hideAdsFromUI();
+    },
+  );
+}
+```
+
+Reusable handler class:
+```dart
+class ReusablePaywallHandler {
+  static PaywallPresentationHandler create({
+    VoidCallback? onSuccess,
+    VoidCallback? onCancel,
+  }) {
+    final handler = PaywallPresentationHandler();
+    
+    handler.onPresent((_) {
+      // Analytics tracking
+      Analytics.track('paywall_presented');
+    });
+    
+    handler.onDismiss((_, result) {
+      switch (result) {
+        case PaywallResult.purchased:
+          onSuccess?.call();
+          break;
+        case PaywallResult.cancelled:
+          onCancel?.call();
+          break;
+        default:
+          break;
+      }
+    });
+    
+    return handler;
+  }
+}
+
+// Usage
+final handler = ReusablePaywallHandler.create(
+  onSuccess: () => Navigator.pushNamed(context, '/premium'),
+  onCancel: () => _showRetentionOffer(),
+);
+```

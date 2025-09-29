@@ -1,0 +1,315 @@
+---
+title: "3rd Party Analytics (Legacy)"
+sidebarTitle: "Overview"
+description: "Superwall can easily be integrated with 3rd party analytics tools."
+---
+
+### Hooking up Superwall events to 3rd party tools
+SuperwallKit automatically tracks some internal events. You can [view the list of events here](/legacy/legacy_tracking-analytics). We encourage you to also track them in your own analytics by implementing the [Superwall delegate](/legacy/legacy_using-superwall-delegate). Using the `handleSuperwallEvent(withInfo:)` function, you can forward events to your analytics service:
+
+<CodeGroup>
+
+```Swift Swift
+extension SuperwallService: SuperwallDelegate {
+  func handleSuperwallEvent(withInfo eventInfo: SuperwallEventInfo) {
+    print("analytics event called", eventInfo.event.description)
+    MyAnalyticsService.shared.track(
+      event: eventInfo.event.description,
+      params: eventInfo.params
+    )
+  }
+}
+```
+
+```Swift Objective-C
+- (void)didTrackSuperwallEventInfo:(SWKSuperwallEventInfo *)info {
+  NSLog(@"Analytics event called %@", info.event.description));
+  [[MyAnalyticsService shared] trackEvent:info.event.description params:info.params];
+}
+```
+
+```kotlin Kotlin
+override fun handleSuperwallEvent(eventInfo: SuperwallEventInfo) {
+  println("analytics event: ${eventInfo.event.rawName}")
+  MyAnalytics.shared.trac(eventInfo.event.rawName, eventInfo.params)
+}
+```
+
+```dart Flutter
+@override
+void handleSuperwallEvent(SuperwallEventInfo eventInfo) async {
+  print("handleSuperwallEvent: $eventInfo");
+
+  // Example usage...
+  switch (eventInfo.event.type) {
+    case EventType.appOpen:
+      print("appOpen event");
+    case EventType.deviceAttributes:
+      print("deviceAttributes event: ${eventInfo.event.deviceAttributes} ");
+    case EventType.paywallOpen:
+      final paywallInfo = eventInfo.event.paywallInfo;
+      print("paywallOpen event: ${paywallInfo} ");
+
+      if (paywallInfo != null) {
+        final identifier =  await paywallInfo.identifier;
+        print("paywallInfo.identifier: ${identifier} ");
+
+        final productIds =  await paywallInfo.productIds;
+        print("paywallInfo.productIds: ${productIds} ");
+      }
+    default:
+      break;
+  }
+}
+```
+
+```typescript React Native
+handleSuperwallEvent(eventInfo: SuperwallEventInfo) {
+  console.log(`handleSuperwallEvent: ${eventInfo}`);
+
+  // Assuming eventInfo has a type property and other necessary properties
+  switch (eventInfo.event.type) {
+  case EventType.appOpen:
+    console.log("appOpen event");
+    break; // Don't forget to add break statements to prevent fall-through
+  case EventType.deviceAttributes:
+    console.log(`deviceAttributes event: ${eventInfo.event.deviceAttributes}`);
+    break;
+  case EventType.paywallOpen:
+    const paywallInfo = eventInfo.event.paywallInfo;
+    console.log(`paywallOpen event: ${paywallInfo}`);
+
+    if (paywallInfo !== null) {
+      paywallInfo.identifier().then((identifier: string) => {
+        console.log(`paywallInfo.identifier: ${identifier}`);
+      });
+
+      paywallInfo.productIds().then((productIds: string[]) => {
+        console.log(`paywallInfo.productIds: ${productIds}`);
+      });
+    }
+    break;
+  default:
+    break;
+  }
+}
+```
+</CodeGroup>
+
+<br />
+<Note>You might also want to set user attribute to allow for [Cohorting in 3rd Party Tools](/legacy/legacy_cohorting-in-3rd-party-tools)</Note>
+
+Alternatively, if you want typed versions of all these events with associated values, you can access them via `eventInfo.event`:
+
+<CodeGroup>
+
+```swift Swift
+func handleSuperwallEvent(withInfo eventInfo: SuperwallEventInfo)  {
+  switch eventInfo.event {
+    case .firstSeen:
+      break
+    case .appOpen:
+      break
+    case .appLaunch:
+      break
+    case .appInstall:
+      break
+    case .sessionStart:
+      break
+    case .appClose:
+      break
+    case .deepLink(let url):
+      break
+    case .triggerFire(let eventName, let result):
+      break
+    case .paywallOpen(let paywallInfo):
+      break
+    case .paywallClose(let paywallInfo):
+      break
+    case .transactionStart(let product, let paywallInfo):
+      break
+    case .transactionFail(let error, let paywallInfo):
+      break
+    case .transactionAbandon(let product, let paywallInfo):
+      break
+    case .transactionComplete(let transaction, let product, let paywallInfo):
+      break
+    case .subscriptionStart(let product, let paywallInfo):
+      break
+    case .freeTrialStart(let product, let paywallInfo):
+      break
+    case .transactionRestore(let paywallInfo):
+      break
+    case .userAttributes(let attributes):
+      break
+    case .nonRecurringProductPurchase(let product, let paywallInfo):
+      break
+    case .paywallResponseLoadStart(let triggeredEventName):
+      break
+    case .paywallResponseLoadNotFound(let triggeredEventName):
+      break
+    case .paywallResponseLoadFail(let triggeredEventName):
+      break
+    case .paywallResponseLoadComplete(let triggeredEventName, let paywallInfo):
+      break
+    case .paywallWebviewLoadStart(let paywallInfo):
+      break
+    case .paywallWebviewLoadFail(let paywallInfo):
+      break
+    case .paywallWebviewLoadComplete(let paywallInfo):
+      break
+    case .paywallWebviewLoadTimeout(let paywallInfo):
+      break
+    case .paywallProductsLoadStart(let triggeredEventName, let paywallInfo):
+      break
+    case .paywallProductsLoadFail(let triggeredEventName, let paywallInfo):
+      break
+    case .paywallProductsLoadComplete(let triggeredEventName):
+      break
+    case .subscriptionStatusDidChange:
+      break
+    }
+}
+```
+
+```kotlin Kotlin
+override fun handleSuperwallEvent(eventInfo: SuperwallEventInfo) {
+  when(eventInfo.event) {
+    is SuperwallEvent.AppClose -> TODO()
+    is SuperwallEvent.AppInstall -> TODO()
+    is SuperwallEvent.AppLaunch -> TODO()
+    is SuperwallEvent.AppOpen -> TODO()
+    is SuperwallEvent.DeepLink -> TODO()
+    is SuperwallEvent.FirstSeen -> TODO()
+    is SuperwallEvent.FreeTrialStart -> TODO()
+    is SuperwallEvent.NonRecurringProductPurchase -> TODO()
+    is SuperwallEvent.PaywallClose -> TODO()
+    is SuperwallEvent.PaywallDecline -> TODO()
+    is SuperwallEvent.PaywallOpen -> TODO()
+    is SuperwallEvent.PaywallPresentationRequest -> TODO()
+    is SuperwallEvent.PaywallProductsLoadComplete -> TODO()
+    is SuperwallEvent.PaywallProductsLoadFail -> TODO()
+    is SuperwallEvent.PaywallProductsLoadStart -> TODO()
+    is SuperwallEvent.PaywallResponseLoadComplete -> TODO()
+    is SuperwallEvent.PaywallResponseLoadFail -> TODO()
+    is SuperwallEvent.PaywallResponseLoadNotFound -> TODO()
+    is SuperwallEvent.PaywallResponseLoadStart -> TODO()
+    is SuperwallEvent.PaywallWebviewLoadComplete -> TODO()
+    is SuperwallEvent.PaywallWebviewLoadFail -> TODO()
+    is SuperwallEvent.PaywallWebviewLoadStart -> TODO()
+    is SuperwallEvent.PaywallWebviewLoadTimeout -> TODO()
+    is SuperwallEvent.SessionStart -> TODO()
+    is SuperwallEvent.SubscriptionStart -> TODO()
+    is SuperwallEvent.SubscriptionStatusDidChange -> TODO()
+    is SuperwallEvent.SurveyClose -> TODO()
+    is SuperwallEvent.SurveyResponse -> TODO()
+    is SuperwallEvent.TransactionAbandon -> TODO()
+    is SuperwallEvent.TransactionComplete -> TODO()
+    is SuperwallEvent.TransactionFail -> TODO()
+    is SuperwallEvent.TransactionRestore -> TODO()
+    is SuperwallEvent.TransactionStart -> TODO()
+    is SuperwallEvent.TransactionTimeout -> TODO()
+    is SuperwallEvent.TriggerFire -> TODO()
+    is SuperwallEvent.UserAttributes -> TODO()
+  }
+}
+```
+
+```dart Flutter
+@override
+void handleSuperwallEvent(SuperwallEventInfo eventInfo) async {
+  // Example usage...
+  switch (eventInfo.event.type) {
+    case EventType.appOpen:
+      print("appOpen event");
+    case EventType.deviceAttributes:
+      print("deviceAttributes event: ${eventInfo.event.deviceAttributes} ");
+    case EventType.paywallOpen:
+      final paywallInfo = eventInfo.event.paywallInfo;
+      print("paywallOpen event: ${paywallInfo} ");
+
+      if (paywallInfo != null) {
+        final identifier =  await paywallInfo.identifier;
+        print("paywallInfo.identifier: ${identifier} ");
+
+        final productIds =  await paywallInfo.productIds;
+        print("paywallInfo.productIds: ${productIds} ");
+      }
+    default:
+      break;
+  }
+}
+```
+
+```typescript React Native
+handleSuperwallEvent(eventInfo: SuperwallEventInfo) {
+  console.log(`handleSuperwallEvent: ${eventInfo}`);
+
+  // Assuming eventInfo has a type property and other necessary properties
+  switch (eventInfo.event.type) {
+  case EventType.appOpen:
+    console.log("appOpen event");
+    break; // Don't forget to add break statements to prevent fall-through
+  case EventType.deviceAttributes:
+    console.log(`deviceAttributes event: ${eventInfo.event.deviceAttributes}`);
+    break;
+  case EventType.paywallOpen:
+    const paywallInfo = eventInfo.event.paywallInfo;
+    console.log(`paywallOpen event: ${paywallInfo}`);
+
+    if (paywallInfo !== null) {
+      paywallInfo.identifier().then((identifier: string) => {
+        console.log(`paywallInfo.identifier: ${identifier}`);
+      });
+
+      paywallInfo.productIds().then((productIds: string[]) => {
+        console.log(`paywallInfo.productIds: ${productIds}`);
+      });
+    }
+    break;
+  default:
+    break;
+  }
+}
+```
+</CodeGroup>
+
+### Using events to see purchased products 
+If your goal is simply to view which product was purchased from a paywall, you don't need a [purchase controller](/legacy/legacy_advanced-configuration) for that (though it can be done in one). Using a `SuperwallDelegate`, you can leverage the `transactionComplete` event, which provides direct access to the purchased product via `product`:
+
+```swift
+import SwiftUI 
+import SuperwallKit
+
+class SWDelegate: SuperwallDelegate {
+    func handleSuperwallEvent(withInfo eventInfo: SuperwallEventInfo) {
+        switch eventInfo.event {
+        case .transactionComplete(let transaction, let product, let paywallInfo):
+            print("Converted from paywall: \(product.productIdentifier)")
+        default:
+            print("\(#function) - \(eventInfo.event)")
+        }
+    }
+}
+
+@main
+struct AwesomeApp: App {
+
+    init() {
+        Superwall.configure(apiKey: "MY_API_KEY")
+        Superwall.shared.delegate = self.swDelegate
+    }
+
+    var body: some Scene {
+        WindowGroup {
+            ContentView()
+                .onAppear { Superwall.shared.register(event: "test_event") }
+        }
+    }
+}
+```
+In that example, as soon as a user converts on a paywall, the product identifier will be printed to the console:
+
+```bash
+Converted from paywall: ex.someProduct.identifier
+```

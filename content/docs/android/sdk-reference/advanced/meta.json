@@ -1,0 +1,9 @@
+{
+  "title": "Advanced",
+  "root": false,
+  "collapsed": true,
+  "pages": [
+    "PaywallBuilder",
+    "setSubscriptionStatus"
+  ]
+}

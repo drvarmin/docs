@@ -1,0 +1,93 @@
+---
+title: "subscriptionStatus"
+description: "A Stream that emits the user's current subscription status whenever it changes."
+---
+
+<Info>
+This Stream emits `SubscriptionStatus` values whenever the user's subscription status changes. Use it to reactively update your UI based on subscription state.
+</Info>
+
+## Purpose
+Provides a reactive stream of subscription status changes for updating UI and controlling feature access.
+
+## Signature
+```dart
+Stream<SubscriptionStatus> get subscriptionStatus
+```
+
+## Returns / State
+Returns a `Stream<SubscriptionStatus>` that emits values whenever the subscription status changes.
+
+## Usage
+
+Basic stream subscription:
+```dart
+class _MyAppState extends State<MyApp> {
+  StreamSubscription<SubscriptionStatus>? _subscription;
+  SubscriptionStatus _currentStatus = SubscriptionStatus.unknown;
+  
+  @override
+  void initState() {
+    super.initState();
+    
+    _subscription = Superwall.shared.subscriptionStatus.listen((status) {
+      setState(() {
+        _currentStatus = status;
+      });
+    });
+  }
+  
+  @override
+  void dispose() {
+    _subscription?.cancel();
+    super.dispose();
+  }
+}
+```
+
+With SuperwallBuilder widget:
+```dart
+SuperWallBuilder(
+  builder: (context, subscriptionStatus) {
+    switch (subscriptionStatus) {
+      case SubscriptionStatus.active:
+        return PremiumContent();
+      case SubscriptionStatus.inactive:
+        return FreeContent();
+      default:
+        return LoadingIndicator();
+    }
+  },
+)
+```
+
+Conditional UI rendering:
+```dart
+class PremiumFeatureButton extends StatefulWidget {
+  @override
+  _PremiumFeatureButtonState createState() => _PremiumFeatureButtonState();
+}
+
+class _PremiumFeatureButtonState extends State<PremiumFeatureButton> {
+  @override
+  Widget build(BuildContext context) {
+    return StreamBuilder<SubscriptionStatus>(
+      stream: Superwall.shared.subscriptionStatus,
+      builder: (context, snapshot) {
+        final status = snapshot.data ?? SubscriptionStatus.unknown;
+        
+        return ElevatedButton(
+          onPressed: status == SubscriptionStatus.active
+              ? _accessPremiumFeature
+              : _showPaywall,
+          child: Text(
+            status == SubscriptionStatus.active
+                ? 'Access Premium Feature'
+                : 'Upgrade to Premium',
+          ),
+        );
+      },
+    );
+  }
+}
+```

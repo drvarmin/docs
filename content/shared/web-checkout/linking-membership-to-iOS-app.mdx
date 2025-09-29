@@ -1,0 +1,66 @@
+---
+title: "Redeeming In-App"
+description: "Handle a deep link in your app and use the delegate methods."
+---
+
+After purchasing from a web paywall, the user will be redirected to your app by a deep link to redeem their purchase on device.
+Please follow our [Post-Checkout Redirecting](/web-checkout-post-checkout-redirecting) guide to handle this user experience.
+
+<Note>
+  If you're using Superwall to handle purchases, then you don't need to do anything here.
+</Note>
+
+If you're using your own `PurchaseController`, you will need to update the subscription status with the redeemed web entitlements. If you're using RevenueCat, you should follow our [Using RevenueCat](/web-checkout-using-revenuecat) guide.
+
+### Using a PurchaseController
+
+If you're using StoreKit in your PurchaseController, you'll need to merge the web entitlements with the device entitlements before setting the subscription status.
+Here's an example of how you might do this:
+
+```swift
+func syncSubscriptionStatus() async {
+  var products: Set<String> = []
+
+  // Get the device entitlements
+  for await verificationResult in Transaction.currentEntitlements {
+    switch verificationResult {
+    case .verified(let transaction):
+      products.insert(transaction.productID)
+    case .unverified:
+      break
+    }
+  }
+  let storeProducts = await Superwall.shared.products(for: products)
+  let deviceEntitlements = Set(storeProducts.flatMap { $0.entitlements })
+
+  // Get the web entitlements from Superwall
+  let webEntitlements = Superwall.shared.entitlements.web
+
+  // Merge the two sets of entitlements
+  let allEntitlements = deviceEntitlements.union(webEntitlements)
+
+  await MainActor.run {
+    Superwall.shared.subscriptionStatus = .active(allEntitlements)
+  }
+}
+```
+
+In addition to syncing the subscription status when purchasing and restoring, you'll need to sync it whenever `didRedeemLink(result:)` is called:
+
+```swift
+final class Delegate: SuperwallDelegate {
+  func didRedeemLink(result: RedemptionResult) {
+    Task {
+      await syncSubscriptionStatus()
+    }
+  }
+}
+```
+
+### Refreshing of web entitlements
+
+If you aren't using a Purchase Controller, the SDK will refresh the web entitlements every 24 hours.
+
+### Redeeming while a paywall is open
+
+If a redeem event occurs when a paywall is open, the SDK will track that as a restore event and the paywall will close.

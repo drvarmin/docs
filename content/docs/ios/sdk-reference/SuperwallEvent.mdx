@@ -1,0 +1,69 @@
+---
+title: "SuperwallEvent"
+description: "An enum representing analytical events that are automatically tracked by Superwall."
+---
+
+<Info>
+These events provide comprehensive analytics about user behavior and paywall performance. Use them to track conversion funnels, user engagement, and revenue metrics in your analytics platform.
+</Info>
+
+<Tip>
+Common events to track for conversion analysis include `triggerFire`, `paywallOpen`, `transactionStart`, and `transactionComplete`.
+</Tip>
+
+## Purpose
+Represents internal analytics events tracked by Superwall and sent to the [`SuperwallDelegate`](/ios/sdk-reference/SuperwallDelegate) for forwarding to your analytics platform.
+
+## Signature
+```swift
+public enum SuperwallEvent {
+  // User lifecycle events
+  case firstSeen
+  case appOpen
+  case appLaunch
+  case appClose
+  case sessionStart
+  case identityAlias
+  case appInstall
+  
+  // Deep linking
+  case deepLink(url: URL)
+  
+  // Paywall events
+  case triggerFire(placementName: String, result: TriggerResult)
+  case paywallOpen(paywallInfo: PaywallInfo)
+  case paywallClose(paywallInfo: PaywallInfo)
+  case paywallDecline(paywallInfo: PaywallInfo)
+  
+  // Transaction events
+  case transactionStart(product: StoreProduct, paywallInfo: PaywallInfo)
+  case transactionComplete(transaction: StoreTransaction?, product: StoreProduct, type: TransactionType, paywallInfo: PaywallInfo)
+  case transactionFail(error: TransactionError, paywallInfo: PaywallInfo)
+  case transactionAbandon(product: StoreProduct, paywallInfo: PaywallInfo)
+  case transactionRestore(restoreType: RestoreType, paywallInfo: PaywallInfo)
+  case transactionTimeout(paywallInfo: PaywallInfo)
+  
+  // Subscription events
+  case subscriptionStart(product: StoreProduct, paywallInfo: PaywallInfo)
+  case freeTrialStart(product: StoreProduct, paywallInfo: PaywallInfo)
+  case subscriptionStatusDidChange
+  
+  // System events
+  case deviceAttributes(attributes: [String: Any])
+  
+  // And more...
+}
+```
+
+## Parameters
+Each event case contains associated values with relevant information for that event type. Common parameters include:
+- `paywallInfo: PaywallInfo` - Information about the paywall
+- `product: StoreProduct` - The product involved in transactions
+- `url: URL` - Deep link URLs
+- `attributes: [String: Any]` - Device or user attributes
+
+## Returns / State
+This is an enum that represents different event types. Events are received via [`SuperwallDelegate.handleSuperwallEvent(withInfo:)`](/ios/sdk-reference/SuperwallDelegate).
+
+## Usage
+These events are received via [`SuperwallDelegate.handleSuperwallEvent(withInfo:)`](/ios/sdk-reference/SuperwallDelegate) for forwarding to your analytics platform.

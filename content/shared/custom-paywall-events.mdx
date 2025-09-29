@@ -1,0 +1,62 @@
+---
+title: "Custom Paywall Actions"
+description: "You can set the click behavior of any element on a paywall to be a custom paywall action. This allows you to tie any tap in your paywall to hard-coded application logic."
+---
+
+For example, adding a custom action called `help_center` to a button in your paywall gives you the opportunity to present a help center whenever that button is pressed. To set this up, implement `handleCustomPaywallAction(withName:)` in your `SuperwallDelegate`:
+
+:::ios
+<CodeGroup>
+```swift Swift
+func handleCustomPaywallAction(withName name: String) {
+  if name == "help_center" {
+    HelpCenterManager.present()
+  }
+}
+```
+
+```swift Objective-C
+- (void)handleCustomPaywallActionWithName:(NSString *)name {
+  if ([name isEqualToString:"help_center"]) {
+    [HelpCenterManager present];
+  }
+}
+```
+</CodeGroup>
+:::
+
+:::android
+```kotlin
+override fun handleCustomPaywallAction(name: String) {
+  if (name == "help_center") {
+    HelpCenterManager.present()
+  }
+}
+```
+:::
+
+:::flutter
+```dart
+@override
+void handleCustomPaywallAction(String name) {
+  if (name == "help_center") {
+    HelpCenterManager.present();
+  }
+}
+```
+:::
+
+:::expo
+```typescript
+handleCustomPaywallAction(name: string) {
+  if (name == "help_center") {
+    HelpCenterManager.present();
+  }
+}
+```
+:::
+
+<br/>
+<Note>
+  Remember to set `Superwall.shared.delegate`! For implementation details, see the [Superwall Delegate](/using-superwall-delegate) guide.
+</Note>

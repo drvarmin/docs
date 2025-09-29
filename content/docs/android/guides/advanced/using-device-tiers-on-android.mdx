@@ -1,0 +1,55 @@
+---
+title: "Device Tier Targeting"
+description: "Target users based on their device performance capabilities to optimize paywall experiences across different hardware tiers."
+---
+
+The `deviceTier` variable allows you to create targeted audiences based on device performance capabilities. This helps optimize paywall experiences by showing resource-appropriate content to different device types. You can reference this in campaign filters, dynamic values, or in paywall text via the `device.deviceTier` variable.
+
+<Note>
+Device tier targeting is available starting in Android SDK version `2.2.2`. Make sure you're using this version or later to access this feature.
+</Note>
+
+## How device tier works
+
+Device tier classification is based on several hardware factors:
+- CPU performance
+- Available RAM
+- 4K/2K codec support
+- Display quality
+
+This automatic classification helps you deliver paywalls that perform well across the full spectrum of Android devices.
+
+## Device tier values
+
+The `device.deviceTier` attribute returns one of these values:
+
+- **`ultraLow`** - Entry-level devices with limited resources.
+- **`low`** - Budget devices with basic performance capabilities.
+- **`mid`** - Mid-range devices with moderate performance.
+- **`high`** - Premium devices with strong performance.
+- **`ultra_high`** - Flagship devices with top-tier specifications.
+- **`unknown`** - Device tier couldn't be determined.
+
+## Creating device tier audiences
+
+To target users by device tier, create an audience using the `device.deviceTier` attribute:
+
+1. Navigate to **Campaigns** in your dashboard.
+2. Click on the campaign you want to target.
+2. Edit, or create, a new audience. 
+3. Add a filter where `device.deviceTier` contains your target tier(s).
+4. Save your audience.
+
+<Tip>You can target multiple tiers in a single audience. For example, use `deviceTier contains LOW` to target both `ultraLow` and `low` tier devices.</Tip>
+
+### Optimizing for lower-end devices
+Create lightweight paywalls for devices that may struggle with resource-intensive content:
+
+```
+device.deviceTier contains ultraLow OR device.deviceTier contains low
+```
+
+Show these users paywalls with:
+- Static images instead of videos.
+- Compressed media files.
+- Simplified animations.

@@ -1,0 +1,18 @@
+---
+title: "Fixing Unexpected Paywall Behavior"
+description: "Step-by-step checklist when a paywall shows up when it shouldn’t—or doesn’t when it should."
+---
+
+If you're seeing a paywall when you think you shouldn't—or not seeing one when you should—run through this checklist:
+
+1. **Check your subscription status logic.**
+   If you're [implementing subscription-related logic yourself](/advanced-configuration), make sure `Superwall.shared.subscriptionStatus` is kept in sync with the actual subscription status. If it's `.unknown` or `.active(_)`, the paywall won’t show unless explicitly overridden.
+
+2. **Test device considerations.**
+   If you’ve previously purchased a subscription, the paywall won’t show again. On iOS, if you’re using a local StoreKit config file, delete and reinstall the app to reset the device’s subscription state.
+
+3. **Review your campaign configuration.**
+   Confirm your placement name is spelled correctly and that all necessary properties are passed to match the audience filter. Also check for any holdout groups that might block the paywall.
+
+4. **Verify product configuration.**
+   If your paywall references unavailable or invalid product identifiers, you’ll see a console error. When using a StoreKit file, be sure to add your products before testing paywall presentation.

@@ -1,0 +1,67 @@
+---
+title: "useSuperwall"
+---
+
+## Purpose
+The `useSuperwall` hook is the core hook that provides access to the Superwall store and underlying SDK functionality. It's generally used internally by other more specific hooks like `useUser` and `usePlacement`, but can be used directly for advanced scenarios. It ensures that native event listeners are set up on first use.
+
+## Returned Values (Store State and Actions)
+
+The hook returns an object representing the Superwall store. If a `selector` function is provided, it returns the selected slice of the store.
+
+### State
+-   `isConfigured: boolean`: True if the Superwall SDK has been configured with an API key.
+-   `isLoading: boolean`: True when the SDK is performing an asynchronous operation like configuration.
+-   `listenersInitialized: boolean`: True if native event listeners have been initialized.
+-   `user?: UserAttributes | null`: An object containing the current user's attributes.
+    -   `UserAttributes`:
+        -   `aliasId: string`: The alias ID of the user.
+        -   `appUserId: string`: The application-specific user ID.
+        -   `applicationInstalledAt: string`: ISO date string of when the application was installed.
+        -   `seed: number`: A seed value for the user.
+        -   `[key: string]: any`: Other custom user attributes.
+-   `subscriptionStatus?: SubscriptionStatus`: The current subscription status of the user.
+    -   `SubscriptionStatus` (see `SuperwallExpoModule.types.ts` for full details):
+        -   `status: "UNKNOWN" | "INACTIVE" | "ACTIVE"`
+        -   `entitlements?: Entitlement[]` (if status is "ACTIVE")
+            -   `Entitlement`: `{ id: string, type: EntitlementType }`
+
+### Actions (Functions)
+-   `configure: (apiKey: string, options?: Record<string, any>) => Promise<void>`: Initializes the Superwall SDK with the provided API key and optional configuration options.
+-   `identify: (userId: string, options?: IdentifyOptions) => Promise<void>`: Identifies the user with the given `userId`.
+    -   `IdentifyOptions`:
+        -   `restorePaywallAssignments?: boolean`: If true, restores paywall assignments from a previous session.
+-   `reset: () => Promise<void>`: Resets the user's identity and clears any stored user-specific data. This is equivalent to logging out the user.
+-   `registerPlacement: (placement: string, params?: Record<string, any>, handlerId?: string | null) => Promise<void>`: Registers a placement. This may or may not present a paywall depending on campaign rules. `handlerId` is used internally by `usePlacement` to associate events.
+-   `getPresentationResult: (placement: string, params?: Record<string, any>) => Promise<any>`: Gets the presentation result for a given placement.
+-   `dismiss: () => Promise<void>`: Dismisses any currently presented paywall.
+-   `preloadAllPaywalls: () => Promise<void>`: Preloads all paywalls.
+-   `preloadPaywalls: (placements: string[]) => Promise<void>`: Preloads paywalls for the specified placement IDs.
+-   `setUserAttributes: (attrs: Record<string, any>) => Promise<void>`: Sets custom attributes for the current user.
+-   `getUserAttributes: () => Promise<Record<string, any>>`: Retrieves the attributes of the current user.
+-   `setLogLevel: (level: string) => Promise<void>`: Sets the log level for the SDK. `level` can be one of: `"debug"`, `"info"`, `"warn"`, `"error"`, `"none"`.
+
+### Selector (Optional Parameter)
+
+-   `selector?: (state: SuperwallStore) => T`: A function that receives the entire `SuperwallStore` state and returns a selected part of it. Useful for performance optimization by only re-rendering components when the selected state changes. Uses `zustand/shallow` for shallow equality checking.
+
+## Example 
+(Direct Usage - Advanced)
+
+```tsx
+import { useSuperwall } from 'expo-superwall';
+
+function MyAdvancedComponent() {
+  const { isConfigured, configure, setUserAttributes } = useSuperwall();
+
+  if (!isConfigured) {
+    return <Text>SDK not configured yet.</Text>;
+  }
+
+  const handleSetCustomAttribute = () => {
+    setUserAttributes({ myCustomFlag: true });
+  };
+
+  return <Button title="Set Custom Flag" onPress={handleSetCustomAttribute} />;
+}
+```

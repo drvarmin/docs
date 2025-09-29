@@ -1,0 +1,82 @@
+---
+title: "identify()"
+description: "A function that creates an account with Superwall by linking a userId to the automatically generated alias."
+---
+
+<Tip>
+Call this as soon as you have a user ID, typically after login or when the user's identity becomes available.
+</Tip>
+
+## Purpose
+Links a user ID to Superwall's automatically generated alias, creating an account for analytics and personalization.
+
+## Signature
+```kotlin
+fun Superwall.identify(
+    userId: String,
+    options: IdentityOptions? = null
+)
+```
+
+```java
+// Java
+public void identify(
+    String userId,
+    @Nullable IdentityOptions options
+)
+```
+
+## Parameters
+<ParamTable>
+| Name | Type | Description |
+|------|------|-------------|
+| `userId` | `String` | Your user's unique identifier, as defined by your backend system. |
+| `options` | `IdentityOptions?` | Optional configuration for identity behavior. Set `restorePaywallAssignments` to `true` to wait for paywall assignments from the server. Use only in advanced cases where users frequently switch accounts. Defaults to `null`. |
+</ParamTable>
+
+## Returns / State
+This function returns `Unit`. After calling, [`isLoggedIn`](/android/sdk-reference/userId) will return `true` and [`userId`](/android/sdk-reference/userId) will return the provided user ID.
+
+## Usage
+
+Basic identification:
+```kotlin
+Superwall.instance.identify("user_12345")
+```
+
+With options for account switching scenarios:
+```kotlin
+val options = IdentityOptions().apply {
+    restorePaywallAssignments = true
+}
+
+Superwall.instance.identify(
+    userId = "returning_user_67890",
+    options = options
+)
+```
+
+Call as soon as you have a user ID:
+```kotlin
+fun userDidLogin(user: User) {
+    Superwall.instance.identify(user.id)
+    
+    // Set additional user attributes
+    Superwall.instance.setUserAttributes(mapOf(
+        "email" to user.email,
+        "plan" to user.subscriptionPlan,
+        "signUpDate" to user.createdAt
+    ))
+}
+```
+
+Java usage:
+```java
+// Basic identification
+Superwall.getInstance().identify("user_12345");
+
+// With options
+IdentityOptions options = new IdentityOptions();
+options.setRestorePaywallAssignments(true);
+Superwall.getInstance().identify("returning_user_67890", options);
+```

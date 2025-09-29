@@ -1,0 +1,58 @@
+---
+title: Experimental Flags
+description: Experimental flags are available to use in our SDK for features still in development.
+---
+
+Experimental flags in Superwall's SDK allow you to opt into features that are safe for production but are still being refined. These features may undergo naming changes or internal restructuring in future SDK versions. We expose them behind flags to give you early access while preserving flexibility for ongoing development.
+
+These flags are configured via the `SuperwallOptions` struct:
+
+```swift
+let options = SuperwallOptions()
+options.enableExperimentalDeviceVariables = true
+Superwall.configure(apiKey: "my_api_key",
+                    options: options)
+```
+
+## Available experimental flags
+When these flags are enabled and the user runs your app, these values become available in campaign filters. Currently, these include:
+
+**Latest Subscription Period Type (String)**:
+Represents whether the user is in a trial, promotional, or a similar phase. Possible values include:
+  - `trial`
+  - `code`
+  - `subscription`
+  - `promotional`
+  - `winback`
+  - `revoked`
+
+Represented as `latestSubscriptionPeriodType` in campaign filters.
+
+**Latest Subscription State (String)**:
+Represents what _state_ the actual subscription is in. Possible values include:
+  - `inGracePeriod`
+  - `subscribed`
+  - `expired`
+  - `inBillingRetryPeriod`
+  - `revoked`
+
+Represented as `latestSubscriptionState` in campaign filters.
+
+**Latest Subscription Will Auto Renew (Bool)**:
+If the user is set to renew or not. Either `true` or `false`
+
+Represented as `latestSubscriptionWillAutoRenew` in campaign filters.
+
+### Detecting users who've cancelled an active trial 
+One common use case for these flags is detecting users who've cancelled an active trial. In that case, the filter in the campaign would check for `latestSubscriptionWillAutoRenew` to be `false` and `latestSubscriptionPeriodType` to be `trial`.
+
+:::flutter
+### Platform Availability
+These variables are currently only available on **iOS**, support for Android is not yet available.
+:::
+
+:::expo
+### Platform Availability
+
+These variables are currently only available on **iOS**, support for Android is not yet available.
+:::

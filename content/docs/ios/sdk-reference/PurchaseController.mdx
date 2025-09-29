@@ -1,0 +1,47 @@
+---
+title: "PurchaseController"
+description: "A protocol for handling Superwall's subscription-related logic with your own purchase implementation."
+---
+
+<Info>
+**This protocol is not required.** By default, Superwall handles all subscription-related logic automatically.
+</Info>
+
+<Warning>
+When implementing PurchaseController, you must manually update [`subscriptionStatus`](/ios/sdk-reference/subscriptionStatus) whenever the user's entitlements change.
+</Warning>
+
+## Purpose
+Use this protocol only if you want complete control over purchase handling, such as when using RevenueCat or other third-party purchase frameworks.
+
+## Signature
+```swift
+public protocol PurchaseController: AnyObject {
+  @MainActor
+  func purchase(product: StoreProduct) async -> PurchaseResult
+  
+  @MainActor
+  func restorePurchases() async -> RestorationResult
+}
+```
+
+## Parameters
+<ParamTable>
+| Method | Parameters | Return Type | Description |
+|--------|------------|-------------|-------------|
+| `purchase` | `product: StoreProduct` | `PurchaseResult` | Called when user initiates purchasing. Implement your purchase logic here. |
+| `restorePurchases` | None | `RestorationResult` | Called when user initiates restore. Implement your restore logic here. |
+</ParamTable>
+
+## Returns / State
+- `purchase()` returns a `PurchaseResult` (`.purchased`, `.failed(Error)`, or `.cancelled`)
+- `restorePurchases()` returns a `RestorationResult` (`.restored` or `.failed(Error?)`)
+
+When using a PurchaseController, you must also manage [`subscriptionStatus`](/ios/sdk-reference/subscriptionStatus) yourself.
+
+## Usage
+For implementation examples and detailed guidance, see [Using RevenueCat](/ios/guides/using-revenuecat).
+
+<Tip>
+This is commonly used with RevenueCat, StoreKit 2, or other third-party purchase frameworks where you want to maintain your existing purchase logic.
+</Tip>

@@ -1,0 +1,49 @@
+---
+title: "Managing Users"
+description: Learn how to manage users in your app.
+---
+
+## Overview
+
+The [`useUser`](/expo/sdk-reference/hooks/useUser) hook provides functions to identify users, sign them out, update their attributes, and access user and subscription status information.
+
+## Example
+
+```tsx
+import { useUser } from "expo-superwall";
+import { Button, Text, View } from "react-native";
+
+function UserManagementScreen() {
+  const { identify, user, signOut, update, subscriptionStatus } = useUser();
+
+  const handleLogin = async () => {
+    // Identify the user with a unique ID
+    await identify(`user_${Date.now()}`);
+  };
+
+  const handleSignOut = async () => {
+    await signOut();
+  };
+
+  const handleUpdateUserAttributes = async () => {
+    // Update custom user attributes
+    await update((oldAttributes) => ({
+      ...oldAttributes,
+      customProperty: "new_value",
+      counter: (oldAttributes.counter || 0) + 1,
+    }));
+  };
+
+  return (
+    <View style={{ padding: 20 }}>
+      <Text>Subscription Status: {subscriptionStatus?.status ?? "unknown"}</Text>
+      {user && <Text>User ID: {user.appUserId}</Text>}
+      {user && <Text>User Attributes: {JSON.stringify(user, null, 2)}</Text>}
+
+      <Button title="Login" onPress={handleLogin} />
+      <Button title="Sign Out" onPress={handleSignOut} />
+      <Button title="Update Attributes" onPress={handleUpdateUserAttributes} />
+    </View>
+  );
+}
+```

@@ -1,0 +1,58 @@
+---
+title: "Superwall.shared"
+description: "The shared Superwall instance that provides access to all SDK methods."
+---
+
+<Warning>
+You must call [`configure()`](/flutter/sdk-reference/configure) before accessing `Superwall.shared`, or the app will crash.
+</Warning>
+
+## Purpose
+Provides access to the configured Superwall instance after calling `configure()`.
+
+## Signature
+```dart
+static Superwall get shared
+```
+
+## Returns / State
+Returns the configured `Superwall` instance that can be used to access all SDK methods.
+
+## Usage
+
+Accessing the shared instance:
+```dart
+// After calling configure()
+await Superwall.shared.registerPlacement('premium_feature');
+await Superwall.shared.identify('user_123');
+```
+
+Common usage pattern:
+```dart
+void _upgradeUser() async {
+  await Superwall.shared.registerPlacement(
+    'upgrade_prompt',
+    feature: () {
+      // Feature unlocked after purchase
+      Navigator.pushNamed(context, '/premium-content');
+    },
+  );
+}
+```
+
+With subscription status:
+```dart
+class _MyWidgetState extends State<MyWidget> {
+  @override
+  void initState() {
+    super.initState();
+    
+    // Listen to subscription status changes
+    Superwall.shared.subscriptionStatus.listen((status) {
+      setState(() {
+        // Update UI based on subscription status
+      });
+    });
+  }
+}
+```

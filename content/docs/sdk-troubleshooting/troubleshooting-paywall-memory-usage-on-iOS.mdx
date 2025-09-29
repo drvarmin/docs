@@ -1,0 +1,23 @@
+---
+title: "Paywall Memory Usage on iOS"
+description: "Investigate why your paywall might look like it's using more memory than you expect in Instruments."
+---
+
+When inspecting memory usage in Instruments, you might notice your paywall appears to be using over, or around, 512MB of memory. That can seem concerning, but in almost all cases, it's nothing to worry about.
+
+Whenever a `WKWebView` is created, WebKit reserves a chunk of memory (typically 512MB) for virtual machine allocation. That memory is reserved by iOS, and most apps using WebKit on iOS will see similar readings during profiling within Instruments. In short, this is just how `WKWebView` is designed to work under the hood.
+
+## Can I reduce this memory usage?
+
+If your app creates a lot of paywalls or manages many `WKWebView` instances, you can reduce memory usage by turning off paywall preloading:
+
+```swift
+let options = SuperwallOptions()
+options.paywalls.shouldPreload = false
+                 
+Superwall.configure(apiKey: "MY_API_KEY", options: options)
+```
+
+This prevents Superwall from creating webviews ahead of time, which reduces memory pressure. However, the tradeoff is that the paywall will take slightly longer to show and users will briefly see the loading view as the paywall is initialized on demand.
+
+We recommend leaving preloading on unless you're noticing real performance issues or memory warnings.

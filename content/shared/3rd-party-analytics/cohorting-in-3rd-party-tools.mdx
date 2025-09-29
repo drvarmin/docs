@@ -1,0 +1,85 @@
+---
+title: "Cohorting in 3rd Party Tools"
+description: "To easily view Superwall cohorts in 3rd party tools, we recommend you set user attributes based on the experiments that users are included in. You can also use custom placements for creating analytics events for actions such as interacting with an element on a paywall."
+---
+
+:::ios
+```swift Swift
+extension SuperwallService: SuperwallDelegate {
+  func handleSuperwallEvent(withInfo eventInfo: SuperwallEventInfo) {
+    if eventInfo.event.description == "trigger_fire" {
+      MyAnalyticsService.shared.setUserAttributes([
+        "sw_experiment_\(eventInfo.event.params["experiment_id"])": true,
+        "sw_variant_\(eventInfo.event.params["variant_id"])": true
+      ])
+    }
+  }
+}
+```
+
+:::
+
+:::android
+```kotlin Kotlin
+override fun handleSuperwallEvent(eventInfo: SuperwallEventInfo) {
+  when(eventInfo.event) {
+    is SuperwallEvent.TriggerFire -> {
+      MyAnalyticsService.shared.setUserAttributes(
+        mapOf(
+          "sw_experiment_${eventInfo.params.get("experiment_id").toString()}" to true,
+          "sw_variant_${eventInfo.params.get("variant_id").toString()}" to true
+        )
+      )
+    }
+    else -> {}
+  }
+}
+```
+:::
+
+:::flutter
+```dart Flutter
+@override
+void handleSuperwallEvent(SuperwallEventInfo eventInfo) async {
+  final experimentId = eventInfo.params?['experiment_id'];
+  final variantId = eventInfo.params?['variant_id'];
+
+  switch (eventInfo.event.type) {
+    case EventType.triggerFire:
+      MyAnalyticsService.shared.setUserAttributes({
+        "sw_experiment_$experimentId": true,
+        "sw_variant_$variantId": true
+      });
+      break;
+    default:
+      break;
+  }
+}
+```
+:::
+
+:::expo
+```typescript React Native
+handleSuperwallEvent(eventInfo: SuperwallEventInfo) {
+  const experimentId = eventInfo.params?['experiment_id']
+  const variantId = eventInfo.params?['variant_id']
+
+  if (!experimentId || !variantId) {
+    return
+  }
+
+  switch (eventInfo.event.type) {
+    case EventType.triggerFire:
+      MyAnalyticsService.shared.setUserAttributes({
+        `sw_experiment_${experimentId}`: true,
+        `sw_variant_${variantId}`: true
+      });
+      break;
+    default:
+      break;
+  }
+}
+```
+:::
+
+Once you've set this up, you can easily ask for all users who have an attribute `sw_experiment_1234` and breakdown by both variants to see how users in a Superwall experiment behave in other areas of your app.

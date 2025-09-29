@@ -1,0 +1,80 @@
+---
+title: "PaywallOptions"
+description: "Configuration for paywall presentation and behavior in the Superwall Flutter SDK."
+---
+
+<Tip>
+`PaywallOptions` is provided via the `paywalls` parameter on [`SuperwallOptions`](/flutter/sdk-reference/SuperwallOptions) and is passed when calling [`configure`](/flutter/sdk-reference/configure).
+</Tip>
+
+## Purpose
+Customize how paywalls look and behave, including preload behavior, alerts, dismissal, and haptics.
+
+## Signature
+```dart
+class PaywallOptions {
+  bool isHapticFeedbackEnabled = true;
+  RestoreFailed restoreFailed = RestoreFailed();
+  bool shouldShowPurchaseFailureAlert = true;
+  bool shouldPreload = true;
+  bool automaticallyDismiss = true;
+  TransactionBackgroundView transactionBackgroundView = TransactionBackgroundView.spinner;
+  bool shouldShowWebRestorationAlert = true;
+  Map<String, String>? overrideProductsByName;
+  bool shouldShowWebPurchaseConfirmationAlert = true;
+}
+
+class RestoreFailed {
+  String title = 'No Subscription Found';
+  String message = "We couldn't find an active subscription for your account.";
+  String closeButtonTitle = 'Okay';
+}
+
+enum TransactionBackgroundView { spinner, none }
+```
+
+## Parameters
+<ParamTable>
+| Property | Type | Description |
+|----------|------|-------------|
+| `isHapticFeedbackEnabled` | `bool` | Enables haptic feedback during key paywall interactions. Defaults to `true`. |
+| `restoreFailed` | `RestoreFailed` | Messaging for the restore-failed alert. |
+| `restoreFailed.title` | `String` | Title for restore-failed alert. Defaults to `"No Subscription Found"`. |
+| `restoreFailed.message` | `String` | Message for restore-failed alert. Defaults to `"We couldn't find an active subscription for your account."` |
+| `restoreFailed.closeButtonTitle` | `String` | Close button title for restore-failed alert. Defaults to `"Okay"`. |
+| `shouldShowPurchaseFailureAlert` | `bool` | Shows an alert after a purchase fails. Set to `false` if you handle failures via a `PurchaseController`. Defaults to `true`. |
+| `shouldPreload` | `bool` | Preloads and caches trigger paywalls and products during SDK initialization. Defaults to `true`. |
+| `automaticallyDismiss` | `bool` | Automatically dismisses the paywall on successful purchase or restore. Defaults to `true`. |
+| `transactionBackgroundView` | `TransactionBackgroundView` | View shown behind the system payment sheet during a transaction. Defaults to `.spinner`. |
+| `shouldShowWebRestorationAlert` | `bool` | Shows an alert asking the user to try restoring on the web if web checkout is enabled. Defaults to `true`. |
+| `overrideProductsByName` | `Map<String, String>?` | Overrides products on all paywalls using name→identifier mapping (e.g., `"primary"` → `"com.example.premium_monthly"`). |
+| `shouldShowWebPurchaseConfirmationAlert` | `bool` | Shows a localized alert confirming a successful web checkout purchase. Defaults to `true`. |
+</ParamTable>
+
+## Usage
+```dart
+final paywallOptions = PaywallOptions()
+  ..isHapticFeedbackEnabled = true
+  ..shouldShowPurchaseFailureAlert = false
+  ..shouldPreload = true
+  ..automaticallyDismiss = true
+  ..transactionBackgroundView = TransactionBackgroundView.spinner
+  ..overrideProductsByName = {
+    'primary': 'com.example.premium_monthly',
+    'tertiary': 'com.example.premium_annual',
+  }
+  ..shouldShowWebRestorationAlert = true
+  ..shouldShowWebPurchaseConfirmationAlert = true;
+
+final options = SuperwallOptions(
+  paywalls: paywallOptions,
+);
+
+await Superwall.configure(
+  'pk_your_api_key',
+  options: options,
+);
+```
+
+## Related
+- [`SuperwallOptions`](/flutter/sdk-reference/SuperwallOptions)

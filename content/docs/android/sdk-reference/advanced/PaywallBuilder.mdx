@@ -1,0 +1,99 @@
+---
+title: "PaywallBuilder"
+description: "A builder class for creating custom PaywallView instances for advanced presentation."
+---
+
+<Warning>
+You're responsible for managing the lifecycle of the returned PaywallView. Do not use the same PaywallView instance in multiple places simultaneously.
+</Warning>
+
+<Note>
+The remotely configured presentation style is ignored when using this method. You must handle presentation styling programmatically.
+</Note>
+
+## Purpose
+Creates a PaywallView that you can present however you want, bypassing Superwall's automatic presentation logic.
+
+## Signature
+```kotlin
+class PaywallBuilder(private val placement: String) {
+    fun params(params: Map<String, Any>?): PaywallBuilder
+    fun overrides(overrides: PaywallOverrides?): PaywallBuilder
+    fun delegate(delegate: PaywallViewCallback): PaywallBuilder
+    fun activity(activity: Activity): PaywallBuilder
+    
+    suspend fun build(): Result<PaywallView>
+    fun buildSync(): PaywallView
+    fun build(onSuccess: (PaywallView) -> Unit, onError: (Throwable) -> Unit)
+}
+```
+
+## Parameters
+<ParamTable>
+| Name | Type | Description |
+|------|------|-------------|
+| `placement` | `String` | The name of the placement as defined on the Superwall dashboard. |
+| `params` | `Map<String, Any>?` | Optional parameters to pass with your placement for audience filters. Keys beginning with `$` are reserved and will be dropped. |
+| `overrides` | `PaywallOverrides?` | Optional overrides for products and presentation style. |
+| `delegate` | `PaywallViewCallback` | A delegate to handle user interactions with the retrieved PaywallView. |
+| `activity` | `Activity` | The activity context required for the PaywallView. |
+</ParamTable>
+
+## Returns / State
+Returns a `Result<PaywallView>` that you can add to your view hierarchy. If presentation should be skipped, returns a failure result.
+
+## Usage
+
+Using with coroutines:
+```kotlin
+lifecycleScope.launch {
+    val result = PaywallBuilder("premium_feature")
+        .params(mapOf("source" to "settings"))
+        .delegate(object : PaywallViewCallback {
+            override fun onFinished(
+                paywall: PaywallView,
+                result: PaywallResult,
+                shouldDismiss: Boolean
+            ) {
+                // Handle paywall completion
+            }
+        })
+        .activity(this@MainActivity)
+        .build()
+    
+    result.fold(
+        onSuccess = { paywallView ->
+            binding.container.addView(paywallView)
+        },
+        onFailure = { error ->
+            println("Error creating paywall: ${error.message}")
+        }
+    )
+}
+```
+
+Jetpack Compose integration:
+```kotlin
+@Composable
+fun PaywallScreen() {
+    PaywallComposable(
+        placement = "premium_feature",
+        params = mapOf("source" to "settings"),
+        delegate = object : PaywallViewCallback {
+            override fun onFinished(
+                paywall: PaywallView,
+                result: PaywallResult,
+                shouldDismiss: Boolean
+            ) {
+                // Handle completion
+            }
+        },
+        errorComposable = { error ->
+            Text("Failed to load paywall: ${error.message}")
+        },
+        loadingComposable = {
+            CircularProgressIndicator()
+        }
+    )
+}
+```

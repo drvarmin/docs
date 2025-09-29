@@ -1,0 +1,51 @@
+---
+title: "Standard Placements"
+---
+
+Standard placements are events that Superwall automatically manages. The following [Superwall Events](/tracking-analytics) are registered by the SDK and can be added as placements in campaigns to present paywalls:
+
+- `app_install`
+- `app_launch`
+- `deepLink_open`
+- `session_start`
+- `paywall_decline`
+- `transaction_fail`
+- `transaction_abandon`
+- `survey_response`
+- `touches_began`
+
+Visit [Superwall Events](/tracking-analytics) to see a full list of parameters that you can use with these events. Here are a few examples of how they might be used:
+
+#### Using the `paywall_decline` event
+
+This is registered when a user manually dismisses any paywall. You can combine this with rules to show a paywall when a user closes a specific paywall. First, [add](/campaigns-placements#adding-a-placement) the standard placement to a campaign:
+
+<Frame>![](/images/campaigns-placement-adding-implicit-placement.png)</Frame>
+
+Then, create a filter in the audience using it:
+
+<Frame>![](/images/campaigns-placements-ex-implicit.png)</Frame>
+
+Here, when a user closes the paywall named `PaywallA`, a new paywall will show.
+
+Note that you can't reference parameters that you've passed in to your original register call in your rules for `paywall_decline`.
+
+#### Using the `survey_response` event
+
+This is registered when a response to a paywall survey has been recorded. First, you need to make sure your paywall [has a survey attached](/surveys).
+
+You can combine this with rules to show a paywall whenever a survey response is recorded or when the user gives a specific response. Again, [add](/campaigns-placements#adding-a-placement) the standard placement `survey_response` to a campaign. Then, add another condition using `survey_selected_option_title` that's equal to the text of a particular response.
+
+For example, if the user selected a survey option named `Too Expensive`, you could present another paywall with a discounted option. This is a great opportunity to show a discounted paywall to improve your conversion rate.
+
+#### Using the `deepLink_open` event
+
+This is registered when a user opens the app via a deep link. First, you need to make sure to [tell Superwall when a deep link has been opened](/in-app-paywall-previews).
+
+You can use the URL parameters of the deep link within your rules. Just [add](/campaigns-placements#adding-a-placement) the standard placement `deepLink_open` to a campaign. Then, you could set up a filter that fires based off of its parameters along with a `params.path` rule to see if its a certain path you've setup.
+
+For example, you could make three conditions to match this deep link: `myapp://paywall?offer=July20`. Here's how:
+
+1. Add the a rule to see if the event is `deepLink_open`. See the [first example](/campaigns-placements#using-the-paywall-decline-event) above using `paywall_decline` to see how to do this.
+2. Add `params.offer` is equal to whatever you've made, like `July20` for a timeboxed offer you made in that month.
+3. Then, you'd also add `params.path` is equal to the text of a path you setup, like `paywall`.

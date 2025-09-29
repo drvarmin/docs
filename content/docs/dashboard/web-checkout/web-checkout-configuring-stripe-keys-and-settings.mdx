@@ -1,0 +1,100 @@
+---
+title: "Configuring Stripe Keys and Settings"
+description: "Create your Stripe keys to connect Superwall to Stripe. Fill out some settings to configure your app."
+---
+
+Once you've created a [Stripe app](/web-checkout-creating-an-app), you'll need to configure it with your Stripe keys and fill in a few settings. This is a one-time setup that connects Superwall to Stripe. The easiest way to get started is to click on the link in your overview page, which will take you to your app's [Settings](/overview-settings) page:
+
+<Frame>![](/images/web2app_prompt.jpeg)</Frame>
+
+### Application settings
+Fill out metadata about your iOS app in this section.
+
+<Frame>![](/images/web2app_settings.png)</Frame>
+
+1. **Icon:** An icon to represent your app, we recommend using the same one that your iOS app does. This will appear on the checkout and subscription management pages.
+
+2. **Application Name:** The name of your app, we recommend using the same name as your iOS app.
+
+3. **Support URL:** A URL to your support page. This will be shown on the checkout and subscription management pages.
+
+4. **Support Email:** An email you provide customers for support questions and general reach out
+
+5. **Redeemable on Desktop:** If your app is an iPad app on Mac, enable this option so that users can redeem products on their Mac. If you aren't using iPads Apps on the Mac, you can disable this. If this is disabled, Superwall enforces redemption on an iOS device.
+
+Once you've filled out this information, **click** on the **Update Application** button. 
+
+### Web Paywall Domain 
+
+This is the domain your paywalls will be shown from. This was set when the Stripe app was created, and cannot be changed.
+
+<Frame>![](/images/web-checkout-domain-section.png)</Frame>
+
+### Stripe Live Configuration
+This section allows you to connect Stripe keys with Superwall. You will need:
+
+1. **Publishable Key:** A Stripe publishable key. Stripe creates this key for you, you don't need to generate it yourself.
+2. **Secret Key:** A Stripe secret key that you create. Once you've made one, paste it here.
+
+To access these, click on the **[API Keys](https://dashboard.stripe.com/apikeys)** link:
+
+<Frame>![](/images/web2app_live_api_keys.png)</Frame>
+
+Under **Restricted Keys**, click on **+ Create restricted key**:
+
+<Frame>![](/images/web2app_rkey.png)</Frame>
+
+Choose "Providing this key to another website" and click **Continue ->**:
+
+<Frame>![](/images/web2app_rkey_make.png)</Frame>
+
+Use "Superwall" as the name and "superwall.com" as the URL, then click **Create restricted key**:
+
+<Frame>![](/images/web2app_rkey_name.png)</Frame>
+
+You'll get a modal of your restricted key, **copy this to your clipboard**, you won't be able to view it again:
+
+<Frame>![](/images/web2app_key.png)</Frame>
+
+From there, copy your **Publishable Key** and **copied key** from the Stripe dashboard to Superwall:
+
+<Frame>![](/images/web2app_associatekeys.png)</Frame>
+
+Once you've provided those two keys, **click** on **Update Configuration** to save your changes. This section should say "Configured" at the top right if setup was successful:
+
+<Frame>![](/images/web2app_live_config.png)</Frame>
+
+### Stripe Sandbox Configuration
+
+For the sandbox configuration, you'll follow the same previous steps, **except you retrieve the keys from this link**: [Stripe Sandbox API Keys](https://dashboard.stripe.com/test/apikeys).
+
+You should see something similar to this:
+
+<Frame>![](/images/web2app_testKey.png)</Frame>
+
+Paste the both the **Publishable Key** and **Secret Key** into Superwall for each respective field and **click** on the **Update Configuration** button. As before, this section should say "Configured" at the top right if setup was successful.
+
+### iOS configuration
+
+Superwall uses the details here to handle deep links back to your app after a purchase occurs. **All of this information is required.**
+
+<Frame>![](/images/web-checkout-ios-config.png)</Frame>
+
+1. **Apple Custom URL Scheme:** Add your app's custom URL scheme. If you haven't set on up, read [here for instructions](/in-app-paywall-previews).
+2. **Apple App ID:** Your iOS app's ID. If you're unsure of your app's ID, you find it in **[App Store Connect](https://appstoreconnect.apple.com) -> Select your App -> General -> App Information -> Apple ID**:
+
+<Frame>![](/images/web2app_app_id.png)</Frame>
+
+3. **Bundle ID:** Your iOS app's bundle ID. You can find this in Xcode -> Targets -> General -> Identity -> Bundle Identifier.
+4. **Team ID:** The team ID that your iOS app belongs to. To find this, visit **[Apple Developer](https://developer.apple.com) -> Account -> Membership details -> Team ID**. It's obscured here, but it'll be where the arrow points in the image below:
+
+<Frame>![](/images/web-checkout-team-id.png)</Frame>
+
+### Confirm setup
+
+Once you've filled out all of these fields, you should see **Configured** for each section:
+
+<Frame>![](/images/web2app_keys.jpeg)</Frame>
+
+
+Next, you'll need to create some products in Stripe.

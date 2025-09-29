@@ -1,0 +1,272 @@
+---
+title: "Statsig"
+description: "The Statsig integration allows you to automatically send Superwall subscription and payment events to your Statsig project. This integration provides comprehensive event tracking with user properties for experimentation and analytics."
+---
+
+In the **Analytics** section within **Integrations**, you can connect your Statsig account to Superwall:
+
+<Frame>![](/images/integrations-statsig.jpeg)</Frame>
+
+### Required fields 
+
+Fill out the following fields and **click** the **Enable Statsig** button at the bottom right to save your changes:
+
+<Frame>![](/images/integrations-config-statsig.jpeg)</Frame>
+
+- **Client SDK Key:** Your Statsig client SDK key from Statsig → Project Settings → Keys & Environments.
+- **Environment:** Which environments to send events from.
+- **Sales Reporting:** Whether to report Proceeds after store taxes & fees or Revenue. Choose between **Proceeds** (after store taxes & fees) or **Revenue**.
+
+### Features
+
+- **Automatic Event Mapping**: Converts Superwall events to Statsig-friendly event names with `sw_` prefix
+- **Revenue Tracking**: Tracks both price (gross) and proceeds (net after fees)
+- **User Property Enrichment**: Attaches store, product, and transaction metadata to user objects
+- **Environment Tier Separation**: Uses Statsig's tier system to separate production and staging data
+- **Sandbox Isolation**: Optional tracking for sandbox/test events
+- **Transaction ID Tracking**: Maintains transaction IDs as custom IDs for reconciliation
+- **Custom Event Metadata**: Includes all Superwall event data as metadata for deep analysis
+
+### Configuration
+
+#### Required settings
+
+| Field             | Description                            | Example                                    |
+| ----------------- | -------------------------------------- | ------------------------------------------ |
+| `client_sdk_key`  | Your Statsig client SDK key            | `"client-abc123def456..."`                 |
+| `environment`     | Which environments to send events from | `"Production"` or `"Production & Sandbox"` |
+| `sales_reporting` | Which value to report                  | `"Revenue"` or `"Proceeds"`                |
+
+### Event mapping
+
+Superwall events are transformed into standardized Statsig events with the `sw_` prefix:
+
+#### Trial events
+
+| Superwall Event                          | Statsig Event          | Description             |
+| ---------------------------------------- | ---------------------- | ----------------------- |
+| `initial_purchase` + `periodType: TRIAL` | `sw_trial_start`       | Trial period begins     |
+| `cancellation` + `periodType: TRIAL`     | `sw_trial_cancelled`   | Trial cancelled         |
+| `uncancellation` + `periodType: TRIAL`   | `sw_trial_uncancelled` | Trial reactivated       |
+| `expiration` + `periodType: TRIAL`       | `sw_trial_expired`     | Trial ended             |
+| `renewal` + `isTrialConversion: true`    | `sw_trial_converted`   | Trial converted to paid |
+
+#### Intro offer events
+
+| Superwall Event                          | Statsig Event                | Description                |
+| ---------------------------------------- | ---------------------------- | -------------------------- |
+| `initial_purchase` + `periodType: INTRO` | `sw_intro_offer_start`       | Intro offer begins         |
+| `cancellation` + `periodType: INTRO`     | `sw_intro_offer_cancelled`   | Intro offer cancelled      |
+| `uncancellation` + `periodType: INTRO`   | `sw_intro_offer_uncancelled` | Intro offer reactivated    |
+| `expiration` + `periodType: INTRO`       | `sw_intro_offer_expired`     | Intro offer ended          |
+| `renewal` + `periodType: INTRO`          | `sw_intro_offer_converted`   | Intro converted to regular |
+
+#### Subscription events
+
+| Superwall Event                           | Statsig Event                 | Description              |
+| ----------------------------------------- | ----------------------------- | ------------------------ |
+| `initial_purchase` + `periodType: NORMAL` | `sw_subscription_start`       | Subscription begins      |
+| `renewal` + `periodType: NORMAL`          | `sw_renewal`                  | Subscription renewed     |
+| `cancellation` + `periodType: NORMAL`     | `sw_subscription_cancelled`   | Subscription cancelled   |
+| `uncancellation` + `periodType: NORMAL`   | `sw_subscription_uncancelled` | Subscription reactivated |
+| `expiration` + `periodType: NORMAL`       | `sw_subscription_expired`     | Subscription ended       |
+| `subscription_paused`                     | `sw_subscription_paused`      | Subscription paused      |
+| `billing_issue`                           | `sw_billing_issue`            | Payment failed           |
+
+#### Other events
+
+| Superwall Event            | Statsig Event              | Description       |
+| -------------------------- | -------------------------- | ----------------- |
+| `product_change`           | `sw_product_change`        | Plan changed      |
+| `non_renewing_purchase`    | `sw_non_renewing_purchase` | One-time purchase |
+| Any event with `price < 0` | `sw_refund`                | Refund processed  |
+| `test`                     | `sw_test`                  | Test event        |
+
+### Event properties
+
+Every Statsig event includes the following structure:
+
+#### Core event fields
+
+- `eventName`: The mapped event name with `sw_` prefix
+- `value`: Revenue amount (when applicable)
+- `time`: Unix timestamp in milliseconds
+- `user`: User object with identity and properties
+- `metadata`: All webhook data fields
+
+#### User object
+
+The user object contains:
+
+- **userID**: User identifier (uses `originalAppUserId` or falls back to `originalTransactionId`)
+- **country**: Two-letter country code (e.g., "US", "GB")
+- **custom**: Transaction properties attached to the user
+  - `isFamilyShare`: Whether the latest transaction is a family share
+  - `store`: The store of the latest transaction (APP_STORE, PLAY_STORE, STRIPE, PADDLE)
+  - `productId`: The product ID of the latest transaction
+  - `bundleId`: The bundle ID of the latest transaction
+- **customIDs**: Additional identifiers
+  - `originalTransactionId`: Store transaction ID (when available)
+- **statsigEnvironment**: Environment tier configuration
+  - `tier: "production"` for production events
+  - `tier: "staging"` for sandbox events
+
+#### Event metadata
+
+All fields from the webhook are included as metadata:
+
+- `id`, `name`, `cancelReason`, `exchangeRate`
+- `isSmallBusiness`, `periodType`, `countryCode`
+- `price`, `proceeds`, `priceInPurchasedCurrency`
+- `taxPercentage`, `commissionPercentage`, `takehomePercentage`
+- `offerCode`, `isFamilyShare`, `expirationAt`
+- `transactionId`, `originalTransactionId`, `originalAppUserId`
+- `store`, `purchasedAt`, `currencyCode`, `productId`
+- `environment`, `isTrialConversion`, `newProductId`
+- `bundleId`, `ts`
+
+### Revenue reporting options
+
+#### Price vs proceeds
+
+The `sales_reporting` setting determines which value is used for the `value` field:
+
+| Setting      | Value Used | Description                               |
+| ------------ | ---------- | ----------------------------------------- |
+| `"Revenue"`  | `price`    | Gross revenue before store fees and taxes |
+| `"Proceeds"` | `proceeds` | Net revenue after store fees and taxes    |
+
+#### Examples
+
+**Gross Revenue (Price):**
+
+- Transaction price: $9.99
+- Store commission (30%): $3.00
+- Your proceeds: $6.99
+- Reported to Statsig: **$9.99**
+
+**Net Revenue (Proceeds):**
+
+- Transaction price: $9.99
+- Store commission (30%): $3.00
+- Your proceeds: $6.99
+- Reported to Statsig: **$6.99**
+
+### Sandbox handling
+
+#### With sandbox enabled
+
+If `environment` is set to `"Production & Sandbox"`:
+
+- Production events → Tagged with `tier: "production"`
+- Sandbox events → Tagged with `tier: "staging"`
+
+#### Without sandbox enabled
+
+If `environment` is set to `"Production"`:
+
+- Production events → Tagged with `tier: "production"`
+- Sandbox events → **Skipped** (not sent to Statsig)
+
+This allows you to:
+
+- Filter events by environment tier in Statsig dashboards
+- Create separate metrics for production vs. test
+- Validate integration without polluting production data
+
+### Refund handling
+
+Refunds are automatically detected when `price < 0`:
+
+- Event type: `sw_refund`
+- Value field: Negative amount
+- All metadata preserved for analysis
+
+Example:
+
+- Original purchase: +$9.99
+- Refund event: -$9.99
+- Net effect on metrics: $0.00
+
+### User identification
+
+The integration uses the following hierarchy for user identification:
+
+1. **Primary**: `originalAppUserId` (if available)
+2. **Fallback**: `originalTransactionId` (always present)
+
+This ensures consistent user tracking even for:
+
+- Legacy users without app user IDs
+- Family sharing scenarios
+- Cross-platform subscriptions
+
+### Testing the integration
+
+#### 1. Validate credentials
+
+The integration automatically validates your credentials by sending a test event when configured.
+
+#### 2. Test event properties
+
+Test events include:
+
+- Event: `sw_test`
+- Basic properties to verify connection
+- No revenue impact
+
+#### 3. Verify in Statsig
+
+Check your Statsig project:
+
+1. Navigate to **Metrics** → **Events Stream**
+2. Look for events with `sw_` prefix
+3. Click on an event to view properties and metadata
+4. Verify the `statsigEnvironment.tier` matches your configuration
+
+### Troubleshooting
+
+#### Events not appearing
+
+1. **Check API Key**: Ensure you're using the client SDK key (starts with "client-")
+2. **Check Environment**: Confirm sandbox events are enabled if testing with sandbox data
+3. **Check Events Stream**: Look in Metrics → Events Stream, not just dashboards
+4. **Wait for Processing**: Events may take a few seconds to appear
+
+#### Authentication errors
+
+- **Invalid Key Format**: Client SDK keys must start with "client-"
+- **Wrong Project**: Verify the key belongs to the correct Statsig project
+- **Key Permissions**: Ensure the key has event logging permissions
+
+#### Missing or incorrect data
+
+- **Check Event Properties**: Use Statsig's Events Stream to inspect raw event data
+- **Verify User ID**: Ensure `originalAppUserId` is being set in your app
+- **Environment Mismatch**: Production events won't appear if filtered for staging tier
+
+### Best practices
+
+1. **Use Consistent User IDs**: Send the same user IDs to both Superwall and Statsig for proper correlation
+2. **Choose Revenue Model**: Decide between gross (Revenue) vs net (Proceeds) and use consistently
+3. **Set Up Environment Tiers**: Use staging tier for testing without affecting production metrics
+4. **Monitor Events Stream**: Regularly check the Events Stream for data quality
+5. **Create Custom Metrics**: Build metrics based on subscription events for experimentation
+6. **Handle Refunds**: Account for negative revenue events in your analysis
+
+### Rate limits
+
+Statsig has the following limits:
+
+- **Events**: 10,000 requests/second per project
+- **Batch Size**: 500 events per batch (this integration sends one at a time)
+- **Request Size**: 1MB maximum per request
+
+The integration sends events individually, well within these limits.
+
+### Data privacy
+
+- **PII Handling**: User IDs are pseudonymous by default
+- **HTTPS Only**: All events sent over encrypted connections
+- **Data Retention**: Follows your Statsig project settings
+- **Deletion Requests**: Handle via Statsig's privacy tools

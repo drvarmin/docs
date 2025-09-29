@@ -1,0 +1,79 @@
+---
+title: "userId"
+description: "A property on Superwall.instance that returns the current user's ID."
+---
+
+<Info>
+The anonymous user ID is automatically generated and persisted to disk, so it remains consistent across app launches until the user is identified.
+</Info>
+
+## Purpose
+Returns the current user's unique identifier, either from a previous call to [`identify()`](/android/sdk-reference/identify) or an anonymous ID if not identified.
+
+## Signature
+```kotlin
+// Accessed via Superwall.instance
+val userId: String
+```
+
+```java
+// Java
+public String getUserId()
+```
+
+## Parameters
+This is a read-only property on the [`Superwall.instance`](/android/sdk-reference/Superwall) with no parameters.
+
+## Returns / State
+Returns a `String` representing the user's ID. If [`identify()`](/android/sdk-reference/identify) has been called, returns that user ID. Otherwise, returns an automatically generated anonymous user ID that is cached to disk.
+
+## Usage
+
+Get the current user ID:
+```kotlin
+val currentUserId = Superwall.instance.userId
+println("User ID: $currentUserId")
+```
+
+Check if user is identified:
+```kotlin
+if (Superwall.instance.isLoggedIn) {
+    println("User is identified with ID: ${Superwall.instance.userId}")
+} else {
+    println("User is anonymous with ID: ${Superwall.instance.userId}")
+}
+```
+
+Example usage in analytics:
+```kotlin
+fun trackAnalyticsEvent() {
+    val userId = Superwall.instance.userId
+    Analytics.track("feature_used", mapOf(
+        "user_id" to userId,
+        "timestamp" to System.currentTimeMillis()
+    ))
+}
+```
+
+Example usage in custom logging:
+```kotlin
+fun logError(error: Throwable) {
+    Logger.log("Error for user ${Superwall.instance.userId}: ${error.message}")
+}
+```
+
+Java usage:
+```java
+// Get current user ID
+String currentUserId = Superwall.getInstance().getUserId();
+System.out.println("User ID: " + currentUserId);
+
+// Check if user is identified
+if (Superwall.getInstance().isLoggedIn()) {
+    System.out.println("User is identified with ID: " + 
+                      Superwall.getInstance().getUserId());
+} else {
+    System.out.println("User is anonymous with ID: " + 
+                      Superwall.getInstance().getUserId());
+}
+```

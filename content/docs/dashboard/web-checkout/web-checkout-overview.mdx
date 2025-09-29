@@ -1,0 +1,66 @@
+---
+title: "Overview"
+description: "Let customers purchase products online via Stripe, and them link them to your iOS app with one seamless flow. No authentication required."
+---
+
+Superwall's web checkout integration makes it easy to set up purchasing funnels for your app via the web. Web checkout is powered by Stripe and Stripe products. Once an online purchase is complete, the customer will be redirected back to your app with a deep link that can be used to unlock content or features in your app via any associated [entitlement](/products#entitlements).
+
+Web checkout requires the Superwall iOS SDK 4.2.0 or later.
+
+<Tip>
+  Visual learner? Go watch our web checkout tour over on YouTube
+  [here](https://youtu.be/eUSIySsN1ZU).
+</Tip>
+### How it works
+
+Superwall presents paywalls via the concept of [campaigns](/campaigns), and each campaign has one or more [placements](/campaigns-placements). A paywall is shown in a campaign when a placement is triggered after your [audience filters](/campaigns-audience) are evaluated. This setup is Superwall's foundation, and the web checkout flow works the exact same way.
+
+The core difference? Each placement becomes a unique URL that you can share, send or email to present a user with a paywall that leads to a Stripe checkout flow. And just like with Superwall on apps, you can create experiments, try out different paywalls, run price tests and more.
+
+<Frame>![](images/web2appflow.jpg)</Frame>
+
+### Overall flow
+
+Refer to the individual pages below to get started, but for a quick, high-level overview — here's how web checkout works from beginning to end:
+
+1. A Stripe app is added to an existing iOS project in Superwall.
+2. Stripe is configured with Superwall.
+3. iOS app details are configured in the Stripe app's settings page (within Superwall).
+4. Products are created _in_ Stripe, and imported into Superwall.
+5. Within a campaign (a default one is provided), you attach those products to a paywall.
+6. A user visits a placement URL, and performs the checkout flow.
+7. After a successful purchase, the user is redirected to download the app.
+8. _On the device that they downloaded the app_, they click the redemption link.
+9. Your iOS app is opened via a deep link (which means it must be set up with Superwall deep links, [docs here](/in-app-paywall-previews)).
+10. In the `SuperwallDelegate`, `willRedeemLink()` is called, and then once it's fetched — `didRedeemLink(result:)` is called with the result of the redemption.
+11. Finally, this user's account and details are managed via a link they find in their [email receipt or by visiting a URL manually](/web-checkout-managing-memberships).
+
+### Getting setup
+
+Before you start, you'll need to have a Stripe account and a Superwall account. If you don't have a Stripe account, you can sign up for one [here](https://dashboard.stripe.com/register).
+
+<Note>
+  To opt yourself into the beta, please visit ["Public Beta
+  Settings"](https://superwall.com/applications/:app/settings/experiments).
+</Note>
+
+1. **[Creating a Stripe App](/web-checkout-creating-an-app):** First, you'll add a Stripe app to an existing project within Superwall.
+2. **[Configuration](/web-checkout-configuring-stripe-keys-and-settings):** Next, you'll need to perform a one-time setup to connect Stripe with Superwall.
+3. **[Creating Stripe products](/web-checkout-configuring-stripe-keys-and-settings):** Create your products in Stripe to add to your web paywalls.
+
+### Creating paywalls and campaigns
+
+4. **[Presenting paywalls](/web-checkout-creating-campaigns-to-show-paywalls):** Set up a campaign, create some placements and add paywalls to begin showing them to customers.
+
+### Associating entitlements to your iOS apps
+
+5. **[Linking purchases to your iOS app](/web-checkout-linking-membership-to-iOS-app):** Once a purchase occurs, the user will be prompted to download your app and click on a redemption link.
+6. **[Managing memberships](/web-checkout-managing-memberships):** Users can cancel, update or manage their memberships via Stripe.
+
+### Testing purchases
+
+7. **[Testing purchases](/web-checkout-testing-purchases):** Test your web checkout flow with test purchases.
+
+### App to Web 
+
+8. **[App to Web Checkout](/web-checkout-direct-stripe-checkout):** For customers in the United States, you can offer Stripe products directly from your iOS paywalls. 

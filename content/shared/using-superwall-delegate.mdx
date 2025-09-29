@@ -1,0 +1,466 @@
+---
+title: "Using the Superwall Delegate"
+description: "Help interface with 3rd party analytics, see which product was purchased on a paywall, handle custom placements and more."
+---
+
+Use Superwall's delegate to extend our SDK's functionality across several surface areas by assigning to the `delegate` property:
+
+:::ios
+<CodeGroup>
+```swift Swift
+class SWDelegate: SuperwallDelegate {
+    // Implement delegate methods here
+}
+
+// After configuring the SDK...
+Superwall.shared.delegate = SWDelegate()
+```
+
+```swift Objective-C
+// In its own file...
+#import <Foundation/Foundation.h>
+@import SuperwallKit;
+@interface SWDelegate : NSObject <SWKSuperwallDelegate>
+@end
+@implementation SWDelegate
+    // Implement delegate methods here
+@end
+
+// After configuring the SDK...
+[[Superwall sharedInstance] setDelegate:[SWDelegate new]];
+```
+</CodeGroup>
+:::
+
+:::android
+```kotlin
+class SWDelegate : SuperwallDelegate {
+    // Implement delegate methods here
+}
+
+// When configuring the SDK...
+Superwall.instance.delegate = SWDelegate()
+```
+:::
+
+:::flutter
+```dart
+import 'package:superwall_flutter/superwall_flutter.dart';
+
+class SWDelegate extends SuperwallDelegate {
+  // Implement delegate methods here
+}
+
+// When configuring the SDK...
+void configureSDK() {
+  Superwall.shared.setDelegate(SWDelegate());
+}
+```
+:::
+
+:::expo
+```tsx
+import { useSuperwallEvents } from "expo-superwall";
+
+// Use the useSuperwallEvents hook to subscribe to Superwall events
+function MyApp() {
+  useSuperwallEvents({
+    onSuperwallEvent: (eventInfo) => {
+      console.log('Superwall Event:', eventInfo.event.event, eventInfo.params);
+    },
+    onSubscriptionStatusChange: (status) => {
+      console.log('Subscription Status Changed:', status.status);
+    },
+    onPaywallPresent: (info) => {
+      console.log('Paywall Presented:', info.name);
+    },
+    onPaywallDismiss: (info, result) => {
+      console.log('Paywall Dismissed:', info.name, 'Result:', result);
+    },
+    onCustomPaywallAction: (name) => {
+      console.log('Custom Action:', name);
+      // Handle custom actions here
+    },
+  });
+
+  return (
+    // Your app content
+  );
+}
+```
+
+<Note>
+The new hooks-based SDK uses `useSuperwallEvents()` instead of the delegate pattern. For delegate functionality with the compat SDK, use `expo-superwall/compat`.
+</Note>
+:::
+
+Some common use cases for using the Superwall delegate include:
+
+- **Custom actions:** [Respond to custom tap actions from a paywall.](/custom-paywall-events#custom-paywall-actions)
+- **Respond to purchases:** [See which product was purchased from the presented paywall.](/viewing-purchased-products)
+- **Analytics:** [Forward events from Superwall to your own analytics.](/3rd-party-analytics)
+
+Below are some commonly used implementations when using the delegate.
+
+### Superwall Events
+
+Most of what occurs in Superwall can be viewed using the delegate method to respond to events:
+
+:::ios
+<CodeGroup>
+```swift Swift
+class SWDelegate: SuperwallDelegate {
+  func handleSuperwallEvent(withInfo eventInfo: SuperwallEventInfo) {
+    switch eventInfo.event {
+    case .transactionComplete(let transaction, let product, let paywallInfo):
+      print("Converted from paywall originalTransactionIdentifier: \(transaction?.originalTransactionIdentifier ?? "")")
+      print("Converted from paywall storeTransactionId: \(transaction?.storeTransactionId ?? "")")
+      print("Converted from paywall productIdentifier: \(product.productIdentifier)")
+      print("Converted from paywall paywallInfo: \(paywallInfo.identifier)")
+    case .transactionRestore(let restoreType, let paywallInfo):
+      print("transactionRestore restoreType \(restoreType)")
+    case let .customPlacement(name, params, paywallInfo):
+      // Forward Mixpanel/Ampltiude/etc
+      print("\(name) - \(params) - \(paywallInfo)")
+    default:
+      // And several more events to use...
+      print("Default event: \(eventInfo.event.description)")
+    }
+  }
+}
+```
+
+```swift Objective-C
+// SWDelegate.h...
+#import <Foundation/Foundation.h>
+@import SuperwallKit;
+
+NS_ASSUME_NONNULL_BEGIN
+
+@interface SWDelegate : NSObject <SWKSuperwallDelegate>
+
+@end
+
+NS_ASSUME_NONNULL_END
+
+// SWDelegate.m...
+@implementation SWDelegate
+
+- (void)handleSuperwallEventWithInfo:(SWKSuperwallEventInfo *)eventInfo {
+  switch(eventInfo.event) {
+    // Switch on any event type here...
+    case SWKSuperwallEventTransactionComplete:
+      NSLog(@"Transaction complete: %@", eventInfo.params[@"primary_product_id"]);
+  }
+}
+```
+</CodeGroup>
+:::
+
+:::android
+```kotlin
+class SWDelegate : SuperwallDelegate {
+  override fun handleSuperwallEvent(eventInfo: SuperwallEventInfo) {
+    // Handle any relevant events here...
+    when (eventInfo.event) {
+        is SuperwallPlacement.TransactionComplete -> {
+          val transaction = (eventInfo.event as SuperwallPlacement.TransactionComplete).transaction
+          val product = (eventInfo.event as SuperwallPlacement.TransactionComplete).product
+          val paywallInfo = (eventInfo.event as SuperwallPlacement.TransactionComplete).paywallInfo
+          println("Transaction Complete: $transaction, Product: $product, Paywall Info: $paywallInfo")
+        }
+        else -> {
+          // Handle other cases
+        }
+    }
+  }
+}
+```
+:::
+
+:::flutter
+```dart
+class _MyAppState extends State<MyApp> implements SuperwallDelegate {
+  @override
+  Future<void> handleSuperwallEvent(SuperwallEventInfo eventInfo) async {
+    switch (eventInfo.event.type) {
+      // Handle any other event types as needed
+      case PlacementType.transactionComplete:
+        final product = eventInfo.params?['product'];
+        logging.info('Transaction complete event received with product: $product');
+        break;
+      default:
+        logging.info('Unhandled event type: ${eventInfo.event.type}');
+        break;
+    }
+  }
+}
+```
+:::
+
+:::expo
+```typescript
+export class MySuperwallDelegate extends SuperwallDelegate {
+  handleSuperwallPlacement(placementInfo: SuperwallPlacementInfo) {
+    console.log("Handling Superwall placement:", placementInfo)
+
+    switch (placementInfo.placement.type) {
+      case PlacementType.transactionComplete:
+        const product = placementInfo.params?.["product"]
+        if (product) {
+          console.log(`Product: ${product}`)
+        } else {
+          console.log("Product not found in params.")
+        }
+        break
+      default:
+        // Handle any other placement types as needed...
+        break
+    }
+  }
+}
+```
+:::
+
+### Paywall Custom Actions
+
+Using the [custom tap action](/custom-paywall-events), you can respond to any arbitrary event from a paywall:
+
+:::ios
+<CodeGroup>
+```swift Swift
+class SWDelegate: SuperwallDelegate {
+  func handleCustomPaywallAction(withName name: String) {
+    if name == "showHelpCenter" {
+      DispatchQueue.main.asyncAfter(deadline: .now() + 0.33) {
+        self.showHelpCenter.toggle()
+      }
+    }
+  }
+}
+```
+
+```swift Objective-C
+// SWDelegate.h...
+#import <Foundation/Foundation.h>
+@import SuperwallKit;
+
+NS_ASSUME_NONNULL_BEGIN
+
+@interface SWDelegate : NSObject <SWKSuperwallDelegate>
+
+@end
+
+NS_ASSUME_NONNULL_END
+
+// SWDelegate.m...
+#import "SWDelegate.h"
+
+@implementation SWDelegate
+
+- (void)handleCustomPaywallActionWithName:(NSString *)name {
+  if ([name isEqualToString:@"showHelpCenter"]) {
+   [self showHelpCenter];
+  }
+}
+
+@end
+```
+</CodeGroup>
+:::
+
+:::android
+```kotlin
+class SWDelegate : SuperwallDelegate {
+  override fun handleCustomPaywallAction(withName: String) {
+    if (withName == "caffeineLogged") {
+      println("Custom paywall action: $withName")
+    }
+  }
+}
+```
+:::
+
+:::flutter
+```dart
+class _MyAppState extends State<MyApp> implements SuperwallDelegate {
+  final logging = Logging();
+
+  @override
+  void handleCustomPaywallAction(String name) {
+    logging.info('handleCustomPaywallAction: $name');
+  }
+}
+```
+:::
+
+:::expo
+```tsx
+import { useSuperwallEvents } from "expo-superwall";
+
+function MyApp() {
+  useSuperwallEvents({
+    onCustomPaywallAction: (name) => {
+      console.log("Handling custom paywall action:", name);
+      // Handle your custom actions here
+    },
+  });
+
+  return (
+    // Your app content
+  );
+}
+```
+:::
+
+### Subscription status changes
+
+You can be informed of subscription status changes using the delegate. If you need to set or handle the status on your own, use a [purchase controller](/advanced-configuration) — this function is only for informational, tracking or similar purposes:
+
+:::ios
+<CodeGroup>
+```swift Swift
+class SWDelegate: SuperwallDelegate {
+  func subscriptionStatusDidChange(from oldValue: SubscriptionStatus, to newValue: SubscriptionStatus) {
+    // Log or handle subscription change in your Ui
+  }
+}
+```
+
+```swift Objective-C
+// SWDelegate.h...
+#import <Foundation/Foundation.h>
+@import SuperwallKit;
+
+NS_ASSUME_NONNULL_BEGIN
+
+@interface SWDelegate : NSObject <SWKSuperwallDelegate>
+
+@end
+
+NS_ASSUME_NONNULL_END
+
+// SWDelegate.m...
+@implementation SWDelegate
+- (void)subscriptionStatusDidChangeFrom:(enum SWKSubscriptionStatus)oldValue
+                                     to:(enum SWKSubscriptionStatus)newValue {
+  NSLog(@"Changed from %lu to %lu", (unsigned long)oldValue, (unsigned long)newValue);
+}
+@end
+```
+</CodeGroup>
+:::
+
+:::android
+```kotlin
+class SWDelegate : SuperwallDelegate {
+  override fun subscriptionStatusDidChange(from: SubscriptionStatus, to: SubscriptionStatus) {
+    println("Subscription status changed from $from to $to")
+  }
+}
+```
+:::
+
+:::flutter
+```dart
+class _MyAppState extends State<MyApp> implements SuperwallDelegate {
+  final logging = Logging();
+
+  @override
+  void subscriptionStatusDidChange(SubscriptionStatus newValue) {
+    logging.info('subscriptionStatusDidChange: $newValue');
+  }
+}
+```
+:::
+
+:::expo
+```tsx
+import { useSuperwallEvents } from "expo-superwall";
+
+function MyApp() {
+  useSuperwallEvents({
+    onSubscriptionStatusChange: (status) => {
+      console.log("Subscription status changed to:", status.status);
+      if (status.status === "ACTIVE") {
+        console.log("Active entitlements:", status.entitlements);
+      }
+    },
+  });
+
+  return (
+    // Your app content
+  );
+}
+```
+:::
+
+### Paywall events
+
+The delegate also has callbacks for several paywall events, such dismissing, presenting, and more. Here's an example:
+
+:::ios
+<CodeGroup>
+```swift Swift
+class SWDelegate: SuperwallDelegate {
+  func didPresentPaywall(withInfo paywallInfo: PaywallInfo) {
+    // paywallInfo will contain all of the presented paywall's info
+  }
+}
+```
+
+```swift Objective-C
+// SWDelegate.h...
+#import <Foundation/Foundation.h>
+@import SuperwallKit;
+
+NS_ASSUME_NONNULL_BEGIN
+
+@interface SWDelegate : NSObject <SWKSuperwallDelegate>
+
+@end
+
+NS_ASSUME_NONNULL_END
+
+// SWDelegate.m...
+@implementation SWDelegate
+- (void)didPresentPaywallWithInfo:(SWKPaywallInfo *)paywallInfo {
+  NSLog(@"Presented paywall with info: %@", paywallInfo);
+}
+@end
+```
+</CodeGroup>
+:::
+
+:::android
+```kotlin
+class SWDelegate : SuperwallDelegate {
+  override fun didPresentPaywall(withInfo: PaywallInfo) {
+    println("Paywall presented: $withInfo")
+  }
+}
+```
+:::
+
+:::flutter
+```dart
+class _MyAppState extends State<MyApp> implements SuperwallDelegate {
+  final logging = Logging();
+
+  @override
+  void didPresentPaywall(PaywallInfo paywallInfo) {
+    logging.info('didPresentPaywall: $paywallInfo');
+  }
+}
+```
+:::
+
+:::expo
+```typescript
+export class MySuperwallDelegate extends SuperwallDelegate {
+  didPresentPaywall(paywallInfo: PaywallInfo): void {
+    console.log("Paywall did present:", paywallInfo)
+  }
+}
+```
+:::

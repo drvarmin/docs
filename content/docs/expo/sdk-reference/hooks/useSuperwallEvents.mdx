@@ -1,0 +1,52 @@
+---
+title: "useSuperwallEvents"
+---
+
+## Purpose
+The `useSuperwallEvents` hook provides a low-level way to subscribe to *any* native Superwall event. This is useful for advanced use cases or for events not covered by the more specific hooks. Listeners are automatically cleaned up when the component using this hook unmounts.
+
+## Parameters
+
+-   `callbacks?: SuperwallEventCallbacks`: An object where keys are event names and values are the corresponding callback functions.
+    -   `SuperwallEventCallbacks`: (Refer to `src/useSuperwallEvents.ts` and `src/SuperwallExpoModule.types.ts` for a full list of subscribable events and their payload types. Common events include):
+        -   `onPaywallPresent?: (info: PaywallInfo) => void`
+        -   `onPaywallDismiss?: (info: PaywallInfo, result: PaywallResult) => void`
+        -   `onPaywallSkip?: (reason: PaywallSkippedReason) => void`
+        -   `onPaywallError?: (error: string) => void`
+        -   `onSubscriptionStatusChange?: (status: SubscriptionStatus) => void`
+        -   `onSuperwallEvent?: (eventInfo: SuperwallEventInfo) => void`: For generic Superwall events.
+            -   `SuperwallEventInfo`: `{ event: SuperwallEvent, params: Record<string, any> }`
+        -   `onCustomPaywallAction?: (name: string) => void`: When a custom action is triggered from a paywall.
+        -   `willDismissPaywall?: (info: PaywallInfo) => void`
+        -   `willPresentPaywall?: (info: PaywallInfo) => void`
+        -   `didDismissPaywall?: (info: PaywallInfo) => void`
+        -   `didPresentPaywall?: (info: PaywallInfo) => void`
+        -   `onPaywallWillOpenURL?: (url: string) => void`
+        -   `onPaywallWillOpenDeepLink?: (url: string) => void`
+        -   `onLog?: (params: { level: LogLevel, scope: LogScope, message: string | null, info: Record<string, any> | null, error: string | null }) => void`
+        -   `handlerId?: string`: (Optional) If provided, some events like `onPaywallPresent`, `onPaywallDismiss`, `onPaywallSkip` will only be triggered if the event originated from a `registerPlacement` call associated with the same `handlerId`. This is used internally by `usePlacement`.
+
+## Returned Values
+
+This hook does not return any values (`void`). Its purpose is to set up and tear down event listeners.
+
+## Example
+
+```tsx
+import { useSuperwallEvents } from 'expo-superwall';
+
+function EventLogger() {
+  useSuperwallEvents({
+    onSuperwallEvent: (eventInfo) => {
+      console.log('Superwall Event:', eventInfo.event.event, eventInfo.params);
+    },
+    onSubscriptionStatusChange: (newStatus) => {
+      console.log('Subscription Status Changed:', newStatus.status);
+    },
+    onPaywallPresent: (info) => {
+      console.log('Paywall Presented (via useSuperwallEvents):', info.name);
+    }
+  });
+
+}
+```

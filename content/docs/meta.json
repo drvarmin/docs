@@ -1,0 +1,14 @@
+{
+    "title": "Superwall Docs",
+    "root": true,
+    "pages": [
+        "home",
+
+        "---Docs---",
+        "dashboard",
+        "ios",
+        "android",
+        "expo",
+        "flutter"
+    ]
+}

@@ -1,0 +1,51 @@
+{
+    "title": "Android SDK",
+    "icon": "Android",
+    "root": true,
+    "pages": [
+        "[Dashboard Docs](https://superwall.com/docs/dashboard)",
+        "index",
+
+        "---Quickstart---",
+        "quickstart/install",
+        "quickstart/configure",
+        "quickstart/user-management",
+        "quickstart/feature-gating",
+        "quickstart/tracking-subscription-state",
+        "quickstart/setting-user-properties",
+        "quickstart/in-app-paywall-previews",
+
+        "---Common Use Cases---",
+        "guides/web-checkout",
+        "guides/advanced-configuration",
+        "guides/configuring",
+        "guides/using-superwall-delegate",
+        "guides/3rd-party-analytics",
+
+        "---SDK Reference---",
+        "sdk-reference/index",
+        "sdk-reference/configure",
+        "sdk-reference/Superwall",
+        "sdk-reference/register",
+        "sdk-reference/identify",
+        "sdk-reference/setUserAttributes",
+        "sdk-reference/userId",
+        "sdk-reference/subscriptionStatus",
+        "sdk-reference/handleDeepLink",
+        "sdk-reference/SuperwallDelegate",
+        "sdk-reference/PurchaseController",
+        "sdk-reference/SuperwallEvent",
+        "sdk-reference/SuperwallOptions",
+        "sdk-reference/PaywallOptions",
+        "sdk-reference/advanced",
+
+        "---Guides---",
+        "guides/vibe-coding",
+        "guides/using-revenuecat",
+        "guides/experimental-flags",
+        "guides/advanced",
+        "guides/migrations",
+        "[Troubleshooting](https://support.superwall.com/articles/3578026824-troubleshooting-android-sdk)",
+        "[Example App](https://github.com/superwall/Superwall-Android/tree/develop/example)"
+    ]
+}

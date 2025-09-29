@@ -1,0 +1,85 @@
+---
+title: "RevenueCat Migration Guide"
+description: "A guide to migrating from RevenueCat to Superwall."
+---
+
+If you're looking to migrate off RevenueCat and use Superwall, here's what you'll need to do along with a few considerations. Your setup can look a little different depending on how you're using RevenueCat, so we'll break it down into a few different sections. Jump to the one that fits your current architecture.
+
+### If you're currently using RevenueCat and not Superwall
+If you've not installed or shipped the Superwall SDK, and are only using RevenueCat — then it's a matter of removing one SDK and adding the other:
+
+1. Remove the RevenueCat SDK from your project.
+2. Install the Superwall SDK by following the [installation guide](/installation).
+3. Update any local data models to correlate purchase status.
+
+For step 3, you might've been doing something similar to this to see if a user was subscribed:
+
+```swift
+// In RevenueCat's SDK
+let customerInfo = try? await Purchases.shared.customerInfo()
+return customerInfo.entitlements.active["Pro"]?.isActive ?? false
+```
+
+In Superwall, the concept is similar. You query active entitlements:
+
+```swift 
+switch Superwall.shared.subscriptionStatus {
+case .active(let entitlements):
+    logger.info("User has active entitlements: \(entitlements)")
+    handler(true)
+case .inactive:
+    logger.info("User is free plan.")
+    handler(false)
+case .unknown:
+    logger.info("User is inactive.")
+    handler(false)
+}
+```
+
+Or, if you're only dealing with one entitlement, you can simplify the above to:
+
+```swift 
+if Superwall.shared.subscriptionStatus.isActive {
+    // The user has an active entitlement
+}
+```
+
+### If you're using a [PurchaseController](/advanced-configuration) with Superwall and RevenueCat
+
+In this case, it's mostly a matter of removing the `PurchaseController` implementation. Remember, a purchase controller is for manually assigning a subscription state to a user and performing purchase logic. Superwall's SDK does all of that out of the box without any code from you:
+
+```swift
+// Remove the `PurchaseController` implementation from your app.
+// Change this code... 
+let purchaseController = RCPurchaseController()
+
+Superwall.configure(
+  apiKey: "MY_API_KEY",
+  purchaseController: purchaseController
+)
+
+// To this...
+Superwall.configure(apiKey: "MY_API_KEY")
+```
+
+Now, when Superwall is configured without a purchase controller, the SDK takes over all purchasing, restoring and entitlement management.
+
+### If you're using observer mode 
+
+If you're using RevenueCat today just with [observer mode](/using-revenuecat#using-purchasesarecompletedby) — you're free to continue to do so. Simply install the Superwall SDK and continue on.
+
+### Considerations
+
+1. **Paywalls:** RevenueCat's paywalls can be displayed if an entitlement isn't active, manually, or by providing custom logic. Superwall can do all of those presentation methods as well. The core difference is with Superwall, typically users [register a  placement](/feature-gating) at the call site instead of looking at an entitlement. This means you can show a paywall based on one or several conditions, not just whether or not a user has an entitlement.
+
+2. **Purchases:** Superwall uses the relevant app storefront (App Store or Google Play) to check for a source of truth for purchases. This is tied to the account logged into the device. For example, if a user is logged into the same Apple ID across an iPad, Mac and iPhone — any subscription they buy in-app will work on all of those devices too. RevenueCat uses a similar approach, so there typically isn't much you need to do. If any subscription status issues arise, typically restoring the user's purchases puts things into place.
+
+    Even if you're using [web checkout](/web-checkout-overview) with either platform, Superwall allows you to manually assign a subscription state to a user via [a `PurchaseController`](/advanced-configuration). 
+
+3. **Platform differences:** Like all products, Superwall and RevenueCat bring different features to the table, even though there are a lot of similarities. While both offer subscription SDKs, paywalls, and analytics - it helps to familiarize yourself with how Superwall is different. Superwall works on the foundations of registering placements and filtering users who activate them into audiences. Superwall groups those concepts together into [campaigns](/campaigns). This means that you're ready from day one to run all sorts of price tests, paywall experiments, and more. 
+
+    In terms of reporting, RevenueCat currently offers some metrics like LTV and MRR that you may still need. If so, you can continue using RevenueCat alongside Superwall in [observer mode](/using-revenuecat#using-purchasesarecompletedby) and all of your dashboard analytics should work as they always have.
+
+----
+
+Whatever your setup, Superwall is ready to meet you where you're at. Whether you want to go all-in with Superwall, use it with RevenueCat or any other approach, our SDK is flexible enough to support you.

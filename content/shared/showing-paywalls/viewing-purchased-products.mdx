@@ -1,0 +1,614 @@
+---
+title: "Viewing Purchased Products"
+description: "There are several ways to view which product was purchased as a result of a paywall presentation."
+---
+
+When a paywall is presenting and a user converts, you can view the purchased products in several different ways.
+
+### Use the `PaywallPresentationHandler`
+
+Arguably the easiest of the options — simply pass in a presentation handler and check out the product within the `onDismiss` block.
+
+<CodeGroup>
+```swift Swift  
+let handler = PaywallPresentationHandler()
+handler.onDismiss { _, result in
+  switch result {
+  case .declined:
+      print("No purchased occurred.")
+  case .purchased(let product):
+      print("Purchased \(product.productIdentifier)")
+  case .restored:
+      print("Restored purchases.")
+  }
+}
+
+Superwall.shared.register(placement: "caffeineLogged", handler: handler) {
+logCaffeine()
+}
+
+````
+
+```swift Objective-C
+SWKPaywallPresentationHandler *handler = [SWKPaywallPresentationHandler new];
+[handler onDismiss:^(SWKPaywallInfo * _Nonnull info,
+                      enum SWKPaywallResult result,
+                      SWKStoreProduct * _Nullable product) {
+  switch (result) {
+    case SWKPaywallResultPurchased:
+      NSLog(@"Purchased %@", product.productIdentifier);
+    default:
+      NSLog(@"Unhandled event.");
+  }
+}];
+
+[[Superwall sharedInstance] registerWithPlacement:@"caffeineLogged"
+                                           params:@{}
+                                          handler:handler
+                                          feature:^{
+  [self logCaffeine];
+}];
+````
+
+```kotlin Android
+val handler = PaywallPresentationHandler()
+handler.onDismiss { _, paywallResult ->
+  when (paywallResult) {
+    is PaywallResult.Purchased -> {
+        // The user made a purchase!
+        val purchasedProductId = paywallResult.productId
+        println("User purchased product: $purchasedProductId")
+        // ... do something with the purchased product ID ...
+    }
+    is PaywallResult.Declined -> {
+        // The user declined to make a purchase.
+        println("User declined to make a purchase.")
+        // ... handle the declined case ...
+    }
+    is PaywallResult.Restored -> {
+        // The user restored a purchase.
+        println("User restored a purchase.")
+        // ... handle the restored case ...
+    }
+  }
+}
+
+Superwall.instance.register(placement = "caffeineLogged", handler = handler) {
+   logCaffeine()
+}
+```
+
+```dart Flutter
+  PaywallPresentationHandler handler = PaywallPresentationHandler();
+
+  handler.onDismiss((paywallInfo, paywallResult) async {
+    String name = await paywallInfo.name;
+    print("Handler (onDismiss): $name");
+    switch (paywallResult) {
+      case PurchasedPaywallResult(productId: var id):
+        // The user made a purchase!
+        print('User purchased product: $id');
+        // ... do something with the purchased product ID ...
+        break;
+      case DeclinedPaywallResult():
+        // The user declined to make a purchase.
+        print('User declined the paywall.');
+        // ... handle the declined case ...
+        break;
+      case RestoredPaywallResult():
+        // The user restored a purchase.
+        print('User restored a previous purchase.');
+        // ... handle the restored case ...
+        break;
+    }
+  });
+
+  Superwall.shared.registerPlacement(
+      "caffeineLogged", handler: handler, feature: () {
+    logCaffeine();
+  });
+```
+
+```typescript React Native
+import * as React from "react"
+import Superwall from "../../src"
+import { PaywallPresentationHandler, PaywallInfo } from "../../src"
+import type { PaywallResult } from "../../src/public/PaywallResult"
+
+const Home = () => {
+  const navigation = useNavigation<HomeScreenNavigationProp>()
+
+  const presentationHandler: PaywallPresentationHandler = {
+    onDismiss: (handler: (info: PaywallInfo, result: PaywallResult) => void) => {
+      handler = (info, result) => {
+        console.log("Paywall dismissed with info:", info, "and result:", result)
+        if (result.type === "purchased") {
+          console.log("Product purchased with ID:", result.productId)
+        }
+      }
+    },
+    onPresent: (handler: (info: PaywallInfo) => void) => {
+      handler = (info) => {
+        console.log("Paywall presented with info:", info)
+        // Add logic for when the paywall is presented
+      }
+    },
+    onError: (handler: (error: string) => void) => {
+      handler = (error) => {
+        console.error("Error presenting paywall:", error)
+        // Handle any errors that occur during presentation
+      }
+    },
+    onSkip: () => {
+      console.log("Paywall presentation skipped")
+      // Handle the case where the paywall presentation is skipped
+    },
+  }
+
+  const nonGated = () => {
+    Superwall.shared.register({ placement: "non_gated", handler: presentationHandler, feature: () => {
+      navigation.navigate("caffeineLogged", {
+        value: "Go for caffeine logging",
+      })
+    });
+  }
+
+  return <View style={styles.container}>// Your view code here</View>
+}
+```
+
+</CodeGroup>
+
+### Use `SuperwallDelegate`
+
+Next, the [SuperwallDelegate](/using-superwall-delegate) offers up much more information, and can inform you of virtually any Superwall event that occurred:
+
+<CodeGroup>
+```swift Swift 
+class SWDelegate: SuperwallDelegate {
+  func handleSuperwallEvent(withInfo eventInfo: SuperwallEventInfo) {
+    switch eventInfo.event {
+    case .transactionComplete(_, let product, _, _):
+      print("Transaction complete: product: \(product.productIdentifier)")
+    case .subscriptionStart(let product, _):
+      print("Subscription start: product: \(product.productIdentifier)")
+    case .freeTrialStart(let product, _):
+      print("Free trial start: product: \(product.productIdentifier)")
+    case .transactionRestore(_, _):
+      print("Transaction restored")
+    case .nonRecurringProductPurchase(let product, _):
+      print("Consumable product purchased: \(product.id)")
+    default:
+      print("Unhandled event.")
+    }
+  }
+}
+
+@main
+struct Caffeine_PalApp: App {
+  @State private var swDelegate: SWDelegate = .init()
+
+  init() {
+    Superwall.configure(apiKey: "my_api_key")
+    Superwall.shared.delegate = swDelegate
+  }
+
+  var body: some Scene {
+    WindowGroup {
+      ContentView()
+    }
+  }
+}
+````
+
+```swift Objective-C
+// SWDelegate.h...
+#import <Foundation/Foundation.h>
+@import SuperwallKit;
+
+NS_ASSUME_NONNULL_BEGIN
+
+@interface SWDelegate : NSObject <SWKSuperwallDelegate>
+
+@end
+
+NS_ASSUME_NONNULL_END
+
+// SWDelegate.m...
+@implementation SWDelegate
+
+- (void)handleSuperwallEventWithInfo:(SWKSuperwallEventInfo *)eventInfo {
+  switch(eventInfo.event) {
+    case SWKSuperwallEventTransactionComplete:
+      NSLog(@"Transaction complete: %@", eventInfo.params[@"primary_product_id"]);
+  }
+}
+
+// In AppDelegate.m...
+#import "AppDelegate.h"
+#import "SWDelegate.h"
+@import SuperwallKit;
+
+@interface AppDelegate ()
+
+@property (strong, nonatomic) SWDelegate *delegate;
+
+@end
+
+@implementation AppDelegate
+
+- (BOOL)application:(UIApplication *)application didFinishLaunchingWithOptions:(NSDictionary *)launchOptions {
+    // Override point for customization after application launch.
+    self.delegate = [SWDelegate new];
+    [Superwall configureWithApiKey:@"my_api_key"];
+    [Superwall sharedInstance].delegate = self.delegate;
+
+    return YES;
+}
+````
+
+```kotlin Android
+class SWDelegate : SuperwallDelegate {
+  override fun handleSuperwallEvent(eventInfo: SuperwallEventInfo) {
+    when (eventInfo.event) {
+        is SuperwallPlacement.TransactionComplete -> {
+          val transaction = (eventInfo.event as SuperwallPlacement.TransactionComplete).transaction
+          val product = (eventInfo.event as SuperwallPlacement.TransactionComplete).product
+          val paywallInfo = (eventInfo.event as SuperwallPlacement.TransactionComplete).paywallInfo
+          println("Transaction Complete: $transaction, Product: $product, Paywall Info: $paywallInfo")
+        }
+        else -> {
+          // Handle other cases
+        }
+    }
+  }
+}
+
+class MyApplication : Application() {
+    override fun onCreate() {
+        super.onCreate()
+        Superwall.configure(this, "my_api_key")
+        Superwall.instance.delegate = SWDelegate()
+    }
+}
+```
+
+```dart Flutter
+import 'dart:io';
+import 'package:flutter/material.dart';
+import 'package:superwallkit_flutter/superwallkit_flutter.dart';
+
+class _MyAppState extends State<MyApp> implements SuperwallDelegate {
+  final logging = Logging();
+
+  @override
+  void initState() {
+    super.initState();
+    configureSuperwall(useRevenueCat);
+  }
+
+  Future<void> configureSuperwall(bool useRevenueCat) async {
+    try {
+      final apiKey = Platform.isIOS
+          ? 'ios_api_project_key'
+          : 'android_api_project_key';
+
+      final logging = Logging();
+      logging.level = LogLevel.warn;
+      logging.scopes = {LogScope.all};
+
+      final options = SuperwallOptions();
+      options.paywalls.shouldPreload = false;
+      options.logging = logging;
+
+      Superwall.configure(apiKey,
+          purchaseController: null,
+          options: options, completion: () {
+        logging.info('Executing Superwall configure completion block');
+      });
+
+      Superwall.shared.setDelegate(this);
+    } catch (e) {
+      // Handle any errors that occur during configuration
+      logging.error('Failed to configure Superwall:', e);
+    }
+  }
+
+  @override
+  Future<void> handleSuperwallEvent(SuperwallEventInfo eventInfo) async {
+    switch (eventInfo.event.type) {
+      case PlacementType.transactionComplete:
+        final product = eventInfo.params?['product'];
+        logging.info('Transaction complete event received with product: $product');
+
+        // Add any additional logic you need to handle the transaction complete event
+        break;
+      // Handle other events if necessary
+      default:
+        logging.info('Unhandled event type: ${eventInfo.event.type}');
+        break;
+    }
+  }
+}
+```
+
+```typescript React Native
+import {
+  PaywallInfo,
+  SubscriptionStatus,
+  SuperwallDelegate,
+  SuperwallPlacementInfo,
+  PlacementType,
+} from '../../src';
+
+export class MySuperwallDelegate extends SuperwallDelegate {
+  handleSuperwallPlacement(placementInfo: SuperwallPlacementInfo) {
+    console.log('Handling Superwall placement:', placementInfo);
+
+    switch (placementInfo.placement.type) {
+      case PlacementType.transactionComplete:
+        const product = placementInfo.params?.["product"];
+        if (product) {
+          console.log(`Product: ${product}`);
+        } else {
+          console.log("Product not found in params.");
+        }
+        break;
+      default:
+        break;
+    }
+  }
+}
+
+export default function App() {
+  const delegate = new MySuperwallDelegate();
+
+  React.useEffect(() => {
+    const setupSuperwall = async () => {
+      const apiKey =
+        Platform.OS === 'ios'
+          ? 'ios_api_project_key'
+          : 'android_api_project_key';
+
+      Superwall.configure({
+        apiKey: apiKey,
+      });
+
+      Superwall.shared.setDelegate(delegate);
+    };
+  }
+}
+```
+
+</CodeGroup>
+
+### Use a purchase controller
+
+If you are controlling the purchasing pipeline yourself via a [purchase controller](/advanced-configuration), then naturally the purchased product is available:
+
+<CodeGroup>
+```swift Swift
+final class MyPurchaseController: PurchaseController {
+  func purchase(product: StoreProduct) async -> PurchaseResult {
+    print("Kicking off purchase of \(product.productIdentifier)")
+
+    do {
+      let result = try await MyPurchaseLogic.purchase(product: product)
+      return .purchased // .cancelled,  .pending, .failed(Error)
+    } catch {
+      return .failed(error)
+    }
+
+}
+
+// 2
+func restorePurchases() async -> RestorationResult {
+print("Restoring purchases")
+return .restored // false
+}
+}
+
+@main
+struct Caffeine_PalApp: App {
+private let pc: MyPurchaseController = .init()
+
+init() {
+Superwall.configure(apiKey: "my_api_key", purchaseController: pc)
+}
+
+var body: some Scene {
+WindowGroup {
+ContentView()
+}
+}
+}
+
+````
+
+```swift Objective-C
+// In MyPurchaseController.h...
+#import <Foundation/Foundation.h>
+@import SuperwallKit;
+@import StoreKit;
+
+NS_ASSUME_NONNULL_BEGIN
+
+@interface MyPurchaseController : NSObject<SWKPurchaseController>
++ (instancetype)sharedInstance;
+@end
+
+NS_ASSUME_NONNULL_END
+
+// In MyPurchaseController.m...
+#import "MyPurchaseController.h"
+
+@implementation MyPurchaseController
+
++ (instancetype)sharedInstance
+{
+  static MyPurchaseController *sharedInstance = nil;
+  static dispatch_once_t onceToken;
+  dispatch_once(&onceToken, ^{
+    sharedInstance = [MyPurchaseController new];
+  });
+  return sharedInstance;
+}
+
+
+- (void)purchaseWithProduct:(SWKStoreProduct * _Nonnull)product
+                 completion:(void (^ _Nonnull)(enum SWKPurchaseResult, NSError * _Nullable))completion {
+  NSLog(@"Kicking off purchase of %@", product.productIdentifier);
+  // Do purchase logic here
+  completion(SWKPurchaseResultPurchased, nil);
+}
+
+- (void)restorePurchasesWithCompletion:(void (^ _Nonnull)(enum SWKRestorationResult, NSError * _Nullable))completion {
+  // Do restore logic here
+  completion(SWKRestorationResultRestored, nil);
+}
+@end
+
+// In AppDelegate.m...
+
+#import "AppDelegate.h"
+#import "MyPurchaseController.h"
+@import SuperwallKit;
+
+@interface AppDelegate ()
+@end
+
+@implementation AppDelegate
+
+- (BOOL)application:(UIApplication *)application didFinishLaunchingWithOptions:(NSDictionary *)launchOptions {
+    // Override point for customization after application launch.
+    [Superwall configureWithApiKey:@"my_api_key"
+                purchaseController:[MyPurchaseController sharedInstance]
+                           options:nil
+                        completion:^{
+
+    }];
+
+    return YES;
+}
+````
+
+```kotlin Android
+class MyPurchaseController(val context: Context): PurchaseController {
+    override suspend fun purchase(
+        activity: Activity,
+        productDetails: ProductDetails,
+        basePlanId: String?,
+        offerId: String?
+    ): PurchaseResult {
+        println("Kicking off purchase of $basePlanId")
+        return PurchaseResult.Purchased()
+    }
+
+    override suspend fun restorePurchases(): RestorationResult {
+        TODO("Not yet implemented")
+    }
+}
+
+class MyApplication : Application() {
+    override fun onCreate() {
+        super.onCreate()
+        Superwall.configure(this, "my_api_key", purchaseController = MyPurchaseController(this))
+    }
+}
+```
+
+```dart Flutter
+class MyPurchaseController extends PurchaseController {
+  // 1
+  @override
+  Future<PurchaseResult> purchaseFromAppStore(String productId) async {
+    print('Attempting to purchase product with ID: $productId');
+    // Do purchase logic
+    return PurchaseResult.purchased;
+  }
+
+  @override
+  Future<PurchaseResult> purchaseFromGooglePlay(
+    String productId,
+    String? basePlanId,
+    String? offerId
+  ) async {
+    print('Attempting to purchase product with ID: $productId and basePlanId: $basePlanId');
+    // Do purchase logic
+    return PurchaseResult.purchased;
+  }
+
+  @override
+  Future<RestorationResult> restorePurchases() async {
+    // Do resture logic
+  }
+}
+```
+
+```typescript React Native
+export class MyPurchaseController extends PurchaseController {
+  // 1
+  async purchaseFromAppStore(productId: string): Promise<PurchaseResult> {
+    console.log("Kicking off purchase of ", productId)
+    // Purchase logic
+    return await this._purchaseStoreProduct(storeProduct)
+  }
+
+  async purchaseFromGooglePlay(
+    productId: string,
+    basePlanId?: string,
+    offerId?: string
+  ): Promise<PurchaseResult> {
+    console.log("Kicking off purchase of ", productId, " base plan ID", basePlanId)
+    // Purchase logic
+    return await this._purchaseStoreProduct(storeProduct)
+  }
+
+  // 2
+  async restorePurchases(): Promise<RestorationResult> {
+    // TODO
+    // ----
+    // Restore purchases and return true if successful.
+  }
+}
+```
+
+</CodeGroup>
+
+### SwiftUI - Use `PaywallView`
+
+The `PaywallView` allows you to show a paywall by sending it a placement. It also has a dismiss handler where the purchased product will be vended:
+
+```swift
+@main
+struct Caffeine_PalApp: App {
+  @State private var presentPaywall: Bool = false
+
+  init() {
+    Superwall.configure(apiKey: "my_api_key")
+  }
+
+  var body: some Scene {
+    WindowGroup {
+      Button("Log") {
+        presentPaywall.toggle()
+      }
+      .sheet(isPresented: $presentPaywall) {
+        PaywallView(placement: "caffeineLogged", params: nil, paywallOverrides: nil) { info, result in
+          switch result {
+          case .declined:
+            print("No purchased occurred.")
+          case .purchased(let product):
+            print("Purchased \(product.productIdentifier)")
+          case .restored:
+            print("Restored purchases.")
+          }
+        } feature: {
+          print("Converted")
+          presentPaywall.toggle()
+        }
+      }
+    }
+  }
+}
+```

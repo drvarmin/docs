@@ -1,0 +1,155 @@
+---
+title: "handleDeepLink()"
+description: "A function that handles deep links and triggers paywalls based on configured campaigns."
+---
+
+<Tip>
+Configure deep link campaigns on the Superwall dashboard by adding the `deepLink` event to a campaign trigger.
+</Tip>
+
+<Info>
+Deep link events are also tracked via [`SuperwallEvent.DeepLink`](/android/sdk-reference/SuperwallEvent) and sent to your [`SuperwallDelegate`](/android/sdk-reference/SuperwallDelegate).
+</Info>
+
+## Purpose
+Processes a deep link URL and triggers any associated paywall campaigns configured on the Superwall dashboard.
+
+## Signature
+```kotlin
+fun Superwall.handleDeepLink(url: String)
+```
+
+```java
+// Java
+public void handleDeepLink(String url)
+```
+
+## Parameters
+<ParamTable>
+| Name | Type | Description |
+|------|------|-------------|
+| `url` | `String` | The deep link URL to process for paywall triggers. |
+</ParamTable>
+
+## Returns / State
+This function returns `Unit`. If the URL matches a campaign configured on the dashboard, it may trigger a paywall presentation.
+
+## Usage
+
+In your Activity:
+```kotlin
+class MainActivity : AppCompatActivity() {
+    
+    override fun onCreate(savedInstanceState: Bundle?) {
+        super.onCreate(savedInstanceState)
+        
+        // Handle deep link on app launch
+        intent?.let { handleIntent(it) }
+    }
+    
+    override fun onNewIntent(intent: Intent?) {
+        super.onNewIntent(intent)
+        intent?.let { handleIntent(it) }
+    }
+    
+    private fun handleIntent(intent: Intent) {
+        val action = intent.action
+        val data = intent.data
+        
+        if (Intent.ACTION_VIEW == action && data != null) {
+            val url = data.toString()
+            
+            // Handle the deep link with Superwall
+            Superwall.instance.handleDeepLink(url)
+            
+            // Continue with your app's deep link handling
+            handleAppDeepLink(url)
+        }
+    }
+}
+```
+
+In your manifest (declare your deep link schemes):
+```xml
+<activity
+    android:name=".MainActivity"
+    android:exported="true">
+    
+    <intent-filter>
+        <action android:name="android.intent.action.VIEW" />
+        <category android:name="android.intent.category.DEFAULT" />
+        <category android:name="android.intent.category.BROWSABLE" />
+        <data android:scheme="myapp" />
+    </intent-filter>
+    
+    <intent-filter>
+        <action android:name="android.intent.action.VIEW" />
+        <category android:name="android.intent.category.DEFAULT" />
+        <category android:name="android.intent.category.BROWSABLE" />
+        <data android:scheme="https"
+              android:host="myapp.com" />
+    </intent-filter>
+    
+</activity>
+```
+
+Handle deep links in different scenarios:
+```kotlin
+fun handleDeepLinkFromNotification(url: String) {
+    // Handle deep link from push notification
+    Superwall.instance.handleDeepLink(url)
+    navigateToContent(url)
+}
+
+fun handleDeepLinkFromWebView(url: String) {
+    // Handle deep link from web view or external browser
+    Superwall.instance.handleDeepLink(url)
+    processWebViewDeepLink(url)
+}
+```
+
+Java usage:
+```java
+public class MainActivity extends AppCompatActivity {
+    
+    @Override
+    protected void onCreate(Bundle savedInstanceState) {
+        super.onCreate(savedInstanceState);
+        
+        Intent intent = getIntent();
+        handleIntent(intent);
+    }
+    
+    @Override
+    protected void onNewIntent(Intent intent) {
+        super.onNewIntent(intent);
+        handleIntent(intent);
+    }
+    
+    private void handleIntent(Intent intent) {
+        String action = intent.getAction();
+        Uri data = intent.getData();
+        
+        if (Intent.ACTION_VIEW.equals(action) && data != null) {
+            String url = data.toString();
+            
+            // Handle the deep link with Superwall
+            Superwall.getInstance().handleDeepLink(url);
+            
+            // Continue with your app's deep link handling
+            handleAppDeepLink(url);
+        }
+    }
+}
+```
+
+Example deep link campaign setup:
+```kotlin
+// When users click a deep link like "myapp://premium-feature"
+// The dashboard campaign can be configured to:
+// 1. Track the deepLink event
+// 2. Show a paywall if user is not subscribed
+// 3. Direct to premium content if user is subscribed
+
+Superwall.instance.handleDeepLink("myapp://premium-feature?source=email")
+```

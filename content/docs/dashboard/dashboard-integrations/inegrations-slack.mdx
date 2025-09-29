@@ -1,0 +1,329 @@
+---
+title: "Slack"
+description: "The Slack integration sends real-time notifications about subscription events to your Slack channels. Get instant updates about new subscribers, cancellations, renewals, and revenue changes with rich, color-coded messages and contextual emojis."
+---
+
+In the **Communication** section within **Integrations**, you can connect your Slack account to Superwall:
+
+<Frame>![](/images/integrations-slack.jpeg)</Frame>
+
+### Required Fields 
+
+Fill out the following fields and **click** the **Enable Slack** button at the bottom right to save your changes:
+
+<Frame>![](/images/integrations-config-slack.jpeg)</Frame>
+
+- **Webhook Url:** Your Slack webhook URL for sending messages to a channel.
+- **Include Sandbox:** Whether to include sandbox events in Slack notifications.
+- **Event Type:** Type of events to send: revenue only or all lifecycle (includes trials, cancellations).
+
+### Features
+
+- **Real-time Notifications**: Instant Slack messages for subscription events
+- **Smart Filtering**: Choose between revenue events only or all subscription lifecycle events
+- **Visual Design**: Color-coded messages with contextual emojis for quick scanning
+- **Revenue Insights**: See price, proceeds, and currency information at a glance
+- **Sandbox Control**: Optional inclusion of test/sandbox events
+- **Rich Context**: Includes user ID, product, country, and transaction details
+
+## Configuration
+
+### Required Settings
+
+| Field | Description | Example |
+|-------|-------------|---------|
+| `integration_id` | Must be set to `"slack"` | `"slack"` |
+| `webhook_url` | Your Slack incoming webhook URL | `"https://hooks.slack.com/services/..."` |
+| `include_sandbox` | Whether to include sandbox events | `"Production Only"` or `"Production & Sandbox"` |
+| `event_type` | Types of events to send | `"Revenue Events Only"` or `"All Subscription Events"` |
+
+### Example Configuration
+
+```json
+{
+  "integration_id": "slack",
+  "webhook_url": "https://hooks.slack.com/services/T00000000/B00000000/XXXXXXXXXXXXXXXXXXXX",
+  "include_sandbox": "Production Only",
+  "event_type": "Revenue Events Only"
+}
+```
+
+## Setting Up Slack Webhooks
+
+1. **Create Incoming Webhook**:
+   - Go to [api.slack.com/apps](https://api.slack.com/apps)
+   - Create a new app or select existing
+   - Enable "Incoming Webhooks"
+   - Add new webhook to workspace
+   - Select target channel
+
+2. **Copy Webhook URL**:
+   - Format: `https://hooks.slack.com/services/T.../B.../...`
+   - Keep this URL secure
+
+3. **Test Connection**:
+   - The integration sends a test message on setup
+   - Verify it appears in your selected channel
+
+## Event Filtering
+
+### Revenue Events Only
+Sends notifications for events with monetary impact:
+- ✅ Initial purchases (paid)
+- ✅ Renewals
+- ✅ Refunds (negative amounts)
+- ✅ Trial/intro conversions (when paid)
+- ❌ Cancellations (no immediate revenue impact)
+- ❌ Expirations
+- ❌ Billing issues
+
+### All Subscription Events
+Sends notifications for all lifecycle events:
+- ✅ All revenue events (above)
+- ✅ Trial starts
+- ✅ Cancellations
+- ✅ Uncancellations
+- ✅ Expirations
+- ✅ Billing issues
+- ✅ Product changes
+- ✅ Subscription pauses
+
+## Message Format
+
+### Visual Indicators
+
+Messages use colors and emojis for quick scanning:
+
+#### Colors
+- 🟢 **Green** (#36a64f): Positive events (purchases, renewals, uncancellations)
+- 🔴 **Red** (#FA6A6A): Negative events (cancellations, expirations, refunds)
+- ⚫ **Gray** (#666666): Neutral events (product changes, pauses)
+
+#### Emojis by Event Type
+
+**Trial Events:**
+- 🤩 Trial start
+- 💰 Trial conversion
+- 😞 Trial cancelled
+- 😞 Trial expired
+- 🤩 Trial uncancelled
+- 🤬 Trial refunded
+
+**Intro Offer Events:**
+- 💰/🤩 Intro offer start
+- 💰 Intro offer conversion
+- 😞 Intro offer cancelled
+- 😞 Intro offer expired
+- 🤩 Intro offer uncancelled
+- 🤬 Intro offer refunded
+
+**Subscription Events:**
+- 💰 New subscriber
+- 💰 Renewal
+- 😞 Subscription cancelled
+- 😞 Subscription expired
+- 🤩 Subscription uncancelled
+- 🤬 Subscription refunded
+
+**Special Events:**
+- 😵‍💫 Product change
+- 🫠 Billing issue
+- ⏸️ Subscription paused
+- 💸 Non-renewing purchase
+
+### Message Structure
+
+Each Slack message includes:
+
+```
+[Emoji] [Event Description]
+━━━━━━━━━━━━━━━━━━━━━
+💵 $9.99 USD (Proceeds: $6.99)
+📦 com.example.premium.monthly
+🌍 United States
+👤 User123
+🏪 APP_STORE
+🔗 Transaction: 700001234567890
+```
+
+### Field Descriptions
+
+| Field | Description | Example |
+|-------|-------------|---------|
+| **Header** | Event type with emoji | "💰 renewal" |
+| **Price** | Transaction amount | "$9.99 USD" |
+| **Proceeds** | Net after fees | "Proceeds: $6.99" |
+| **Product** | Product identifier | "com.example.premium" |
+| **Country** | User's country | "United States" |
+| **User** | User identifier | "User123" or transaction ID |
+| **Store** | Payment provider | "APP_STORE" |
+| **Transaction** | Transaction ID | "700001234567890" |
+
+## Sandbox Handling
+
+### Production Only
+- Production events → Sent to Slack
+- Sandbox events → **Skipped**
+
+### Production & Sandbox
+- Production events → Sent to Slack
+- Sandbox events → Sent to Slack with 🧪 indicator
+
+Sandbox events include a note in the message to differentiate from production.
+
+## Special Event Handling
+
+### Refunds
+Identified by negative price values:
+- Header changes to "refunded [type]"
+- Emoji changes to 🤬
+- Color remains red
+- Shows negative amount
+
+### Family Sharing
+Events with `isFamilyShare: true`:
+- Shows shared subscription indicator
+- Price may be $0 for family members
+- Original purchaser shows full price
+
+### Trial Conversions
+Renewals with `isTrialConversion: true`:
+- Header shows "trial conversion"
+- Indicates successful trial-to-paid transition
+- Always green/positive color
+
+### Product Changes
+Shows when users switch plans:
+- Displays old and new product IDs
+- Neutral gray color
+- May have $0 price
+
+## Use Cases
+
+### Revenue Monitoring
+Track real-time revenue with "Revenue Events Only":
+- Monitor daily subscription revenue
+- Get alerts for high-value purchases
+- Track refund activity
+- Celebrate trial conversions
+
+### Customer Success
+Track lifecycle with "All Subscription Events":
+- Monitor cancellation trends
+- Identify billing issues quickly
+- Track trial-to-paid conversion
+- Spot at-risk subscribers
+
+### Team Celebrations
+Share wins with your team:
+- New subscriber notifications
+- Trial conversion celebrations
+- Renewal milestones
+- Recovery from cancellations
+
+## Best Practices
+
+1. **Dedicated Channels**: Create specific channels for different event types
+2. **Filter Appropriately**: Use "Revenue Only" for finance, "All Events" for customer success
+3. **Include Context**: User IDs help connect events to support tickets
+4. **Monitor Patterns**: Watch for unusual cancellation or refund spikes
+5. **Sandbox Separation**: Consider separate webhooks for production vs testing
+
+## Troubleshooting
+
+### Messages Not Appearing
+
+1. **Check Webhook URL**: Ensure URL is valid and not revoked
+2. **Check Channel**: Verify bot has access to target channel
+3. **Check Filters**: Confirm event type and sandbox settings
+4. **Check Slack Limits**: Webhook rate limits (1 per second)
+
+### Incorrect Information
+
+1. **Check Timezone**: Timestamps are in UTC
+2. **Check Currency**: Amounts in USD, original currency shown
+3. **Check User ID**: Falls back to transaction ID if not available
+
+### Test the Integration
+
+Send a test event to verify setup:
+1. Configure the integration
+2. A test message is automatically sent
+3. Check your Slack channel
+4. Look for "🧪 Test event" message
+
+## Rate Limits
+
+Slack incoming webhooks have a rate limit of 1 message per second. The integration sends events individually as they occur, typically well within this limit.
+
+## Security Considerations
+
+- **Webhook URLs are sensitive**: Treat like passwords
+- **Rotate if compromised**: Generate new webhook URL if leaked
+- **Channel permissions**: Ensure appropriate team members have access
+- **PII considerations**: User IDs may be visible to channel members
+
+## Advanced Configuration
+
+### Multiple Channels
+Set up multiple integrations for different channels:
+- Revenue events → #revenue-alerts
+- Cancellations → #customer-success
+- All events → #subscription-monitoring
+
+### Custom Filtering
+While the integration offers two preset filters, you can:
+- Use Slack workflows for additional filtering
+- Set up multiple integrations with different settings
+- Use Slack's notification preferences per channel
+
+## Message Examples
+
+### New Paid Subscription
+```
+💰 new subscriber
+━━━━━━━━━━━━━━━━━━━━━
+💵 $49.99 USD (Proceeds: $34.99)
+📦 com.example.premium.yearly
+🌍 United States
+👤 user_abc123
+🏪 APP_STORE
+🔗 Transaction: 700001234567890
+```
+
+### Trial Start
+```
+🤩 Trial start
+━━━━━━━━━━━━━━━━━━━━━
+💵 $0.00 USD
+📦 com.example.premium.monthly
+🌍 Germany
+👤 user_xyz789
+🏪 PLAY_STORE
+🔗 Transaction: GPA.1234-5678-9012
+```
+
+### Refund
+```
+🤬 refunded subscription
+━━━━━━━━━━━━━━━━━━━━━
+💵 -$9.99 USD (Proceeds: -$6.99)
+📦 com.example.premium.monthly
+🌍 United Kingdom
+👤 user_def456
+🏪 STRIPE
+🔗 Transaction: sub_1234567890
+```
+
+### Billing Issue
+```
+🫠 Billing issue
+━━━━━━━━━━━━━━━━━━━━━
+💵 $0.00 USD
+📦 com.example.premium.monthly
+🌍 Canada
+👤 user_ghi789
+🏪 APP_STORE
+🔗 Transaction: 700009876543210
+❗ Payment failed - subscription at risk
+```

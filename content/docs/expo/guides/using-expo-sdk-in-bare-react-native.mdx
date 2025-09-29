@@ -1,0 +1,122 @@
+---
+title: Using Expo SDK in Bare React Native Apps
+description: Install Superwall's Expo SDK in existing React Native projects without Expo
+---
+
+This guide is for React Native developers who want to integrate Superwall for the first time using our Expo SDK, even though their project doesn't use Expo.
+
+<Note>
+  **This doesn't sound like you?**
+  
+  - **Expo project** → Use the standard [installation guide](/expo/quickstart/install)
+  - **React Native app with existing Superwall SDK** → See our [migration guide](/expo/guides/migrating-react-native)
+</Note>
+
+## What are Expo Modules?
+
+Expo Modules allow you to use Expo SDK packages in any React Native project, even if you're not using Expo as your development framework. This means bare React Native apps can benefit from Expo's ecosystem while maintaining their existing project structure.
+
+Superwall's Expo SDK (`expo-superwall`) is now our recommended SDK for all React Native projects. By installing Expo Modules in your bare React Native app, you can use our latest SDK with the best features and support.
+
+## Prerequisites
+
+Before starting, ensure you have:
+
+- A React Native project (compatible with React Native 0.79+)
+- iOS deployment target set to 15.1 or higher
+- Android minimum SDK version 21 or higher
+- Node.js 18 or newer
+
+## Step 1: Install Expo Modules
+
+First, you need to install Expo modules in your React Native project. This allows you to use any Expo SDK package, including `expo-superwall`.
+
+<Note>
+  For comprehensive installation details, refer to [Expo's official guide](https://docs.expo.dev/bare/installing-expo-modules/)
+</Note>
+
+### Automatic Installation (Recommended)
+
+Run the following command in your project root:
+
+```bash
+npx install-expo-modules@latest
+```
+
+This command automatically configures your iOS and Android projects to support Expo modules.
+
+### Manual Installation (If Automatic Fails)
+
+If the automatic installation doesn't work (common in highly customized projects), follow these steps:
+
+1. Install the expo package:
+
+```bash
+npm install expo
+```
+
+2. Configure your iOS project:
+   - Set iOS deployment target to 15.1 in Xcode
+   - Update your `AppDelegate` files as per [Expo's manual instructions](https://docs.expo.dev/bare/installing-expo-modules/#manual-installation)
+   - Run `npx pod-install` to install iOS dependencies
+
+3. Configure your Android project:
+   - Update `android/settings.gradle` and `android/app/build.gradle`
+   - Follow the Android configuration steps in [Expo's guide](https://docs.expo.dev/bare/installing-expo-modules/#manual-installation)
+
+## Step 2: Install Superwall Expo SDK
+
+Once Expo modules are configured, install the Superwall SDK:
+
+<CodeGroup>
+
+```bash npm
+npm install expo-superwall
+```
+
+```bash yarn
+yarn add expo-superwall
+```
+
+```bash pnpm
+pnpm add expo-superwall
+```
+
+```bash bun
+bun add expo-superwall
+```
+
+</CodeGroup>
+
+## Step 3: Platform-Specific Configuration
+
+### iOS Configuration
+
+After installing the SDK, run:
+
+```bash
+cd ios && pod install
+```
+
+### Android Configuration
+
+Ensure your `android/app/build.gradle` has:
+
+```gradle
+android {
+    compileSdkVersion 34
+    
+    defaultConfig {
+        minSdkVersion 21
+        targetSdkVersion 34
+    }
+}
+```
+
+## Troubleshooting
+
+If you encounter any issues during installation, refer to [Expo's installation guide](https://docs.expo.dev/bare/installing-expo-modules/) for detailed troubleshooting steps and platform-specific configuration details.
+
+## What's Next?
+
+Continue with the [Superwall configuration guide](/expo/quickstart/configure) to complete your setup.

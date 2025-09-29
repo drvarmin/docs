@@ -1,0 +1,96 @@
+---
+title: "Using New SDK Features"
+description: "Superwall's recent SDK updates bring several new improvements and features. Here's how to get started quickly."
+---
+
+With our latest iOS SDK (version 4) and updates for Android, Flutter, and React Native (version 2), plus recent product enhancements, Superwall delivers several improvements to the overall experience:
+
+1. **Cross-platform entitlements:** Segment product offerings by tiers of service across your product suite.
+2. **Entitlements in campaign filters:** Use powerful new campaign filtering capabilities, such as leveraging entitlements in filters.
+3. **New product management:** Easily set up products and associate them to tiers of service using entitlements.
+4. **StoreKit 2:** Finally, our iOS SDK uses [StoreKit 2](https://developer.apple.com/storekit/) by default (unless you're using Objective-C).
+
+To see migration information, check out these guides for all of our SDKs:
+
+- [iOS](/migrating-to-v4)
+- [Android](/migrating-to-v2-android)
+- [React Native](/migrating-to-v2-react-native)
+- [Flutter](/migrating-to-v2-flutter)
+
+### Entitlements
+
+Products are now attached to an entitlement. By default, we provide an entitlement out of the box — and products can use one or more of them. If you are not using a [purchase controller](/advanced-configuration) or tiered services, then you don't have to think much about them. From an SDK standpoint, tracking subscription state worked similar to this:
+
+```swift
+if Superwall.shared.subscriptionState == .active/inactive {
+    // Some paid feature
+}
+```
+
+Whereas now, you still look at `subscriptionStatus`, except it's no longer `.active`. Now, the `.active` case includes the active _entitlements_:
+
+```swift
+switch Superwall.shared.subscriptionStatus {
+case .active(let entitlements):
+    print("Active entitlements: \(entitlements)")
+case .inactive:
+    print("Inactive")
+case .unknown:
+    print("Unknown")
+}
+```
+
+Or, if you only have one entitlement you use to represent "pro" access, you can simplify your check:
+
+```swift
+// If you're only using one entitlement...
+if Superwall.shared.subscriptionStatus.isActive{
+    // Has an active entitlement
+}
+```
+
+Also, common [delegate](/using-superwall-delegate) methods have changed as well. As the migration guides above call out, `event` has been renamed to `placement`, so you'll see that reflected across our product and SDKs.
+
+<Note>
+  With entitlements, the paywall editor setting "Present Paywall" is now deprecated. Entitlements
+  replace them in the audience filter.
+</Note>
+
+### Entitlements in campaign filters
+
+Campaign filters now filter more operators, like `and` and `or`, and they also have access to product entitlements:
+
+<Frame>![](/images/entitlementCheck.png)</Frame>
+
+Using entitlements in campaign filtering opens up scenarios where you could filter down to tiers of service, such as "Match users who have the Silver entitlement active, but not Platinum.", etc.
+
+### New product management
+
+As mentioned above, products are now associated to an entitlement. When adding products, you can choose one or more entitlements that belong to it. For any previously added products, Superwall associates a default entitlement (`pro`) to them automatically.
+
+<Frame>![](/images/productEntitlement.png)</Frame>
+
+For more, check out our docs on [adding products](/products).
+
+### StoreKit 2
+
+Finally, our iOS SDK defaults to using StoreKit 2 in most cases. Refer to the migration guide above for our iOS SDK to learn more. StoreKit 2 support also opened up other enhancements for our SDK. You can now use Superwall to make purchases directly, like this:
+
+```swift
+// StoreKit 1 Products
+let result = await Superwall.shared.purchase(sk1Product)
+
+// StoreKit 2 Products
+let result = await Superwall.shared.purchase(product)
+
+// Superwall's abstraction over products
+let result = await Superwall.shared.purchase(storeProduct)
+```
+
+The ability to make purchases directly along with [observer mode](/observer-mode) means that you can:
+
+- Have Superwall handle all purchase logic.
+- Track your revenue
+- And enable metrics, charts and other data
+
+...all for free.

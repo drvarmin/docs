@@ -1,0 +1,93 @@
+---
+title: "Interactive Paywall Preview"
+description: "The interactive paywall preview shows how your paywall looks on certain iOS devices, for different configurations:"
+---
+
+<Warning>
+  The legacy editor is deprecated. Please visit the docs covering our new
+  [editor](/paywall-editor-overview).
+</Warning>
+
+![1746](/images/4.png)
+
+The top bar allows you to change the localization of the paywall and the device that it's displayed on:
+
+![](/images/5.png)
+
+As you mouse-over the paywall, you'll see blue boxes appear highlighting the elements of the paywall that are editable. Clicking on one of these will bring up an editor to the right:
+
+![](/images/6.png)
+
+This is where you define what the end user sees for the selected element. It contains fields that are relevant to the type of element that's selected. For example, text can be edited in a textfield, and images and videos can be replaced.
+
+Above this, you'll see two buttons: **Default** and **Free Trial**:
+
+![](/images/7.png)
+
+You can click these to toggle between the free trial and default (no free trial) behaviour of the selected element. This also toggles the device preview. When the SDK detects a free trial in any product and the user hasn't already used a free trial within that product's subscription group, it will use the content supplied in the free trial tab. Otherwise it will use the content in the default tab. The free trial tab automatically inherits from the default tab.
+
+### Adding Variables
+
+You can show product, user, or device data within text elements by adding a **Variable**. This uses a language called [Liquid](https://shopify.github.io/liquid/basics/introduction/) to substitute in data at runtime.
+
+Click the **\+ Add Variable** button to choose a variable:
+
+![](/images/8.png)
+
+This opens a navigation menu from which you can select the data you want to display, along with a preview of what that data looks like:
+
+![](/images/9.png)
+
+![](/images/10.png)
+
+Clicking on a variable row will insert it inside your textfield with double curly brackets, which tells the device to replace it with real data:
+
+![](/images/a447c2e-Screenshot_2022-11-29_at_15.03.06.png)
+
+The following objects can be referenced and templated within your paywalls:
+
+| Object    | Description                                                                                                       | Example                                                                                                            | User Sees                                                                                  |
+| --------- | ----------------------------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------ | ------------------------------------------------------------------------------------------ |
+| primary   | Product information relating to the _primary product_ defined in the _Product section_                            | `{{primary.trialPeriodDays}`} days free then only `{{primary.price}}` per `{{primary.period}}        `             | 7 days free then only $89.99 per year                                                      |
+| secondary | Product information relating to the _secondary product_ defined in the _Product section_                          | Subscribe for only `{{secondary.price}}` per `{{secondary.period}}`                                                | Subscribe for only $4.99 per month                                                         |
+| tertiary  | Product information relating to the _tertiary product_ defined in the _Product section_                           | That's only `{{tertiary.weeklyPrice}}` per week!                                                                   | That's only $2.49 per week!                                                                |
+| user      | User attributes your SDK implementation sets on the user. See [Setting User Attributes](/setting-user-properties) | Hey `{{user.firstName}}`! FitnessAI offers tons of `{{user.fitnessGoal}}` workouts to help you reach your goals :) | Hey Sam! FitnessAI offers tons of calorie burning workouts to help you reach your goals :) |
+| params    | Parameters defined when triggering a paywall. See [Showing Paywalls](/feature-gating).                            | Oh no, you lost! The secret word was `{{params.gameAnswer}}`. Start a free trial to play again!                    | Oh no, you lost! The secret word was MONEY. Start a free trial to play again!              |
+| device    | Device attributes automatically created on device.                                                                | Compatible with your `{{ device.deviceModel }`}                                                                    | Compatible with your iPhone 14 Pro                                                         |
+
+You can do complex math on these variables using liquid. [Take a look at their documentation](https://shopify.github.io/liquid) for more on how to do that.
+
+Additionally, you can use the following device properties: `device.minutesSince_X`, `device.hoursSince_X`, `device.daysSince_X`, `device.monthsSince_X`, and `device.yearsSince_X`, where X is the name of an event that you've [registered](/feature-gating) or a [Superwall event](/tracking-analytics). This gives you the days etc since the last occurrence of the event that you specify, excluding the event that triggered the paywall. For example, a paywall presented via an `app_open` event and the text It has been `{{ device.daysSince_app_open}}` since you last opened the app will show `{{ It has been 2 days since you last opened the app }}`.
+
+### AI Powered Suggestions
+
+When you edit a textfield, the AI Powered Suggestions section will offer alternative suggestions for your text using OpenAI's gpt3:
+
+![](/images/d0bbfb5-Screenshot_2023-06-14_at_18.25.25.png)
+
+### Click Behavior
+
+You can set the click behavior of an element by using the **Click Behavior** dropdown:
+
+![](/images/db7c993-Screenshot_2022-11-29_at_16.40.53.png)
+
+You choose from the following types of click behavior:
+
+| Click Behavior      | Functionality                                                                                                                                                                                                                        |
+| ------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
+| Do nothing          | This won't do anything if the user taps on it.                                                                                                                                                                                       |
+| Open deep link      | This will open a deep link. After selecting this you can specify the link to use. We recommend sending deep links to the SDK: [Deep Links & In-App Previews](/in-app-paywall-previews).                                              |
+| Open URL            | This will open a URL from within the paywall.                                                                                                                                                                                        |
+| Open URL externally | This will open the provided URL in the user's browser.                                                                                                                                                                               |
+| Close the paywall   | Closes the paywall.                                                                                                                                                                                                                  |
+| Restore             | Restores purchases via the restorePurchases(completion:) [delegate method](/configuring-the-sdk#conforming-to-the-delegate).                                                                                                         |
+| Custom action       | Sends the custom action name you provide to the SDK's delegate method handleCustomPaywallAction(withName:). You can use this to perform custom logic from your app as discussed in [Custom Paywall Actions](/custom-paywall-events). |
+| Purchase primary    | Initiates the delegate method purchase(product:) with your primary product identifier.                                                                                                                                               |
+| Purchase secondary  | Initiates the delegate method purchase(product:) with your secondary product identifier.                                                                                                                                             |
+| Purchase tertiary   | Initiates the delegate method purchase(product:) with your tertiary product identifier.                                                                                                                                              |
+
+### Customizing design
+
+You can customize the layout, typography, layer, size, margin, padding, corners, effects and background image using the fields below the click behavior:
+
+![](/images/ad94d77-Screenshot_2022-11-30_at_11.43.34.png)

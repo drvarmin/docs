@@ -1,0 +1,61 @@
+---
+title: "Purchasing Products Outside of a Paywall"
+description: "If you wish to purchase products directly on iOS and Android, use our SDK's `purchase` methods."
+---
+
+If you're using Superwall for revenue tracking, but want a hand with making purchases in your implementation, you can use our `purchase` methods:
+
+:::ios
+```swift iOS
+// For StoreKit 1
+private func purchase(_ product: SKProduct) async throws -> PurchaseResult {
+  return await Superwall.shared.purchase(product)
+}
+
+// For StoreKit 2
+private func purchase(_ product: StoreKit.Product) async throws -> PurchaseResult {
+  return await Superwall.shared.purchase(product)
+}
+
+// Superwall's `StoreProduct`
+private func purchase(_ product: StoreProduct) async throws -> PurchaseResult {
+  return await Superwall.shared.purchase(product)
+}
+```
+:::
+
+:::android
+```kotlin Android
+ // Purchase product with first available baseplan
+ Superwall.instance.purchase("my_product_id")
+ // Purchase product with base plan and cheapest/free offer
+ Superwall.instance.purchase("my_product_id:base_plan:sw-auto")
+ // Purchase product with a specified offer
+ Superwall.instance.purchase("my_product_id:base_plan:offer")
+  // Purchase product with no offer
+ Superwall.instance.purchase("my_product_id:base_plan:sw-none")
+````
+:::
+
+For iOS, the `purchase()` method supports StoreKit 1, 2 and Superwall's abstraction over a product, `StoreProduct`. You can fetch the products you've added to Superwall via the `products(for:)` method. Similarly, in Android, you can fetch a product using a product identifier — and the first base plan will be selected:
+
+:::ios
+```swift iOS  
+private func fetchProducts(for identifiers: Set<String>) async -> Set<StoreProduct> {
+    return await Superwall.shared.products(for: identifiers)
+}
+```
+:::
+
+:::android
+```kotlin Android
+val products = Superwall.instance.getProducts("id1", "id2")
+```
+:::
+
+If you already have your own product fetching code, simply pass the product representation to these methods. For example, in StoreKit 1 — an `SKProduct` instance, in StoreKit 2, `Product`, etc. Each `purchase()` implementation returns a `PurchaseResult`, which informs you of the transaction's resolution:
+
+- `.cancelled`: The purchase was cancelled.
+- `.purchased`: The product was purchased.
+- `.pending`: The purchase is pending/deferred and requires action from the developer.
+- `.failed(Error)`: The purchase failed for a reason other than the user cancelling or the payment pending.

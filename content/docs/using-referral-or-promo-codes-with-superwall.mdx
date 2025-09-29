@@ -1,0 +1,163 @@
+---
+title: "Using Referral or Promo Codes with Superwall"
+description: "Learn how to use referral or promo codes with Superwall."
+---
+
+There are two primary ways to use referral codes or promo codes with Superwall:
+
+1. **Using Superwall's Mobile SDKs**: By using [custom actions](/custom-paywall-events) along with a [campaign](/campaigns) for referrals, you can create a flow to handle referral codes and see their resulting conversions and other data. You create the products that each referral should unlock within the respective app storefront.
+2. **Web Checkout**: Here, you can use Superwall's [web checkout](/web-checkout-overview) feature to easily offer referrals. With this approach, you could create a [checkout link](/web-checkout-creating-campaigns-to-show-paywalls) for each referral you need. Unlike the previous option, you create the [products in Stripe](/web-checkout-adding-a-stripe-product).
+
+### Understanding Superwall's role
+Before you continue, it's critical to understand Superwall's role in this process. Most referral flows usually call for two things:
+
+1. A way to enter in a referral code and validate it.
+2. And, a resulting discounted offer that the user can redeem.
+
+**Your app must provide the referral code entry and validation.** In addition, you'll want to create discounted products in either App Store Connect, Google Play Console, or Stripe. Superwall offers products from these sources on paywalls. Remember, Superwall does *not* create or manage the products — it shows the ones you've imported from one of those places.
+
+### Referral flows
+Given that information, here is how most referral flows can work:
+
+
+<Tabs>
+  <Tab title="Mobile SDK">
+    ```mermaid
+flowchart TD
+    A([Paywall is shown]) --> B[Referral Code claim<br />button is tapped]
+    B --> C[Custom Action is fired<br />from button tap]
+    C --> D[Responding in your Superwall Delegate,<br />you present your own referral UI<br />over the existing paywall]
+
+    D --> E{Code is valid?}
+    E -- NO --> F[Dismiss referral UI,<br />existing paywall is still presented]
+    E -- YES --> G[Dismiss referral UI,<br />dismiss existing paywall.<br />Register placement for the referral code.]
+    G --> H[Present new paywall with<br />discounted product.<br />In Superwall, you can use campaign data to<br />attribute conversions, trials, etc.]
+```
+Now, let's go through each step in detail. We'll assume that you're triggering this flow from a paywall that's already presented, but if that's not the case — just skip to the step where you present your referral entry UI (step four):
+
+    <Steps>
+        <Step title="Create a new campaign for your referrals.">
+            Create a campaign for your referrals. Here, you'd add the discounted product(s) you've made to a paywall. You can add in as many placements as you need. Maybe there's one for each influencer, or seasonal discount offer, etc. You'll register one of these placements later on if the referral code entry was successful.
+        </Step>
+        <Step title="Referral code is tapped.">
+            A paywall is shown. On it, this button that reads "Referral Code" has a custom tap action called "showPromoRedeem" which gets tapped:
+
+            <Frame>![](/images/rc_1.jpg)</Frame>
+        </Step>
+        <Step title="SuperwallDelegate handles custom action">
+            This app has a [`SuperwallDelegate`](/using-superwall-delegate):
+
+            ```swift
+            @main
+            struct Caffeine_PalApp: App {
+                @State private var delegate: SWDelegate = .init()
+                
+                init() {
+                    Superwall.configure(apiKey: "api_key")
+                    // Delegate configured here
+                    Superwall.shared.delegate = delegate
+                }
+                
+                var body: some Scene {
+                    WindowGroup {
+                        ContentView()
+                    }
+                }
+            }
+            ```
+            Using the [`SuperwallDelegate`](/using-superwall-delegate), the app responds to the custom action. It presents a customized referral redemption interface _on top_ of the existing paywall. This is optional, but presenting over the paywall means that the user will be taken back to it if the redemption code entry fails:
+
+            ```swift
+            @Observable
+            class SWDelegate: SuperwallDelegate {
+                enum CustomActions: String, Identifiable {
+                    case showPromoRedeem
+                    var id: Self { self }
+                }
+
+                func handleCustomPaywallAction(withName name: String) {
+                    guard let action: CustomActions = .init(rawValue: name) else {
+                        print("Unexpected custom action: \(name)")
+                        return
+                    }
+                    
+                    switch action {
+                    case .showPromoRedeem:
+                        let referralUI = UIHostingController(rootView: ReferralRedeemView(callback: {
+                            // TODO: Implement placement on success
+                        }))
+                        if let paywallVC = Superwall.shared.presentedViewController {
+                            paywallVC.present(referralUI, animated: true)
+                        } else {
+                            // Present either using SwiftUI .sheet or other means
+                        }
+                    }
+                }
+            }
+            ```
+        </Step>
+        <Step title="Referral UI is shown.">
+            Now that your referral interface is showing, you'd validate the code on your server or by some other means.
+
+            <Frame>![](/images/rc_2.jpg)</Frame>
+        </Step>
+        <Step title="If it's successful, register a placement for referrals">
+            Now, if the code succeeds, you'd dismiss the referral UI and the existing paywall. In our callback, we...
+
+            1. Dismiss the existing views.
+            2. And, we register a placement that corresponds to a campaign you've setup for referral codes:
+
+            ```swift
+            // This...
+            let referralUI = UIHostingController(rootView: ReferralRedeemView(callback: {
+                // TODO: Implement placement on success
+            }))
+
+            // Might look similar to this...
+            let referralUI = UIHostingController(rootView: ReferralRedeemView(callback: {
+                // Dismiss the referral UI
+                referralUI.dismiss(animated: true)
+                // Dismiss the existing paywall
+                Superwall.shared.presentedViewController?.dismiss(animated: true)
+                
+                // This shows the paywall with the discounted product.
+                // It should be gated, which means the closure only fires if they convert.
+                Superwall.shared.register(placement: "referral",
+                                        params: ["influencer":"Jordan"]) {
+                    MyAnalyticsService.shared.log("referral_code_redeemed",
+                                                properties: ["referral_code": "Jordan", "result": "trial_started"])
+                }
+            }))
+            ```
+        </Step>
+        <Step title="The discounted product is presented.">
+            Finally, your paywall and discounted product that you setup in step #1 is shown. If they convert, you'll see all of the details in your campaign that you built for referrals, just like you would any other campaign. You can also forward events to your third party analytics service as well, as shown in the previous step.
+
+            <Frame>![](/images/rc_3.jpg)</Frame>
+
+            And that's it! It's a matter of creating discounted products, using them in a campaign, showing a referral UI and validating it, and then registering a placement to show those paywalls within a campaign.
+        </Step>
+    </Steps>
+  </Tab>
+  <Tab title="Web Checkout">
+    The flow on web checkout is considerably easier, and that's primarily because you aren't navigating app storefronts for products and have a direct link to payments. And, just like with mobile, you can use your own referral entry system if you've got one to reveal web checkout links and their paywalls. Here's how it works:
+
+    <Steps>
+     <Step title="Create a new campaign for your referrals.">
+        Create a campaign for your referrals. Here, you'd add the discounted product(s) you've made to a paywall that were created in Stripe. You can add in as many placements as you need. Maybe there's one for each influencer, or seasonal discount offer, etc.
+    </Step>
+    <Step title="Send out Web Checkout links.">
+        Next, simply send out the [web checkout](/web-checkout-creating-campaigns-to-show-paywalls) links to your users. You can create a link for each referral code, or you can use the same link for all of them. 
+
+        <Tip>
+        Remember that with Superwall's web checkout feature, each placement you add becomes its own web checkout link.
+        </Tip>
+    </Step>
+    <Step title="User converts.">
+        When the user clicks the link, they are taken to a web checkout page that has the discounted product you created in Stripe. They can enter their payment information and complete the purchase.
+
+        And that's it! It's a matter of creating discounted products in Stripe, using them in a campaign, and then sending out the web checkout links to your users. You'll see all of the details in your campaign that you built for referrals, just like you would any other campaign, so you can track conversions, trial starts, and more.
+    </Step>
+    </Steps>
+  </Tab>
+</Tabs>

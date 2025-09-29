@@ -1,0 +1,123 @@
+---
+title: "Presenting Paywalls from One Another (Legacy)"
+sidebarTitle: "Presenting Paywalls from One Another"
+description: "Learn how to present a different paywall from one that's already presented."
+---
+
+It's possible to present another paywall from one already showing. This can be useful if you want to highlight a special discount, offer, or emphasize another feature more effectively using a different paywall. Check out the example here:
+
+- A [placement](/campaigns-placements) is evaluated when the button is tapped. Superwall sees that the user isn't subscribed, so a paywall is shown.
+- Next, the user taps the "Custom Icons Too 👀" button.
+- The current paywall dismisses, and then presents the icons-centric paywall.
+
+<Frame>![](/../images/presentPaywallEx.jpg)</Frame>
+
+<Tip>
+  You can extend this technique to be used with several other interesting standard placements. For
+  example, presenting a paywall when the user abandons a transaction, responds to a survey and more.
+  Check out the examples [here](/campaigns-standard-placements#standard-placements).
+</Tip>
+
+There are two different ways you can do this, with [custom placements](/paywall-editor-styling-elements#tap-behaviors) or by using [deep links](/legacy/legacy_in-app-paywall-previews). We recommend using custom placements, as the setup is a little easier.
+
+<Note>
+  Custom placements minimum SDK requirements are 3.7.3 for iOS, 1.2.4 for Android, 1.2.2 for
+  flutter, and 1.2.6 for React Native.
+</Note>
+
+They both have the same idea, though. You create a new campaign specifically for this purpose, attach a paywall and either add a filter (for deep linking) or a new placement (for custom placements) to match users to it.
+
+<Note>
+  While it's not _required_ to make a new campaign, it is best practice. Then, if you later have
+  other paywalls you wish to open in the same manner, you can simply add a new
+  [audience](/campaigns-audience) for them in the campaign you make from the steps below.
+</Note>
+
+### Use Custom Placements
+
+<Steps>
+  <Step title="Add a Custom Placement Tap Behavior">
+    Select a component on your paywall and add a **Custom Placement** Tap Behavior, and name it whatever you wish (i.e. showIconPaywall).
+
+    <Frame>![](/../images/customPlacementLink.png)</Frame>
+
+    Finally, be sure to click **Publish** at the top of the editor to push your changes live
+
+  </Step>
+  <Step title="Create a campaign for the other paywall to show">
+    Create a new [campaign](/campaigns) specifically for this purpose, here — it's called "Custom Placement Example":
+
+    <Frame>![](/../images/customPlacementCampaign.png)</Frame>
+
+  </Step>
+  <Step title="Add the placement">
+    In your new campaign, [add a new placement](/campaigns-placements#adding-a-placement) that matches the name of your custom action you added in step one. For us, that's `showIconPaywall`:
+    <br />
+    <Frame>![](/../images/customPlacementCreate.png)</Frame>
+  </Step>
+  <Step title="Choose a paywall to show">
+  Finally, choose a paywall that should present by **clicking** on the **Paywalls** button at the top:
+  <br />
+  <Frame>![](/../images/customPlacementPaywall.png)</Frame>
+</Step>
+
+</Steps>
+
+### Use Deep Links
+
+<Steps>
+  <Step title="Setup Deep Links">
+    You'll need [deep links](/legacy/legacy_in-app-paywall-previews) set up for your app. This is how Superwall
+    will query parameters and later launch your desired paywall.
+  </Step>
+  <Step title="Trigger the deep link from an existing paywall">
+    Choose the paywall you want to open another paywall from. Then, click the element (a button, text, etc.) that should open the new paywall:
+
+    1. In its component properties on the right-hand side, add a **Tap Behavior**.
+    2. Set its **Action** to **Open Url**.
+    3. For the URL, use your deep link scheme from step one, and then append a parameter which will represent which other paywall to present. This is specific to your app, but here — `offer` is the key and `icons` is the value. Your resulting URL should be constructed like this: `deepLinkScheme://?someKey=someValue`.
+    4. Set its **Type** to **Deep Link**.
+    5. Click **Done**.
+
+    Here's what it should look like (again, with your own values here):
+
+    <Frame>![](/../images/openPaywallParams.png)</Frame>
+
+    Finally, be sure to click **Publish** at the top of the editor to push your changes live.
+
+  </Step>
+  <Step title="Create a campaign for the other paywall to show">
+    Create a new [campaign](/campaigns) specifically for this purpose, here — it's called "Deeplink Example":
+
+    <Frame>![](/../images/openPaywallCampaign.png)</Frame>
+
+  </Step>
+  <Step title="Add the placement">
+    In your new campaign, [add a placement](/campaigns-placements#adding-a-placement) for the `deepLink_open` standard placement:
+    <br />
+    <Frame>![](/../images/openPaywallPlacement.png)</Frame>
+  </Step>
+  <Step title="Edit the audience filter">
+    Edit the default audience's filter to match `params.[whatever-you-named-the-parameter]`. Recall that in our example, the parameter was `offer` and the value was `icons`. So here, we'd type `params.offer` and **click** the **+** button:
+    <br />
+    <Frame>![](/../images/openPaywallParamsEditor.png)</Frame>
+
+    Superwall will ask what type of new parameter this is — choose **Placement** and enter the parameter name once more (i.e. "offer"). Click **Save**:
+    <br />
+    <Frame>![](/../images/openPaywallParamsCreate.png)</Frame>
+
+    Finally, choose the **is** operator and type in the value of your parameter (in our case, "icons"). Then, **click** the **+ Add Filter** button. Here's what it should look like:
+    <br />
+    <Frame>![](/../images/openPaywallFinal.png)</Frame>
+
+  </Step>
+  <Step title="Choose a paywall to show">
+  Finally, choose a paywall that should present by **clicking** on the **Paywalls** button at the top:
+  <br />
+  <Frame>![](/../images/openPaywallPaywall.png)</Frame>
+</Step>
+</Steps>
+
+### Test Opens
+
+After following the steps above for either method, be sure to test out your presentation. Open the relevant paywall on a device and tap on whichever button should trigger the logic. The currently presented paywall should dismiss, and then immediately after — the other paywall will show.

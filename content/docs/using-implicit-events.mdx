@@ -1,0 +1,45 @@
+---
+title: "Using Implicit Events"
+description: "The following [Superwall Events](/docs/tracking-analytics) are automatically registered by the SDK and can be added as events in campaigns to present paywalls."
+---
+
+<Warning>
+  This page is outdated. Please visit this [one](/campaigns-placements#implicit-placements) for more
+  relevant information.
+</Warning>
+* `app_install` * `app_launch` * `deepLink_open` * `session_start` * `paywall_decline` * `transaction_fail`
+* `transaction_abandon` * `survey_response` * `touches_began`
+
+Visit [Superwall Events](/docs/tracking-analytics) to see a full list of parameters that you can use with these events.
+
+### `paywall_decline`
+
+This is registered when a user manually dismisses any paywall.
+
+You can combine this with rules to show a paywall when a user closes a specific paywall:
+
+<Frame>![](/images/caa0f2c-Screenshot_2023-08-21_at_16.07.15.png) </Frame>
+
+Here, when a user closes the paywall named `Example Paywall | Non Gated`, a new paywall will show.
+
+Note that you can't reference parameters that you've passed in to your original register call in your rules for `paywall_decline`.
+
+### `survey_response`
+
+This is registered when a response to a paywall survey as been recorded. First, you need to make sure your paywall [has a survey attached](/docs/surveys).
+
+You can combine this with rules to show a paywall whenever a survey response is recorded or when the user gives a specific response:
+
+<Frame>![](/images/ba49517-Screenshot_2023-08-21_at_16.42.02.png) </Frame>
+
+Here if the user selects an option named `Too Expensive`, they will see another paywall. This is a great opportunity to show a discounted paywall to improve your conversion rate.
+
+### `deepLink_open`
+
+This is registered when a user opens the app via a deep link. First, you need to make sure to [tell Superwall when a deep link has been opened](/docs/in-app-paywall-previews).
+
+You can use the URL parameters of the deep link within your rules:
+
+<Frame>![](/images/fd13248-Screenshot_2023-08-22_at_11.53.33.png) </Frame>
+
+This rule will match the deep link `myapp://paywall?offer=July20`.

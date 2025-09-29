@@ -1,0 +1,33 @@
+---
+title: "Using Superwall with Cursor"
+description: "Use our SDK footprint file, along with a custom Cursor User Rule, to use Superwall with AI."
+---
+
+If you're developing an app using [Cursor](https://www.cursor.com/en), you can use our custom [Cursor User Rule](https://docs.cursor.com/context/rules-for-ai) to speed up your development. You can also prepend some of the examples found on [cursorrules.io](https://cursorrules.io), or use your current rule, in addition by adding in our following Superwall User Rule after it. 
+
+Right now, this is available for iOS and Swift with more SDKs and languages to come.
+
+### Cursor user rules setup
+
+To get started:
+
+1. Download the User Rule file for iOS [here](https://github.com/superwall/cursor-rules/blob/main/ios-swiftui-cursor-rules-superwall-sdk.md).
+2. In Cursor, go to **Cursor -> Settings... -> Cursor Settings**.
+<Frame>![](/images/cursor-new-name.png)</Frame>
+3. Under **User Rules**, paste in the text from the User Rule file.
+
+This feature works much better if you remind Cursor that a code sample is related to Superwall. For example:
+
+```md
+// ✅ Try to do it this way!
+Using the Superwall SDK, register a placement called "drinkCoffee" and include a print statement saying `Coffee time` in the block.
+
+// ❌ Try not do it this way!
+Register a placement called "drinkCoffee" and include a print statement saying `Coffee time` in the block.
+```
+
+Remember to check for updates to the User Cursor Rule, as we will edit it when our SDKs change. 
+
+<Note>
+Remember, LLMs can be hit or miss with advice — always review the code it suggests! Despite tuning the rules and prompts as best as we can, sometimes you may get inaccurate results.
+</Note>

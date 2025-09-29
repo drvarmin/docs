@@ -1,0 +1,88 @@
+---
+title: "setSubscriptionStatus()"
+description: "Manually sets the user's subscription status when using a custom PurchaseController."
+---
+
+<Warning>
+This method should only be used with a custom [`PurchaseController`](/flutter/sdk-reference/PurchaseController). The default purchase controller manages subscription status automatically.
+</Warning>
+
+## Purpose
+Manually updates the user's subscription status when implementing custom purchase logic.
+
+## Signature
+```dart
+Future<void> setSubscriptionStatus(SubscriptionStatus status)
+```
+
+## Parameters
+<ParamTable>
+| Name | Type | Description |
+|------|------|-------------|
+| `status` | `SubscriptionStatus` | The subscription status to set (active, inactive, unknown). |
+</ParamTable>
+
+## Returns / State
+Returns a `Future<void>` that completes when the subscription status is updated.
+
+## Usage
+
+After custom purchase:
+```dart
+class MyPurchaseController extends PurchaseController {
+  @override
+  Future<PurchaseResult> purchaseFromAppStore(String productId) async {
+    try {
+      // Custom purchase logic
+      final result = await MyPaymentService.purchase(productId);
+      
+      if (result.success) {
+        // Update subscription status after successful purchase
+        await Superwall.shared.setSubscriptionStatus(
+          SubscriptionStatus.active,
+        );
+        return PurchaseResult.purchased;
+      }
+      
+      return PurchaseResult.failed;
+    } catch (e) {
+      return PurchaseResult.failed;
+    }
+  }
+}
+```
+
+Subscription expiry handling:
+```dart
+Future<void> _checkSubscriptionExpiry() async {
+  final expiryDate = await MyPaymentService.getSubscriptionExpiry();
+  
+  if (expiryDate.isBefore(DateTime.now())) {
+    // Subscription has expired
+    await Superwall.shared.setSubscriptionStatus(
+      SubscriptionStatus.inactive,
+    );
+    
+    // Show renewal prompt
+    _showRenewalPrompt();
+  }
+}
+```
+
+Manual status sync:
+```dart
+Future<void> _syncSubscriptionStatus() async {
+  try {
+    final serverStatus = await MyAPI.getUserSubscriptionStatus();
+    
+    final superwallStatus = serverStatus.isActive
+        ? SubscriptionStatus.active
+        : SubscriptionStatus.inactive;
+    
+    await Superwall.shared.setSubscriptionStatus(superwallStatus);
+    
+  } catch (e) {
+    print('Failed to sync subscription status: $e');
+  }
+}
+```

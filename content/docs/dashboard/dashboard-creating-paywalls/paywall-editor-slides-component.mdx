@@ -1,0 +1,52 @@
+---
+title: "Slides"
+description: "Use Superwall's slides component to create a horizontal or vertical slide UX driven by a user's gesture."
+---
+
+### Adding a slides component
+The slide component was built to make interactive slide designs easy. It's similar to a [carousel](/paywall-editor-carousel-component), except its meant to be driven by user gestures instead of automatically progressing through its contents. To use the slides component:
+
+1. In the left sidebar, click **+** to add a new element.
+2. Choose **Slides** under the "Layout" header.
+
+<Frame>![](/images/paywall-editor-slides-component.png)</Frame>
+
+The slides component requires an explicit `width` set. Generally, setting this to 100% of the viewport's width works well. This is also the default size set:
+
+<Frame>![](/images/paywall-editor-slides-width.png)</Frame>
+
+By default:
+
+- The slides component is set to `Horizontal` scrolling.
+- Scrolling indicators are created for you. Read below to see how you can customize these.
+- A default height is assigned.
+- The slides respond to gestures.
+
+### Adding contents to slides
+
+The slides component has a few demonstration items added to it by default. You can remove these and add your own content:
+
+<Frame>![](/images/paywall-editor-slides-items.png)</Frame>
+
+Here, the container stack determines the height. You can customize this as needed.
+
+### Tracking or updating the displayed element in slides 
+
+When a slides element is added, Superwall automatically creates an element variable for it (accessed through the **[Variables](/paywall-editor-variables)** tab in the left sidebar, or the variables button in the **[floating toolbar](/paywall-editor-floating-toolbar)**). Its name will match whatever is in the element hierarchy in the left sidebar:
+
+<Frame>![](/images/paywall-editor-slides-var.png)</Frame>
+
+You can use its `Child Page Index` variable to change which slide is showing. You can use this to manually set which slide is showing. Here, the button progresses to the next slide by incrementing the slides `Child Page Index` variable:
+
+<Frame>![](/images/paywall-editor-carousel-vars.png)</Frame>
+
+<Note>
+The variable's name is derived by the node's unique identifier. You don't need to set or generally be aware of this value.
+</Note>
+
+You can also reference this variable when using a [dynamic value](/paywall-editor-dynamic-values) to do things such as:
+
+- Select a product based off of the index of the slide.
+- Show custom paging indicators.
+- Change text using [dynamic values](/paywall-editor-dynamic-values) based on the index.
+- etc. 

@@ -1,0 +1,348 @@
+---
+title: "Amplitude"
+description: "The Amplitude integration automatically sends Superwall subscription and payment events to your Amplitude project. Track subscription lifecycle events, analyze revenue metrics, and understand user behavior with automatic event mapping and revenue tracking."
+---
+
+In the **Analytics** section within **Integrations**, you can connect your Amplitude account to Superwall:
+
+<Frame>![](/images/integrations-amplitude.jpeg)</Frame>
+
+### Required fields 
+
+Fill out the following fields and **click** the **Enable Amplitude** button at the bottom right to save your changes:
+
+<Frame>![](/images/integrations-config-amplitude.jpeg)</Frame>
+
+- **Region:** Data residency region for your Amplitude project.
+- **Api Key:** Your Amplitude API key.
+- **Sandbox Api Key:** Optional API key for sandbox events (leave blank to opt out).
+- **Sales Reporting:** Which revenue value to report in Amplitude. Choose between **Proceeds** (after store taxes & fees) or **Revenue**.
+
+### Features
+
+- **Automatic Event Mapping**: Converts Superwall events to Amplitude-friendly format
+- **Revenue Tracking**: Automatic revenue attribution with LTV tracking
+- **Multi-Region Support**: Works with US and EU data residency
+- **Sandbox Isolation**: Separate tracking for production and sandbox events
+- **Human-Readable Events**: Events prefixed with `[Superwall]` for easy identification
+- **Session Tracking**: Automatic session ID generation
+- **Platform Attribution**: Tracks which store (App Store, Play Store, Stripe) generated revenue
+
+### Configuration
+
+#### Required settings
+
+| Field | Description | Example |
+|-------|-------------|---------|
+| `integration_id` | Must be set to `"amplitude"` | `"amplitude"` |
+| `region` | Data residency region | `"US (Default)"` or `"EU"` |
+| `api_key` | Your Amplitude API key | `"abc123def456..."` |
+| `sales_reporting` | Which value to report | `"Revenue"` or `"Proceeds"` |
+
+#### Optional settings
+
+| Field | Description | Example |
+|-------|-------------|---------|
+| `sandbox_api_key` | API key for sandbox events (leave blank to skip) | `"xyz789..."` |
+
+#### Example configuration
+
+```json
+{
+  "integration_id": "amplitude",
+  "region": "US (Default)",
+  "api_key": "your_production_api_key_here",
+  "sandbox_api_key": "your_sandbox_api_key_here",
+  "sales_reporting": "Revenue"
+}
+```
+
+### Event mapping
+
+Superwall events are transformed into human-readable Amplitude events:
+
+#### Event name format
+All events are prefixed with `[Superwall]` followed by a descriptive name:
+- Example: `[Superwall] Trial Start`
+- Example: `[Superwall] Subscription Renewal`
+
+#### Complete event mapping
+
+| Superwall Event | Amplitude Event | Description |
+|-----------------|-----------------|-------------|
+| `initial_purchase` + TRIAL | `[Superwall] Trial Start` | Trial begins |
+| `initial_purchase` + INTRO | `[Superwall] Intro Offer Start` | Intro offer begins |
+| `initial_purchase` + NORMAL | `[Superwall] Subscription Start` | Paid subscription begins |
+| `renewal` + trial conversion | `[Superwall] Trial Conversion` | Trial converts to paid |
+| `renewal` + INTRO | `[Superwall] Intro Offer Conversion` | Intro converts to regular |
+| `renewal` + NORMAL | `[Superwall] Subscription Renewal` | Regular renewal |
+| `cancellation` + TRIAL | `[Superwall] Trial Cancellation` | Trial cancelled |
+| `cancellation` + INTRO | `[Superwall] Intro Offer Cancellation` | Intro cancelled |
+| `cancellation` + NORMAL | `[Superwall] Subscription Cancellation` | Subscription cancelled |
+| `uncancellation` + TRIAL | `[Superwall] Trial Uncancellation` | Trial reactivated |
+| `uncancellation` + INTRO | `[Superwall] Intro Offer Uncancellation` | Intro reactivated |
+| `uncancellation` + NORMAL | `[Superwall] Subscription Uncancellation` | Subscription reactivated |
+| `expiration` + TRIAL | `[Superwall] Trial Expiration` | Trial ended |
+| `expiration` + INTRO | `[Superwall] Intro Offer Expiration` | Intro ended |
+| `expiration` + NORMAL | `[Superwall] Subscription Expiration` | Subscription ended |
+| `billing_issue` | `[Superwall] Billing Issue` | Payment failed |
+| `subscription_paused` | `[Superwall] Subscription Paused` | Subscription paused |
+| `product_change` | `[Superwall] Product Change` | Plan changed |
+| `non_renewing_purchase` | `[Superwall] Non-Renewing Purchase` | One-time purchase |
+| Any with `price < 0` | `[Superwall] Refund` | Refund processed |
+| `test` | `[Superwall] Test` | Test event |
+
+### Event properties
+
+Every Amplitude event includes comprehensive properties:
+
+#### Core Amplitude fields
+- `user_id`: User identifier (uses `originalAppUserId` or `originalTransactionId`)
+- `event_type`: Human-readable event name with `[Superwall]` prefix
+- `time`: Event timestamp (milliseconds)
+- `session_id`: Same as timestamp (groups related events)
+- `platform`: Store name (APP_STORE, PLAY_STORE, STRIPE, PADDLE)
+- `insert_id`: Unique event ID prefixed with `sw_`
+
+#### Revenue fields (when applicable)
+- `revenue`: Transaction amount (based on sales_reporting setting)
+- `price`: Same as revenue
+- `quantity`: Always 1
+- `productId`: Product identifier
+- `revenueType`: Same as event type (for revenue categorization)
+
+#### Event properties object
+All Superwall webhook data fields are included:
+- `id`, `name`, `cancelReason`, `exchangeRate`
+- `isSmallBusiness`, `periodType`, `countryCode`
+- `price`, `proceeds`, `priceInPurchasedCurrency`
+- `taxPercentage`, `commissionPercentage`, `takehomePercentage`
+- `offerCode`, `isFamilyShare`, `expirationAt`
+- `transactionId`, `originalTransactionId`, `originalAppUserId`
+- `store`, `purchasedAt`, `currencyCode`, `productId`
+- `environment`, `isTrialConversion`, `newProductId`
+- `bundleId`, `ts`
+
+### Revenue tracking
+
+#### Automatic revenue attribution
+
+Revenue is automatically tracked for events with non-zero amounts:
+- **Positive revenue**: Purchases, renewals, conversions
+- **Negative revenue**: Refunds (automatically deducted)
+- **Zero revenue**: Cancellations, expirations, billing issues
+
+#### Revenue reporting options
+
+The `sales_reporting` setting determines which value is used:
+
+| Setting | Value Used | Description |
+|---------|------------|-------------|
+| `"Revenue"` | `price` | Gross revenue before store fees |
+| `"Proceeds"` | `proceeds` | Net revenue after store fees |
+
+#### Revenue examples
+
+**Initial Purchase ($9.99):**
+```json
+{
+  "event_type": "[Superwall] Subscription Start",
+  "revenue": 9.99,
+  "price": 9.99,
+  "productId": "com.example.premium",
+  "revenueType": "[Superwall] Subscription Start"
+}
+```
+
+**Refund (-$9.99):**
+```json
+{
+  "event_type": "[Superwall] Refund",
+  "revenue": -9.99,
+  "price": -9.99,
+  "productId": "com.example.premium",
+  "revenueType": "[Superwall] Refund"
+}
+```
+
+### User identification
+
+The integration uses this hierarchy for user identification:
+
+1. **Primary**: `originalAppUserId` (if available)
+2. **Fallback**: `originalTransactionId` (always present)
+
+This ensures consistent user tracking across:
+- Multiple devices
+- App reinstalls
+- Legacy users without app user IDs
+
+#### Platform tracking
+
+The `platform` field identifies the payment source:
+- `APP_STORE`: iOS App Store
+- `PLAY_STORE`: Google Play Store
+- `STRIPE`: Stripe web payments
+- `PADDLE`: Paddle payments (coming soon)
+
+This helps analyze:
+- Revenue by platform
+- Platform-specific retention
+- Cross-platform users
+
+### Sandbox handling
+
+#### With sandbox API key
+If `sandbox_api_key` is configured:
+- Production events → Production project
+- Sandbox events → Sandbox project
+
+#### Without sandbox API key
+If `sandbox_api_key` is empty:
+- Production events → Production project
+- Sandbox events → **Skipped** (not sent)
+
+This prevents test data from polluting production analytics.
+
+### Data residency
+
+Amplitude supports two data residency regions:
+
+| Region | API Endpoint | Use Case |
+|--------|--------------|----------|
+| `US (Default)` | api2.amplitude.com | Global, default |
+| `EU` | api.eu.amplitude.com | GDPR compliance |
+
+Choose based on:
+- Your data privacy requirements
+- User location
+- Compliance needs
+
+### Session management
+
+Sessions are automatically managed:
+- `session_id` = Event timestamp
+- Groups rapid events together
+- New session for each subscription action
+- Helps track user journey
+
+### Testing the integration
+
+#### 1. Validate credentials
+The integration validates credentials by sending a test event when configured.
+
+#### 2. Verify in Amplitude
+
+Check your Amplitude project:
+1. **User Lookup**: Find test user by ID
+2. **Event Stream**: Verify events arriving
+3. **Revenue Chart**: Confirm revenue tracking
+4. **User Properties**: Check LTV calculation
+
+#### 3. Test different scenarios
+- Purchase event → Positive revenue
+- Refund event → Negative revenue
+- Cancellation → No revenue
+- Trial start → Event without revenue
+
+### Best practices
+
+1. **Consistent User IDs**: Send user IDs to app stores for better tracking
+2. **Separate Environments**: Use sandbox API key for testing
+3. **Revenue Model**: Choose gross vs net consistently
+4. **Event Naming**: Use `[Superwall]` prefix to identify source
+5. **Platform Analysis**: Segment by platform for insights
+6. **Cohort Analysis**: Use trial conversion events for cohorts
+
+### Common use cases
+
+#### Revenue analytics
+```
+Events: [Superwall] Subscription Start, [Superwall] Subscription Renewal
+Metric: Sum of revenue
+Segment by: platform, productId, countryCode
+```
+
+#### Conversion funnel
+```
+1. [Superwall] Trial Start
+2. [Superwall] Trial Conversion
+Conversion Rate: Step 2 / Step 1
+```
+
+#### Churn analysis
+```
+Events: [Superwall] Subscription Cancellation
+Segment by: cancelReason, periodType, price tier
+```
+
+#### LTV calculation
+```
+Revenue Events: All [Superwall] events with revenue > 0
+Group by: user_id
+Calculate: Sum of revenue per user
+```
+
+### Troubleshooting
+
+#### Events not appearing
+
+1. **Check API Key**: Verify key is correct for your project
+2. **Check Region**: Ensure region matches your Amplitude project
+3. **Check Environment**: Sandbox events need sandbox API key
+4. **Check User ID**: Must have valid identifier
+
+#### Revenue not tracking
+
+1. **Check Amount**: Only non-zero amounts create revenue
+2. **Check Event Type**: Revenue fields only for purchase/renewal events
+3. **Check Settings**: Verify Revenue vs Proceeds selection
+4. **Check Refunds**: Negative amounts should decrease revenue
+
+#### Duplicate events
+
+The integration uses `insert_id` to prevent duplicates:
+- Format: `sw_eventId-eventName`
+- Amplitude automatically deduplicates by `insert_id`
+
+#### User attribution issues
+
+1. **Check User ID**: Verify originalAppUserId is being sent
+2. **Check Fallback**: originalTransactionId should always exist
+3. **Platform Mismatch**: Ensure platform field is correct
+
+### Rate limits
+
+Amplitude HTTP API v2 limits:
+- **Events per batch**: 1000 (we send 1 at a time)
+- **Request size**: 1MB (well within limit)
+- **Rate limit**: 1000 events/second per device
+- **Daily limit**: Based on your plan
+
+### Integration with Amplitude features
+
+#### User properties
+While this integration sends events, consider:
+- Setting user properties separately
+- Using Identify API for user traits
+- Enriching profiles with app data
+
+#### Revenue verification
+Amplitude's revenue verification requires:
+- Receipt data (not included in webhooks)
+- Direct integration with app stores
+- This integration complements but doesn't replace revenue verification
+
+#### Predictive analytics
+Use Superwall events for:
+- Churn prediction models
+- LTV forecasting
+- Conversion probability scoring
+
+### Data privacy
+
+- **User IDs**: Pseudonymous by default
+- **GDPR**: Use EU region for European users
+- **Data Retention**: Follows Amplitude project settings
+- **Deletion**: Handle via Amplitude's User Privacy API
+- **PII**: Avoid sending PII in event properties

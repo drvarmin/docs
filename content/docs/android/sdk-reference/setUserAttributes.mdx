@@ -1,0 +1,87 @@
+---
+title: "setUserAttributes()"
+description: "A function that sets user attributes for use in paywalls and analytics on the Superwall dashboard."
+---
+
+<Warning>
+These attributes should not be used as a source of truth for sensitive information.
+</Warning>
+
+<Info>
+Keys beginning with `$` are reserved for Superwall internal use and will be ignored. Arrays and nested maps are not supported as values.
+</Info>
+
+## Purpose
+Sets custom user attributes that can be used in paywall personalization, audience filters, and analytics on the Superwall dashboard.
+
+## Signature
+```kotlin
+fun Superwall.setUserAttributes(attributes: Map<String, Any?>)
+```
+
+```java
+// Java
+public void setUserAttributes(Map<String, Object> attributes)
+```
+
+## Parameters
+<ParamTable>
+| Name | Type | Description |
+|------|------|-------------|
+| `attributes` | `Map<String, Any?>` | A map of custom attributes to store for the user. Values can be any JSON encodable value, including strings, numbers, booleans, URLs, or timestamps. |
+</ParamTable>
+
+## Returns / State
+This function returns `Unit`. If an attribute already exists, its value will be overwritten while other attributes remain unchanged.
+
+## Usage
+
+Set multiple user attributes:
+```kotlin
+val attributes = mapOf(
+    "name" to "John Doe",
+    "email" to "john@example.com",
+    "plan" to "premium",
+    "signUpDate" to System.currentTimeMillis(),
+    "profilePicUrl" to "https://example.com/pic.jpg",
+    "isVip" to true,
+    "loginCount" to 42
+)
+
+Superwall.instance.setUserAttributes(attributes)
+```
+
+Set individual attributes over time:
+```kotlin
+Superwall.instance.setUserAttributes(mapOf("lastActiveDate" to System.currentTimeMillis()))
+Superwall.instance.setUserAttributes(mapOf("featureUsageCount" to 15))
+```
+
+Remove an attribute by setting it to null:
+```kotlin
+Superwall.instance.setUserAttributes(mapOf("temporaryFlag" to null))
+```
+
+Real-world example after user updates profile:
+```kotlin
+fun updateUserProfile(user: User) {
+    Superwall.instance.setUserAttributes(mapOf(
+        "name" to user.displayName,
+        "avatar" to user.avatarURL,
+        "preferences" to user.notificationPreferences,
+        "lastUpdated" to System.currentTimeMillis()
+    ))
+}
+```
+
+Java usage:
+```java
+// Set multiple attributes
+Map<String, Object> attributes = new HashMap<>();
+attributes.put("name", "John Doe");
+attributes.put("email", "john@example.com");
+attributes.put("plan", "premium");
+attributes.put("loginCount", 42);
+
+Superwall.getInstance().setUserAttributes(attributes);
+```

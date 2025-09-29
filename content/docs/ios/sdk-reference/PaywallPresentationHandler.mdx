@@ -1,0 +1,117 @@
+---
+title: "PaywallPresentationHandler"
+description: "A handler class that provides status updates for paywall presentation in register() calls."
+---
+
+<Info>
+Use this handler when you need fine-grained control over paywall events for a specific [`register()`](/ios/sdk-reference/register) call, rather than global events via [`SuperwallDelegate`](/ios/sdk-reference/SuperwallDelegate).
+</Info>
+
+<Note>
+This handler is specific to the individual `register()` call. For global paywall events across your app, use [`SuperwallDelegate`](/ios/sdk-reference/SuperwallDelegate) instead.
+</Note>
+
+## Purpose
+Provides callbacks for paywall lifecycle events when using [`register()`](/ios/sdk-reference/register) with a specific handler instance.
+
+## Signature
+```swift
+@objcMembers
+public final class PaywallPresentationHandler: NSObject {
+  public func onPresent(_ handler: @escaping (PaywallInfo) -> Void)
+  public func onDismiss(_ handler: @escaping (PaywallInfo, PaywallResult) -> Void)
+  public func onSkip(_ handler: @escaping (PaywallSkippedReason) -> Void)
+  public func onError(_ handler: @escaping (Error) -> Void)
+}
+```
+
+## Parameters
+<ParamTable>
+| Method | Parameters | Description |
+|--------|------------|-------------|
+| `onPresent` | `handler: (PaywallInfo) -> Void` | Sets a handler called when the paywall is presented. |
+| `onDismiss` | `handler: (PaywallInfo, PaywallResult) -> Void` | Sets a handler called when the paywall is dismissed. |
+| `onSkip` | `handler: (PaywallSkippedReason) -> Void` | Sets a handler called when paywall presentation is skipped. |
+| `onError` | `handler: (Error) -> Void` | Sets a handler called when an error occurs during presentation. |
+</ParamTable>
+
+## Returns / State
+Each method returns `Void` and configures the handler for the specific paywall lifecycle event.
+
+## Usage
+
+Basic handler setup:
+```swift
+func registerFeatureWithHandler() {
+  let handler = PaywallPresentationHandler()
+  
+  handler.onPresent { paywallInfo in
+    print("Paywall presented: \(paywallInfo.id)")
+    // Pause background tasks, analytics, etc.
+  }
+  
+  handler.onDismiss { paywallInfo, result in
+    print("Paywall dismissed with result: \(result)")
+    
+    switch result {
+    case .purchased:
+      showSuccessMessage()
+    case .cancelled:
+      showPromotionalOffer()
+    case .restored:
+      updateUIForActiveSubscription()
+    }
+  }
+  
+  Superwall.shared.register(
+    placement: "premium_feature",
+    params: ["source": "feature_screen"],
+    handler: handler
+  ) {
+    unlockPremiumFeature()
+  }
+}
+```
+
+Handle skip and error cases:
+```swift
+let handler = PaywallPresentationHandler()
+
+handler.onSkip { reason in
+  print("Paywall skipped: \(reason)")
+  
+  switch reason {
+  case .userIsSubscribed:
+    proceedToFeature()
+  case .holdout:
+    proceedToFeature()
+  default:
+    break
+  }
+}
+
+handler.onError { error in
+  print("Paywall error: \(error)")
+  showErrorAlert(error)
+}
+```
+
+Method chaining style:
+```swift
+func registerWithChaining() {
+  let handler = PaywallPresentationHandler()
+    .onPresent { _ in pauseVideo() }
+    .onDismiss { _, result in 
+      resumeVideo()
+      handlePurchaseResult(result)
+    }
+    .onError { error in showAlert(error) }
+  
+  Superwall.shared.register(
+    placement: "remove_ads",
+    handler: handler
+  ) {
+    hideAdsFromUI()
+  }
+}
+```

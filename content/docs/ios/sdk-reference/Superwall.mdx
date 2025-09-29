@@ -1,0 +1,58 @@
+---
+title: "Superwall"
+description: "The shared instance of Superwall that provides access to all SDK features."
+---
+
+<Note>
+You must call [`configure()`](/ios/sdk-reference/configure) before accessing `Superwall.shared`, otherwise your app will crash.
+</Note>
+
+## Purpose
+Provides access to the configured Superwall instance after calling [`configure()`](/ios/sdk-reference/configure).
+
+## Signature
+```swift
+public static var shared: Superwall { get }
+```
+
+## Parameters
+This is a computed property with no parameters.
+
+## Returns / State
+Returns the shared `Superwall` instance that was configured via [`configure()`](/ios/sdk-reference/configure).
+
+## Usage
+
+Configure first (typically in AppDelegate or SceneDelegate):
+```swift
+Superwall.configure(apiKey: "pk_your_api_key")
+```
+
+Then access throughout your app:
+```swift
+Superwall.shared.register(placement: "feature_access") {
+  // Feature code here
+}
+```
+
+Set user identity and attributes:
+```swift
+Superwall.shared.identify(userId: "user123")
+
+Superwall.shared.setUserAttributes([
+  "plan": "premium",
+  "signUpDate": Date()
+])
+```
+
+Set delegate:
+```swift
+Superwall.shared.delegate = self
+```
+
+Override products:
+```swift
+Superwall.shared.overrideProductsByName = [
+  "primary": "produceID_to_replace_primary_product"
+]
+```

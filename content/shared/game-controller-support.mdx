@@ -1,0 +1,55 @@
+---
+title: "Game Controller Support"
+description: "SuperwallKit supports Game Controller input."
+---
+
+:::ios
+First, set the `SuperwallOption` `isGameControllerEnabled` to `true`:
+
+```swift
+let options = SuperwallOptions()
+options.isGameControllerEnabled = true
+Superwall.configure(apiKey: "MY_API_KEY", options: options);
+```
+
+Forward events to your paywall by calling `gamepadValueChanged(gamepad:element:)` from your own gamepad's `valueChanged` handler:
+
+```swift
+controller.extendedGamepad?.valueChangedHandler = { gamepad, element in
+  // send values to Superwall
+  Superwall.shared.gamepadValueChanged(gamepad: gamepad, element: element)
+
+  // ... rest of your code
+}
+```
+:::
+
+:::android
+First set the `SuperwallOption` `isGameControllerEnabled` to `true`:
+
+```kotlin
+Superwall.instance.options.isGameControllerEnabled = true
+```
+
+Then Superwall will automatically listen for gamepad events and forward them to your paywall!
+:::
+
+:::flutter
+First set the `SuperwallOption` `isGameControllerEnabled` to `true`:
+
+```dart
+Superwall.instance.options.isGameControllerEnabled = true
+```
+
+Then Superwall will automatically listen for gamepad events and forward them to your paywall!
+:::
+
+:::expo
+First set the `SuperwallOption` `isGameControllerEnabled` to `true`:
+
+```typescript
+Superwall.instance.options.isGameControllerEnabled = true
+```
+
+Then Superwall will automatically listen for gamepad events and forward them to your paywall!
+:::

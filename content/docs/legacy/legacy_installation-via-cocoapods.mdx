@@ -1,0 +1,49 @@
+---
+title: "iOS - CocoaPods (Legacy)"
+sidebarTitle: "iOS - CocoaPods"
+description: Install the Superwall iOS SDK via CocoaPods. To see the latest release, [check out the repository](https://github.com/superwall/Superwall-iOS).
+---
+
+## Install via CocoaPods
+
+<iframe
+  width="560"
+  height="315"
+  src="https://www.youtube.com/embed/geTHOGyL_60?si=PcvLomnkAlugt_89"
+  title="Install Superwall in an iOS App"
+  frameBorder="0"
+  allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
+  allowfullscreen
+></iframe>
+
+First, add the following to your Podfile:
+
+`pod 'SuperwallKit', '< 4.0.0'
+`
+
+Next, run `pod repo update` to update your local spec repo. [Why?](https://stackoverflow.com/questions/43701352/what-exactly-does-pod-repo-update-do)
+
+Finally, run `pod install` from your terminal.
+
+### Updating to a New Release
+
+To update to a new beta release, you'll need to update the version specified in the Podfile and then run `pod install` again.
+
+### Import SuperwallKit
+
+You should now be able to `import SuperwallKit`:
+
+Swift:
+
+`import SuperwallKit`
+
+Objective-C:
+`@import SuperwallKit;`
+
+<Check>**And you're done!** Now you're ready to configure the SDK 👇</Check>
+
+<CardGroup cols={1}>
+  <Card title="Next Up" icon="forward" href="/legacy/legacy_configuring-the-sdk">
+    Begin configuring the SDK to show paywalls inside your App!
+  </Card>
+</CardGroup>

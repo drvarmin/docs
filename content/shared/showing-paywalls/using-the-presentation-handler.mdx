@@ -1,0 +1,234 @@
+---
+title: "Using the Presentation Handler When Presenting Paywalls"
+description: "The `PaywallPresentationHandler` enables you to monitor and respond to key events during paywall presentation, such as when a paywall is displayed, dismissed, encounters an error, or is skipped."
+sidebarTitle: "Presentation Handler"
+---
+
+You can provide a `PaywallPresentationHandler` to `register`, whose functions provide status updates for a paywall:
+
+- `onDismiss`: Called when the paywall is dismissed. Accepts a `PaywallInfo` object containing info about the dismissed paywall, and there is a `PaywallResult` informing you of any transaction.
+- `onPresent`: Called when the paywall did present. Accepts a `PaywallInfo` object containing info about the presented paywall.
+- `onError`: Called when an error occurred when trying to present a paywall. Accepts an `Error` indicating why the paywall could not present.
+- `onSkip`: Called when a paywall is skipped. Accepts a `PaywallSkippedReason` enum indicating why the paywall was skipped.
+
+<CodeGroup>
+
+```swift Swift
+let handler = PaywallPresentationHandler()
+handler.onDismiss { paywallInfo, result in
+  print("The paywall dismissed. PaywallInfo: \(paywallInfo). Result: \(result)")
+}
+handler.onPresent { paywallInfo in
+  print("The paywall presented. PaywallInfo:", paywallInfo)
+}
+handler.onError { error in
+  print("The paywall presentation failed with error \(error)")
+}
+handler.onSkip { reason in
+  switch reason {
+  case .holdout(let experiment):
+    print("Paywall not shown because user is in a holdout group in Experiment: \(experiment.id)")
+  case .noAudienceMatch:
+    print("Paywall not shown because user doesn't match any audiences.")
+  case .placementNotFound:
+    print("Paywall not shown because this placement isn't part of a campaign.")
+  }
+}
+
+Superwall.shared.register(placement: "campaign_trigger", handler: handler) {
+  // Feature launched
+}
+```
+
+```swift Objective-C
+SWKPaywallPresentationHandler *handler = [[SWKPaywallPresentationHandler alloc] init];
+
+[handler onDismiss:^(SWKPaywallInfo * _Nonnull paywallInfo,
+                         enum SWKPaywallResult result,
+                         SWKStoreProduct * _Nullable product) {
+  NSLog(@"The paywall presented. PaywallInfo: %@ - result: %ld", paywallInfo, (long)result);
+}];
+
+[handler onPresent:^(SWKPaywallInfo * _Nonnull paywallInfo) {
+  NSLog(@"The paywall presented. PaywallInfo: %@", paywallInfo);
+}];
+
+[handler onError:^(NSError * _Nonnull error) {
+  NSLog(@"The paywall presentation failed with error %@", error);
+}];
+
+[handler onSkip:^(enum SWKPaywallSkippedReason reason) {
+  switch (reason) {
+    case SWKPaywallSkippedReasonUserIsSubscribed:
+      NSLog(@"Paywall not shown because user is subscribed.");
+      break;
+    case SWKPaywallSkippedReasonHoldout:
+      NSLog(@"Paywall not shown because user is in a holdout group.");
+      break;
+    case SWKPaywallSkippedReasonNoAudienceMatch:
+      NSLog(@"Paywall not shown because user doesn't match any audiences.");
+      break;
+    case SWKPaywallSkippedReasonPlacementNotFound:
+      NSLog(@"Paywall not shown because this placement isn't part of a campaign.");
+      break;
+    case SWKPaywallSkippedReasonNone:
+      // The paywall wasn't skipped.
+      break;
+  }
+}];
+
+[[Superwall sharedInstance] registerWithPlacement:@"campaign_trigger" params:nil handler:handler feature:^{
+  // Feature launched.
+}];
+```
+
+```kotlin Kotlin
+val handler = PaywallPresentationHandler()
+handler.onDismiss { paywallInfo, result ->
+  println("The paywall dismissed. PaywallInfo: ${it}")
+}
+handler.onPresent {
+  println("The paywall presented. PaywallInfo: ${it}")
+}
+handler.onError {
+  println("The paywall errored. Error: ${it}")
+}
+handler.onSkip {
+  when (it) {
+    is PaywallSkippedReason.PlacementNotFound -> {
+      println("The paywall was skipped because the placement was not found.")
+    }
+    is PaywallSkippedReason.Holdout -> {
+      println("The paywall was skipped because the user is in a holdout group.")
+    }
+    is PaywallSkippedReason.NoAudienceMatch -> {
+      println("The paywall was skipped because no audience matched.")
+    }
+  }
+}
+
+Superwall.instance.register(placement = "campaign_trigger", handler = handler) {
+    // Feature launched
+}
+```
+
+```dart Flutter
+PaywallPresentationHandler handler = PaywallPresentationHandler();
+handler.onPresent((paywallInfo) async {
+  String name = await paywallInfo.name;
+  print("Handler (onPresent): $name");
+});
+handler.onDismiss((paywallInfo, paywallResult) async {
+  String name = await paywallInfo.name;
+  print("Handler (onDismiss): $name");
+});
+handler.onError((error) {
+  print("Handler (onError): ${error}");
+});
+handler.onSkip((skipReason) async {
+  String description = await skipReason.description;
+
+  if (skipReason is PaywallSkippedReasonHoldout) {
+    print("Handler (onSkip): $description");
+
+    final experiment = await skipReason.experiment;
+    final experimentId = await experiment.id;
+    print("Holdout with experiment: ${experimentId}");
+  } else if (skipReason is PaywallSkippedReasonNoAudienceMatch) {
+    print("Handler (onSkip): $description");
+  } else if (skipReason is PaywallSkippedReasonPlacementNotFound) {
+    print("Handler (onSkip): $description");
+  } else {
+    print("Handler (onSkip): Unknown skip reason");
+  }
+});
+
+Superwall.shared.registerPlacement("campaign_trigger", handler: handler, feature: () {
+  // Feature launched
+});
+```
+
+```typescript React Native
+const handler = new PaywallPresentationHandler()
+handler.onPresent((paywallInfo) => {
+  const name = paywallInfo.name
+  console.log(`Handler (onPresent): ${name}`)
+})
+handler.onDismiss((paywallInfo, paywallResult) => {
+  const name = paywallInfo.name
+  console.log(`Handler (onDismiss): ${name}`)
+})
+handler.onError((error) => {
+  console.log(`Handler (onError): ${error}`)
+})
+handler.onSkip((skipReason) => {
+  const description = skipReason.description
+
+  if (skipReason instanceof PaywallSkippedReasonHoldout) {
+    console.log(`Handler (onSkip): ${description}`)
+    const experiment = skipReason.experiment
+    const experimentId = experiment.id
+    console.log(`Holdout with experiment: ${experimentId}`)
+  } else if (skipReason instanceof PaywallSkippedReasonNoAudienceMatch) {
+    console.log(`Handler (onSkip): ${description}`)
+  } else if (skipReason instanceof PaywallSkippedReasonPlacementNotFound) {
+    console.log(`Handler (onSkip): ${description}`)
+  } else {
+    console.log(`Handler (onSkip): Unknown skip reason`)
+  }
+})
+
+Superwall.shared.register({
+  placement: 'campaign_trigger',
+  handler: handler,
+  feature: () => {
+    // Feature launched
+  }
+});
+```
+
+</CodeGroup>
+
+:::expo
+```tsx React Native
+import { usePlacement } from "expo-superwall";
+import { Button } from "react-native";
+
+function PaywallButton() {
+  const { registerPlacement } = usePlacement({
+    onPresent: (paywallInfo) => {
+      console.log(`Handler (onPresent): ${paywallInfo.name}`);
+    },
+    onDismiss: (paywallInfo, paywallResult) => {
+      console.log(`Handler (onDismiss): ${paywallInfo.name}`);
+      // Check the result to see if user purchased
+      console.log(`Result:`, paywallResult);
+    },
+    onError: (error) => {
+      console.log(`Handler (onError): ${error}`);
+    },
+    onSkip: (skipReason) => {
+      console.log(`Handler (onSkip):`, skipReason);
+    },
+  });
+
+  const handlePress = async () => {
+    await registerPlacement({
+      placement: 'campaign_trigger',
+      feature: () => {
+        // Feature launched
+        console.log("Feature unlocked!");
+      },
+    });
+  };
+
+  return <Button onPress={handlePress} title="Show Paywall" />;
+}
+```
+:::
+
+<Tip>
+  Wanting to see which product was just purchased from a paywall? Use `onDismiss` and the `result`
+  parameter. Or, you can use the
+  [SuperwallDelegate](/3rd-party-analytics#using-events-to-see-purchased-products).
+</Tip>

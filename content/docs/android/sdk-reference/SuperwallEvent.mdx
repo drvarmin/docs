@@ -1,0 +1,109 @@
+---
+title: "SuperwallEvent"
+description: "A sealed class representing analytical events that are automatically tracked by Superwall."
+---
+
+<Info>
+These events provide comprehensive analytics about user behavior and paywall performance. Use them to track conversion funnels, user engagement, and revenue metrics in your analytics platform.
+</Info>
+
+<Tip>
+Common events to track for conversion analysis include `TriggerFire`, `PaywallOpen`, `TransactionStart`, and `TransactionComplete`.
+</Tip>
+
+## Purpose
+Represents internal analytics events tracked by Superwall and sent to the [`SuperwallDelegate`](/android/sdk-reference/SuperwallDelegate) for forwarding to your analytics platform.
+
+## Signature
+```kotlin
+sealed class SuperwallEvent {
+    // User lifecycle events
+    object FirstSeen : SuperwallEvent()
+    object AppOpen : SuperwallEvent()
+    object AppLaunch : SuperwallEvent()
+    object AppClose : SuperwallEvent()
+    object SessionStart : SuperwallEvent()
+    object IdentityAlias : SuperwallEvent()
+    object AppInstall : SuperwallEvent()
+    
+    // Deep linking
+    data class DeepLink(val url: String) : SuperwallEvent()
+    
+    // Paywall events
+    data class TriggerFire(
+        val placementName: String, 
+        val result: TriggerResult
+    ) : SuperwallEvent()
+    
+    data class PaywallOpen(val paywallInfo: PaywallInfo) : SuperwallEvent()
+    data class PaywallClose(val paywallInfo: PaywallInfo) : SuperwallEvent()
+    data class PaywallDecline(val paywallInfo: PaywallInfo) : SuperwallEvent()
+    
+    // Transaction events
+    data class TransactionStart(
+        val product: StoreProduct, 
+        val paywallInfo: PaywallInfo
+    ) : SuperwallEvent()
+    
+    data class TransactionComplete(
+        val transaction: StoreTransaction?, 
+        val product: StoreProduct, 
+        val type: TransactionType, 
+        val paywallInfo: PaywallInfo
+    ) : SuperwallEvent()
+    
+    data class TransactionFail(
+        val error: TransactionError, 
+        val paywallInfo: PaywallInfo
+    ) : SuperwallEvent()
+    
+    data class TransactionAbandon(
+        val product: StoreProduct, 
+        val paywallInfo: PaywallInfo
+    ) : SuperwallEvent()
+    
+    data class TransactionRestore(
+        val restoreType: RestoreType, 
+        val paywallInfo: PaywallInfo
+    ) : SuperwallEvent()
+    
+    data class TransactionTimeout(val paywallInfo: PaywallInfo) : SuperwallEvent()
+    
+    // Subscription events
+    data class SubscriptionStart(
+        val product: StoreProduct, 
+        val paywallInfo: PaywallInfo
+    ) : SuperwallEvent()
+    
+    data class FreeTrialStart(
+        val product: StoreProduct, 
+        val paywallInfo: PaywallInfo
+    ) : SuperwallEvent()
+    
+    object SubscriptionStatusDidChange : SuperwallEvent()
+    
+    // System events
+    data class DeviceAttributes(val attributes: Map<String, Any>) : SuperwallEvent()
+    
+    // And more...
+}
+```
+
+```java
+// Java - SuperwallEvent is a sealed class hierarchy
+// Access via pattern matching or instanceof checks
+```
+
+## Parameters
+Each event contains associated values with relevant information for that event type. Common parameters include:
+- `paywallInfo: PaywallInfo` - Information about the paywall
+- `product: StoreProduct` - The product involved in transactions
+- `url: String` - Deep link URLs
+- `attributes: Map<String, Any>` - Device or user attributes
+
+## Returns / State
+This is a sealed class that represents different event types. Events are received via [`SuperwallDelegate.handleSuperwallEvent(eventInfo)`](/android/sdk-reference/SuperwallDelegate).
+
+## Usage
+
+These events are received via [`SuperwallDelegate.handleSuperwallEvent(eventInfo)`](/android/sdk-reference/SuperwallDelegate) for forwarding to your analytics platform.

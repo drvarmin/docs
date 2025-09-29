@@ -1,0 +1,33 @@
+---
+title: "Custom Paywall Analytics"
+description: "Learn how to log events from paywalls, such as a button tap or product change, to forward to your analytics service."
+---
+
+You can create customized analytics tracking for any paywall event by using custom placements. With them, you can get callbacks for actions such as interacting with an element on a paywall sent to your [Superwall delegate](/using-superwall-delegate). This can be useful for tracking how users interact with your paywall and how that affects their behavior in other areas of your app.
+
+For example, in the paywall below, perhaps you're interested in tracking when people switch the plan from "Standard" and "Pro":
+
+<Frame>![](/images/3pa_cp_2.jpeg)</Frame>
+
+You could create a custom placement [tap behavior](/paywall-editor-styling-elements#tap-behaviors) which fires when a segment is tapped:
+
+<Frame>![](/images/3pa_cp_1.jpeg)</Frame>
+
+Then, you can listen for this placement and forward it to your analytics service:
+
+```swift Swift
+extension SuperwallService: SuperwallDelegate {
+  func handleSuperwallEvent(withInfo eventInfo: SuperwallEventInfo) {
+    switch eventInfo.event {
+      case let .customPlacement(name, params, paywallInfo):
+        // Prints out didTapPro or didTapStandard
+        print("\(name) - \(params) - \(paywallInfo)")
+        MyAnalyticsService.shared.send(event: name, params: params)
+      default:
+        print("Default event: \(eventInfo.event.description)")
+    }
+  }
+}
+```
+
+For a walkthrough example, check out this [video on YouTube](https://youtu.be/4rM1rGRqDL0).

@@ -1,0 +1,12 @@
+---
+title: "StoreKit Transactions Not Clearing in Xcode"
+description: "Fix for when a test transaction seems stuck or active when it shouldn’t be."
+---
+
+Sometimes StoreKit test transactions appear active when they’re not. This is often due to a target membership issue or StoreKit config issue. To fix:
+
+1. Open Xcode → **Debug → StoreKit → Manage Transactions**.
+2. Delete all existing transactions.
+3. If it still fails, remove the StoreKit config file from the project.
+4. Build and run the project again.
+5. Re-add the StoreKit config file.

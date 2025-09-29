@@ -1,0 +1,49 @@
+{
+  "$schema": "node_modules/wrangler/config-schema.json",
+  "account_id": "<YOUR_ACCOUNT_ID>",
+  "main": ".open-next/worker.js",
+  "name": "<YOUR_WORKER_NAME>",
+  "compatibility_date": "2024-12-30",
+  "compatibility_flags": [
+    // Enable Node.js API
+    // see https://developers.cloudflare.com/workers/configuration/compatibility-flags/#nodejs-compatibility-flag
+    "nodejs_compat",
+    // Allow to fetch URLs in your app
+    // see https://developers.cloudflare.com/workers/configuration/compatibility-flags/#global-fetch-strictly-public
+    "global_fetch_strictly_public"
+  ],
+  "assets": {
+    "directory": ".open-next/assets",
+    "binding": "ASSETS"
+  },
+  "services": [{
+    "binding": "WORKER_SELF_REFERENCE",
+    // The service should match the "name" of your worker
+    "service": "<YOUR_WORKER_NAME>"
+  }],
+  "r2_buckets": [
+    // Create a R2 binding with the binding name "NEXT_INC_CACHE_R2_BUCKET"
+    // {
+    //   "binding": "NEXT_INC_CACHE_R2_BUCKET",
+    //   "bucket_name": "<BUCKET_NAME>",
+    // },
+  ],
+  "routes": [
+    {
+      "pattern": "<YOUR_ROUTE_PATTERN>",
+      "zone_id": "<YOUR_ZONE_ID>"
+    }
+  ],
+  "env": {
+    "staging": {
+      // Staging environment example: deploys to <worker-name-staging>.<account>.workers.dev
+      // Manual deploy only; no custom route, no KV bindings.
+      "vars": {
+      },
+      // Deploy to workers.dev instead of the custom domain defined at the top level
+      "workers_dev": true,
+      // Override any inherited routes so we do not clash with production
+      "routes": []
+    }
+  }
+}

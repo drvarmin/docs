@@ -1,0 +1,75 @@
+---
+title: "setUserAttributes()"
+description: "Sets custom attributes for the current user that can be used in campaign targeting."
+---
+
+<Note>
+User attributes are key-value pairs that help you target campaigns to specific user segments. They're also sent with events for analytics.
+</Note>
+
+## Purpose
+Sets custom attributes for the current user that can be used for campaign targeting and analytics.
+
+## Signature
+```dart
+Future<void> setUserAttributes(Map<String, Object> userAttributes)
+```
+
+## Parameters
+<ParamTable>
+| Name | Type | Description |
+|------|------|-------------|
+| `userAttributes` | `Map<String, Object>` | A map of user attributes to set. Values can be strings, numbers, booleans, or dates. |
+</ParamTable>
+
+## Returns / State
+Returns a `Future<void>` that completes when the user attributes are set.
+
+## Usage
+
+Basic usage:
+```dart
+await Superwall.shared.setUserAttributes({
+  'plan': 'premium',
+  'age': 25,
+  'hasCompletedOnboarding': true,
+});
+```
+
+After user signup:
+```dart
+Future<void> _setUserProfile(User user) async {
+  await Superwall.shared.setUserAttributes({
+    'email': user.email,
+    'name': user.name,
+    'signupDate': user.createdAt.toIso8601String(),
+    'referralSource': user.referralSource ?? 'direct',
+    'trialEndDate': user.trialEndDate?.toIso8601String(),
+    'isFirstTimeUser': user.isFirstTimeUser,
+  });
+}
+```
+
+Updating subscription info:
+```dart
+Future<void> _updateSubscriptionAttributes(Subscription subscription) async {
+  await Superwall.shared.setUserAttributes({
+    'subscriptionTier': subscription.tier,
+    'subscriptionStartDate': subscription.startDate.toIso8601String(),
+    'subscriptionStatus': subscription.status,
+    'monthlySpend': subscription.monthlyAmount,
+  });
+}
+```
+
+With error handling:
+```dart
+Future<void> _safeSetUserAttributes(Map<String, Object> attributes) async {
+  try {
+    await Superwall.shared.setUserAttributes(attributes);
+    print('User attributes updated successfully');
+  } catch (e) {
+    print('Failed to set user attributes: $e');
+  }
+}
+```

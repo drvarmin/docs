@@ -1,0 +1,153 @@
+---
+title: "Using the Superwall Delegate (Legacy)"
+sidebarTitle: "Using the Superwall Delegate"
+description: "Use a Superwall delegate to help interface with 3rd party analytics, see which product was purchased on a paywall, handle custom events and more."
+---
+
+Use a Superwall's delegate to extend our SDK's functionality across several surface areas by assigning to the `delegate` property:
+
+<CodeGroup>
+```swift Swift
+class SWDelegate: SuperwallDelegate {
+    // Implement delegate methods here
+}
+
+// After configuring the SDK...
+Superwall.shared.delegate = SWDelegate()
+```
+
+```swift Objective-C 
+// In its own file...
+#import <Foundation/Foundation.h>
+@import SuperwallKit;
+@interface SWDelegate : NSObject <SWKSuperwallDelegate>
+@end
+@implementation SWDelegate
+    // Implement delegate methods here
+@end
+
+// After configuring the SDK...
+[[Superwall sharedInstance] setDelegate:[SWDelegate new]];
+```
+
+```kotlin Kotlin
+class SWDelegate : SuperwallDelegate {
+    // Implement delegate methods here
+}
+
+// When configuring the SDK...
+Superwall.shared.delegate = SWDelegate()
+```
+
+```dart Flutter
+import 'package:superwall_flutter/superwall_flutter.dart';
+
+class SWDelegate extends SuperwallDelegate {
+  // Implement delegate methods here
+}
+
+// When configuring the SDK...
+void configureSDK() {
+  Superwall.shared.setDelegate(SWDelegate());
+}
+```
+
+```typescript React Native
+import {
+  PaywallInfo,
+  SubscriptionStatus,
+  SuperwallDelegate,
+  SuperwallEventInfo,
+  EventType,
+} from '@superwall/react-native-superwall';
+
+// Implement delegate methods
+export class SWDelegate extends SuperwallDelegate {
+}
+
+// In your app.tsx...
+import { SWDelegate } from './SWDelegate';
+
+export default function App() {
+  const delegate = new SWDelegate();
+
+  React.useEffect(() => {
+    const setupSuperwall = async () => {
+      // After configuring the SDK...
+      Superwall.shared.setDelegate(delegate);
+    };
+  }, []);
+}
+```
+
+</CodeGroup>
+
+Some common use cases for using the Superwall delegate include:
+
+- **Custom actions:** [Respond to custom tap actions from a paywall.](/legacy/legacy_custom-paywall-events#custom-paywall-actions)
+- **Respond to purchases:** [See which product was purchased from the presented paywall.](/legacy/legacy_3rd-party-analytics#using-events-to-see-purchased-products)
+- **Analytics:** [Forward events from Superwall to your own analytics.](/legacy/legacy_3rd-party-analytics)
+
+Below are some commonly used implementations when using the delegate.
+
+### Superwall Events
+Most of what occurs in Superwall can be viewed using the delegate method to respond to events:
+
+```swift
+class SWDelegate: SuperwallDelegate {
+    func handleSuperwallEvent(withInfo eventInfo: SuperwallEventInfo) {
+        switch eventInfo.event {
+        case .transactionComplete(let transaction, let product, let paywallInfo):
+            print("Converted from paywall originalTransactionIdentifier: \(transaction?.originalTransactionIdentifier ?? "")")
+            print("Converted from paywall storeTransactionId: \(transaction?.storeTransactionId ?? "")")
+            print("Converted from paywall productIdentifier: \(product.productIdentifier)")
+            print("Converted from paywall paywallInfo: \(paywallInfo.identifier)")
+        case .transactionRestore(let restoreType, let paywallInfo):
+            print("transactionRestore restoreType \(restoreType)")
+        case let .customPlacement(name, params, paywallInfo):
+            // Forward Mixpanel/Ampltiude/etc
+            print("\(name) - \(params) - \(paywallInfo)")
+        default:
+            // And several more events to use...
+            print("Default event: \(eventInfo.event.description)")
+        }
+    }
+}
+```
+
+### Paywall Custom Actions 
+Using the [custom tap action](/legacy/legacy_custom-paywall-events), you can respond to any arbitrary event from a paywall:
+
+```swift 
+class SWDelegate: SuperwallDelegate {
+    func handleCustomPaywallAction(withName name: String) {
+        if name == "showHelpCenter" {
+            DispatchQueue.main.asyncAfter(deadline: .now() + 0.33) {
+                self.showHelpCenter.toggle()
+            }
+        }
+    }
+}
+```
+
+### Subscription status changes 
+You can be informed of subscription status changes using the delegate. If you need to set or handle the status on your own, use a [purchase controller](/legacy/legacy_advanced-configuration) — this function is only for informational, tracking or similar purposes:
+
+```swift 
+class SWDelegate: SuperwallDelegate {
+    func subscriptionStatusDidChange(to newValue: SubscriptionStatus) {
+        // Log or handle subscription change in your Ui
+    }
+}
+```
+
+### Paywall events 
+The delegate also has callbacks for several paywall events, such dismissing, presenting, and more. Here's an example:
+
+```swift 
+class SWDelegate: SuperwallDelegate {
+    func didPresentPaywall(withInfo paywallInfo: PaywallInfo) {
+        // paywallInfo will contain all of the presented paywall's info
+    }
+}
+```

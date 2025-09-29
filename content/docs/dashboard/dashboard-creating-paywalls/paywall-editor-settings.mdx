@@ -1,0 +1,89 @@
+---
+title: "Settings"
+---
+
+To configure settings for your paywall, click the **Settings** button from the **sidebar**:
+
+<Frame>![](/images/pe-editor-settings-sidebar.png)</Frame>
+
+You have four primary properties of your paywall to configure here, all are set with default values.
+
+### Presentation Style
+
+Toggle the presentation style of your paywall. Available options are:
+
+1. **Fullscreen:** The paywall will cover the entire device screen.
+2. **Push:** The paywall will push onto a hierarchy, such as a `UINavigationController` on iOS.
+3. **Modal:** The paywall presents with the platform's default modal API.
+4. **No Animation:** The paywall presents modally, but without any animation.
+5. **Drawer:** The paywall presents from a bottom drawer.
+
+### Scrolling 
+
+Toggle the scrolling behavior of your paywall. Available options are:
+
+1. **Enabled (Default):** The paywall can scroll its contents when presented on a device.
+2. **Disabled:** Disables all scrolling behavior on the paywall.
+
+<Note>
+Requires iOS SDK v3.11.2+ and Android SDK v1.4.0+
+</Note>
+
+### Game Controller Support 
+
+Toggle game controller support for paywalls — obviously, ideal for paywalls shown in games where controllers may be in use. Available options are:
+
+1. **Enabled:** The paywall can scroll its contents when presented on a device.
+2. **Disabled (Default):** Disables all scrolling behavior on the paywall.
+
+Learn more about game controller support [here](/game-controller-support#game-controller-support).
+
+### Feature Gating
+
+Feature gating allows you to control whether or not [placements](/campaigns-placements) should restrict access to features. Using either method, the paywall will still be presented if a user isn't subscribed:
+
+1. **Non Gated:** Placements _will always_ fire your feature block. Specifically, once the paywall is dismissed.
+2. **Gated:** Placements _will only_ fire your feature block if the user is subscribed. Note that if they are subscribed, the paywall will _not_ be presented.
+
+For example:
+
+```swift
+// With non gated - `logCaffeine()` is still invoked
+Superwall.shared.register(placement: "caffeineLogged") {
+  logCaffeine()
+}
+
+// With gated - `logCaffeine()` is invoked only if the user is subscribed
+Superwall.shared.register(placement: "caffeineLogged") {
+  logCaffeine()
+}
+```
+
+This is useful to dynamically change what is paywalled in production without an app update. For example, in a caffeine tracking app — perhaps you might run a weekend campaign where logging caffeine is free. You'd simply change the paywall to be **Non Gated**. Then, the paywall would still be presented, but users would be able to continue and log caffeine.
+
+For information on how this behaves when offline, view this [section](/feature-gating#handling-network-issues).
+
+<Note>
+  Feature gating does not apply if you are manually presenting a paywall via `getPaywall`.
+</Note>
+
+### Cache on Device
+
+If enabled, Superwall's SDK will cache the paywall on device. This can be useful if you have a paywall that could take a few seconds to fetch and present (i.e. if there is a video as part of your design). On-device caching can lead to quicker presentation.
+
+<Note>Device caching is currently only available on iOS.</Note>
+
+### Identifier
+
+The identifier for the paywall. Non-editable.
+
+### Present Paywall
+
+<Warning>
+  This is now deprecated in iOS SDK version 4 and above, and version 2 and above for all other SDKs. Instead, use the [entitlements](/campaigns-audience#matching-to-entitlements) feature when creating campaign filters.
+</Warning>
+
+You can have a paywall present under two different conditions when a [placement](/campaigns-placements) is matched:
+
+1. **Check User Subscription:** Present the paywall only if the user's subscription is not active.
+2. **Always:** Present the paywall regardless of the user's subscription status.

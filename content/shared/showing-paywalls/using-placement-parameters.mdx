@@ -1,0 +1,77 @@
+---
+title: "Using Placement Parameters"
+description: "Placement parameters allow you to send additional data to the Superwall platform when registering placements."
+---
+
+You can send parameters along with any placement you create. For example, if you had a caffeine logging app — perhaps you'd have a placement for logging caffeine:
+
+```swift
+// In iOS...
+Superwall.shared.register(placement: "caffeineLogged") {
+    store.log(amountToLog)
+}
+```
+
+Now, imagine you could log caffeine from several different touch points in your app. You may wish to know _where_ the user tried to log caffeine from, and you could tie a parameter to the `caffeineLogged` placement to do this:
+
+<CodeGroup>
+
+```swift iOS
+Superwall.shared.register(placement: "caffeineLogged", params: ["via":"logging_page"]) {
+  store.log(amountToLog)
+}
+```
+
+```kotlin Android
+val params: Map<String, Any> = mapOf(
+    "via" to "logging_page"
+)
+Superwall.instance.register("caffeineLogged", params = params)  {
+    store.log(amountToLog)
+}
+```
+
+```dart Flutter
+final params = <String, dynamic>{"via": "logging_page"};
+Superwall.shared.registerPlacement(
+  "placement",
+  params: params,
+  feature: () {
+    logToStore(100);
+  }
+);
+```
+
+```typescript React Native
+Superwall.shared.register({
+  placement: 'caffeineLogged',
+  params: new Map([["via", "logging_page"]]),
+  feature: ()=>{
+    console.log("show coffee")
+  }
+});
+```
+
+</CodeGroup>
+
+The `via` parameter could now be used all throughout Superwall. You could create a new [audience](/campaigns-audience) which has filters for each place users logged caffeine from, and unique paywalls for each of them.
+
+Parameter placements can be used in four primary ways:
+
+1. **Audience Filtering:** As mentioned above, you can filter against parameters when creating audiences. Following our example, you'd create a **placement parameter** named **via** and then choose how to filter off of the parameter's value:
+
+   <Frame>![](/images/placementParamVia.png)</Frame>
+
+2. **Templating in Text:** Parameters are available in our [paywall editor](/paywall-editor-overview), so you can easily use them in text components too:
+
+```
+Hey {{user.firstName}}! FitnessAI offers tons of {{user.fitnessGoal}} workouts to help you reach your goals :)
+```
+
+3. **Interfacing with Analytics:** Another common scenario is cohorting with your own analytics. See this [doc](/cohorting-in-3rd-party-tools) for more.
+
+4. **Reference them on Paywalls:** Display dynamic images by constructing URLs based on placement parameters, change copy on a paywall to emphasize a feature, and more. For more, check out the docs over [creating custom variables](/paywall-editor-variables#custom-variables).
+
+To see an example of using placement parameters in a paywall, see this video:
+
+<iframe width="560" height="315" src="https://www.youtube.com/embed/7KT9FfKLByA?si=9IC10cN16zARIVN9" title="YouTube video player" frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share; fullscreen" referrerpolicy="strict-origin-when-cross-origin"></iframe>

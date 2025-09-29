@@ -1,0 +1,50 @@
+---
+title: "Troubleshooting (Legacy)"
+sidebarTitle: "Troubleshooting"
+---
+
+### My paywall has unexpected presentation behaviour
+
+If you are seeing a paywall when you think you shouldn't or vice versa, we recommend running through the following list to debug:
+
+1. If you're [implementing subscription-related logic yourself](/legacy/legacy_advanced-configuration), check when you're setting `Superwall.shared.subscriptionStatus`. It's important that the variable here is kept in sync with the subscription status of the user. If it isn't, the paywall won't display when it is supposed to. If the status is `.unknown` or `.active`, the paywall won't show (unless you're specifically overriding that). [See here](/legacy/legacy_advanced-configuration) for more information about that.
+2. Check your device. If you have already purchased a subscription on your device, your paywall wouldn't show again. If on iOS and you're using a local StoreKit file in your app for testing purposes, deleting and reinstalling your app will reset your device's subscription status.
+3. Check your [campaign](/campaigns). Are you sending the necessary properties along with your trigger to match the rule? Is your trigger event name spelt correctly? If you have a holdout group in your campaign double check that this isn't the reason your paywall isn't displaying.
+4. Check that the products on your paywall are available and their identifiers are correct. If not, you'll see an error printed to the console. On iOS, if you're using a StoreKit configuration file to test, make sure to add your products before trying to present the paywall.
+
+### How can I debug paywall presentation in production?
+
+If you know the userId of an account that's having trouble with paywalls, search for it in the Users tab on the dashboard. Clicking on it will reveal the user's events log. Whenever a paywall is or isn't shown, you'll see a `paywallPresentationRequest` event. Expanding that will give you a `status` and `status_reason` from which you can figure out what the issue is. If you're seeing `subscription_status_timeout` as a reason, it means that it took longer than 5 seconds to get the subscription status. This could be because you're not setting `Superwall.shared.subscriptionStatus` correctly or there's an issue with internet.
+
+We recommend calling `identify(userId:)` in your app with the same userId that you use in your analytics to make life easier.
+
+### In sandbox on iOS, my paywall shows free trial text but when I go to purchase, it doesn't show a free trial
+
+If you've previously purchased a product within a subscription group and then deleted and reinstalled the app while testing in sandbox, this could happen. To fix this, restore products and try again. This is because we use the on-device receipt to determine whether a free trial is available. In sandbox, the app's receipt isn't retrieved until a purchase or restore is made. Therefore, the SDK won't be able to accurately determine whether the free trial is available. Fortunately, this won't happen in production.
+
+### My products aren't loading or aren't working in production
+
+If your products haven't loaded you'll get an error message printed to the console. Run through the following list to solve this:
+
+1. On the Superwall dashboard:
+   1. Check that you have added products to all paywalls in the paywall editor. If any paywall doesn't contain a valid identifier you will see a error message in the console.
+2. For iOS apps:
+   1. In Xcode:
+      1. If you're using a StoreKit configuration file locally, make sure your products have been added to it, either manually or by syncing with App Store Connect.
+      2. Make sure your app's bundle ID is the same as your app in App Store Connect.
+      3. Check you've added in-app purchase capability to your app's Xcode project.
+   2. On App Store Connect:
+      1. Make sure your free and paid apps agreements status are active.
+      2. Make sure that your tax and banking information has been added.
+      3. Make sure your product status is 'Ready to Submit'.
+      4. Check that the IDs of your products match those in the paywall.
+      5. Make sure you've waited at least 15 minutes after creating a product.
+   3. In Production:
+      1. Make sure you have waited for at least 72 hours after the release of a new app for your products to appear in your app. As soon as they appear on your App Store page, you'll know they're available in-app.
+3. For Android apps:
+   1. Users in Russia and Belarus don't have access to Google Billing. In this instance, products won't load and paywalls won't show. The `onError` `PaywallPresentationHandler` handler will get called.
+   2. Make sure the device or emulator you're running on has the Play Store app and that you are signed in to your Google account on the Play Store.
+   3. Make sure your `applicationId` matches the applicationId on the Play Store.
+4. If you're using RevenueCat:
+   1. Check that your product IDs are added to RevenueCat and associated with an entitlement.
+   2. If you're using offerings, make sure your product is associated with one.

@@ -1,0 +1,89 @@
+---
+title: "PaywallOptions"
+description: "Configuration for paywall presentation and behavior in the Superwall Android SDK."
+---
+
+<Tip>
+`PaywallOptions` is provided via the `paywalls` property on [`SuperwallOptions`](/android/sdk-reference/SuperwallOptions) and is passed to the SDK when you call [`configure`](/android/sdk-reference/configure).
+</Tip>
+
+## Purpose
+Customize how paywalls look and behave, including preload behavior, alerts, dismissal, and haptics.
+
+## Signature
+```kotlin
+import kotlin.time.Duration
+
+class PaywallOptions {
+    var isHapticFeedbackEnabled: Boolean = true
+
+    class RestoreFailed {
+        var title: String = "No Subscription Found"
+        var message: String = "We couldn't find an active subscription for your account."
+        var closeButtonTitle: String = "Okay"
+    }
+    var restoreFailed: RestoreFailed = RestoreFailed()
+
+    var shouldShowPurchaseFailureAlert: Boolean = true
+    var shouldPreload: Boolean = true
+    var useCachedTemplates: Boolean = false
+    var automaticallyDismiss: Boolean = true
+
+    enum class TransactionBackgroundView { SPINNER }
+    var transactionBackgroundView: TransactionBackgroundView? = TransactionBackgroundView.SPINNER
+
+    var overrideProductsByName: Map<String, String> = emptyMap()
+    var optimisticLoading: Boolean = false
+    var timeoutAfter: Duration? = null
+}
+```
+
+## Parameters
+<ParamTable>
+| Property | Type | Description |
+|----------|------|-------------|
+| `isHapticFeedbackEnabled` | `Boolean` | Enables haptic feedback when users purchase/restore, open links, or close the paywall. Defaults to `true`. |
+| `restoreFailed` | `RestoreFailed` | Messaging for the restore-failed alert. |
+| `restoreFailed.title` | `String` | Title for restore-failed alert. Defaults to "No Subscription Found". |
+| `restoreFailed.message` | `String` | Message for restore-failed alert. Defaults to "We couldn't find an active subscription for your account." |
+| `restoreFailed.closeButtonTitle` | `String` | Close button title for restore-failed alert. Defaults to "Okay". |
+| `shouldShowPurchaseFailureAlert` | `Boolean` | Shows an alert after a purchase fails. Set to `false` if you handle failures via a `PurchaseController`. Defaults to `true`. |
+| `shouldPreload` | `Boolean` | Preloads and caches trigger paywalls and products during SDK initialization. Set to `false` for just-in-time loading. Defaults to `true`. |
+| `useCachedTemplates` | `Boolean` | Loads paywall template websites from disk when available. Defaults to `false`. |
+| `automaticallyDismiss` | `Boolean` | Automatically dismisses the paywall on successful purchase or restore. Defaults to `true`. |
+| `transactionBackgroundView` | `TransactionBackgroundView?` | View shown behind the system payment sheet during a transaction. Use `null` for no view. Defaults to `.SPINNER`. |
+| `overrideProductsByName` | `Map<String, String>` | Overrides products on all paywalls using name→identifier mapping (e.g., `"primary"` → `"com.example.premium_monthly"`). |
+| `optimisticLoading` | `Boolean` | Hides shimmer optimistically. Defaults to `false`. |
+| `timeoutAfter` | `Duration?` | Duration until a paywall timeout is invoked. When not using fallback loading, setting this triggers a timeout instead of retrying. |
+</ParamTable>
+
+## Usage
+```kotlin
+val paywallOptions = PaywallOptions().apply {
+    isHapticFeedbackEnabled = true
+    shouldShowPurchaseFailureAlert = false
+    shouldPreload = true
+    useCachedTemplates = false
+    automaticallyDismiss = true
+    transactionBackgroundView = PaywallOptions.TransactionBackgroundView.SPINNER
+    overrideProductsByName = mapOf(
+        "primary" to "com.example.premium_monthly",
+        "tertiary" to "com.example.premium_annual",
+    )
+    optimisticLoading = false
+    timeoutAfter = null
+}
+
+val options = SuperwallOptions().apply {
+    paywalls = paywallOptions
+}
+
+Superwall.configure(
+    application = this,
+    apiKey = "pk_your_api_key",
+    options = options,
+)
+```
+
+## Related
+- [`SuperwallOptions`](/android/sdk-reference/SuperwallOptions)

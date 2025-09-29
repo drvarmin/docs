@@ -1,0 +1,19 @@
+{
+    "title": "Settings",
+    "pages": [
+        "!overview-settings-localization",
+        "overview-settings",
+        "overview-settings-keys",
+        "overview-settings-billing",
+        "overview-settings-revenue-tracking",
+        "overview-settings-refund-protection",
+        "overview-settings-audit-log",
+        "overview-settings-team",
+        "overview-settings-projects",
+        "overview-settings-all-teams",
+        "overview-settings-public-beta",
+        "overview-settings-advanced",
+        "!overview-settings-apple-search-ads",
+        "..."
+    ]
+}

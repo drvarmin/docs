@@ -1,0 +1,85 @@
+---
+title: Variable Reference
+---
+
+# User
+
+These are all the properties that Superwall automatically exposes on the user object. It can be referenced as `{{ user.<property> }}` in your templates and `user.<property>` in rules.
+
+Property | Type   | Examples  | Description                                                                                            | Available Since
+-------- | ------ | --------- | ------------------------------------------------------------------------------------------------------ | ---------------
+seed     | number | 0, 35, 99 | A random number between 0 and 99 (inclusive) seeded by the appUserId. Useful for routing in campaigns. | 3.2.0
+
+\
+
+<customproperty>
+</customproperty>
+
+| any | foo, bar | A custom property defined in the Superwall dashboard | 3.2.0
+
+<note>
+  Any properties you assign with <code>setUserAttributes</code> will be available on the user
+  object. 👆
+</note>
+
+# Device
+
+These are all the properties that Superwall automoatically exposes on the device object. It can be referenced as `{{ device.<property> }}` in your templates and `device.<property>` in rules.
+
+Property                    | Type      | Examples                                                                         | Description                                                                                                                                                          | Available Since
+--------------------------- | --------- | -------------------------------------------------------------------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ---------------
+publicApiKey                | string    | pk_79e750d225197c7d774602f5698b7510dad0dfe15d91464a                              | The Public API key for Superwall                                                                                                                                     | 3.0.0
+platform                    | string    | macOS, iOS                                                                       | The platform the user is on                                                                                                                                          | 3.0.0
+appUserId                   | string    | 2c79db670ec39dd8e747ae2ff4, $SuperwallAlias:9b8663b5-eb67-41fd-a5a1-972ea2149e23 | The unique identifier for the user, provided by the app. This can also be a `$SuperwallAlias` if you have not called `identify`                                      | 3.0.0
+aliases                     | string    | 9b8663b5-eb67-41fd-a5a1-972ea2149e23                                             | A list of aliases for the user. If you've called `identify` this may contain the alias Superwall originally created.                                                 | 3.0.0
+vendorId                    | string    | 9b8663b5-eb67-41fd-a5a1-972ea2149e23                                             | A unique identifier for the device. This persists between `identify` and `reset` calls                                                                               | 3.0.0
+appVersion                  | string    | 1.0.0, 4.3.1                                                                     | The version of the app, as defined in the app's `Info.plist`                                                                                                         | 3.0.0
+osVersion                   | string    | 16.3.1, 14.4.1                                                                   | The version of the operating system                                                                                                                                  | 3.0.0
+deviceModel                 | string    | iPhone12, iPhone8, iPad5                                                         | The model of the device                                                                                                                                              | 3.0.0
+deviceLocale                | string    | en_US, en_GB, fr_FR, fr_OM                                                       | The locale of the device                                                                                                                                             | 3.0.0
+deviceLanguageCode          | string    | en, fr                                                                           | The language code of the device, just the first part of the locale                                                                                                   | 3.0.0
+deviceCurrencyCode          | string    | USD, EUR                                                                         | The currency code of the device                                                                                                                                      | 3.0.0
+deviceCurrencySymbol        | string    | $, €                                                                             | The currency symbol of the device                                                                                                                                    | 3.0.0
+timezoneOffset              | number    | -18000, 3600                                                                     | The timezone offset of the device in seconds. Ex: -14,400 for EST                                                                                                    | 3.0.0
+radioType                   | string    | Cellular, Wifi, No Internet                                                      | The radio type of the device                                                                                                                                         | 3.0.0
+interfaceType               | string    | ipad, iphone, mac, carplay, tv, unspecified                                      | The type of interface of the device, preferred over `deviceModel`. Note that iPhone screen size emulated in iPad will be iphone. Built for iPad on Mac will be ipad. | 3.2.0
+interfaceStyle              | string    | Unspecified, Unknown, Light, Dark                                                | The interface style of the device                                                                                                                                    | 3.0.0
+isLowPowerModeEnabled       | string    | true, false                                                                      | Whether or not low power mode is enabled                                                                                                                             | 3.0.0
+bundleId                    | string    | com.superwall.test                                                               | The bundle ID of the app                                                                                                                                             | 3.0.0
+appInstallDate              | string    | 2021-07-01T00:00:00.000Z                                                         | The date the app was installed, ISO-8601 format                                                                                                                      | 3.0.0
+isMac                       | boolean   | true, false                                                                      | Whether or not the device is a Mac                                                                                                                                   | 3.0.0
+daysSinceInstall            | number    | 0, 1, 2                                                                          | The number of days since the app was installed                                                                                                                       | 3.0.0
+minutesSinceInstall         | number    | 0, 1, 2                                                                          | The number of minutes since the app was installed                                                                                                                    | 3.0.0
+daysSinceLastPaywallView    | undefined | , 0, 1, 2                                                                        | The number of days since the last paywall view                                                                                                                       | 3.0.0
+minutesSinceLastPaywallView | undefined | , 0, 1, 2                                                                        | The number of minutes since the last paywall view                                                                                                                    | 3.0.0
+totalPaywallViews           | number    | 0, 1, 2                                                                          | The total number of paywall views                                                                                                                                    | 3.0.0
+utcDate                     | string    | 2021-07-01                                                                       | The UTC date                                                                                                                                                         | 3.0.0
+localDate                   | string    | 2021-07-01                                                                       | The local date                                                                                                                                                       | 3.0.0
+utcTime                     | string    | 15:54:28                                                                         | The UTC time                                                                                                                                                         | 3.0.0
+localTime                   | string    | 15:54:28                                                                         | The local time                                                                                                                                                       | 3.0.0
+localDateTime               | string    | 2021-07-01T15:54:28                                                              | The local date time                                                                                                                                                  | 3.0.0
+utcDateTime                 | string    | 2021-07-01T15:54:28                                                              | The UTC date time                                                                                                                                                    | 3.0.0
+isSandbox                   | string    | true, false                                                                      | Whether or not the device is a sandbox                                                                                                                               | 3.0.0
+subscriptionStatus          | string    | ACTIVE, INACTIVE, UNKNOWN                                                        | The subscription status of the user                                                                                                                                  | 3.0.0
+isFirstAppOpen              | boolean   | true, false                                                                      | Whether or not this is the first app open                                                                                                                            | 3.0.0
+sdkVersion                  | string    | 3.0.0                                                                            | The version of the Superwall SDK                                                                                                                                     | 3.4.0
+sdkVersionPadded            | string    | 003.000.010                                                                      | The version of the Superwall SDK, padded to 3 digits                                                                                                                 | 3.4.0
+appBuildString              | string    | 1234                                                                             | The build string of the app, usually a number. From the app's `Info.plist`                                                                                           | 3.4.0
+appBuildStringNumber        | undefined | , 1                                                                              | The build string of the app, converted to a number                                                                                                                   | 3.4.0
+
+# Params
+
+These are all the properties that Superwall automatically exposes on the params object. It can be referenced as `{{ params.<property> }}` in your templates and `params.<property>` in rules. These are all defined by what you pass in to a register call. See the [iOS reference](https://sdk.superwall.me/documentation/superwallkit/superwall/register(placement:params:handler:feature:)>>) for more details.
+
+Property | Type | Examples | Description | Available Since
+-------- | ---- | -------- | ----------- | ---------------
+         |
+
+\
+
+<customparam>
+</customparam>
+
+| any | foo, bar | A custom parameter defined when you trigger an event | 3.0.0
+
+[//]: < "END_PARAMS_PROPERTIES - DO NOT MODIFY BETWEEN THESE LINES"

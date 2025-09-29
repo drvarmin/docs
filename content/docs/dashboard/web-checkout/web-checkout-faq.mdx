@@ -1,0 +1,39 @@
+---
+title: "Web Checkout FAQ"
+description: "Frequently asked questions about web checkout."
+---
+
+### How does restoring memberships work on iOS when you've purchased via web checkout?
+
+When the user taps on the restore link in the paywall, we'll do the normal restore flow for on-device subscriptions. However, if you've enabled web checkout and the restored
+entitlements don't match the entitlements belonging to the products on the paywall, we'll present an alert asking the user if they'd like to check for subscriptions on the web. This will
+take them out of your app to the [plan management screen](/web-checkout-managing-memberships) where they can get a redemption link to restore their subscriptions.
+
+### What happens if a user taps the redemption link multiple times or shares it?
+
+Redemption codes are single-use and tied to a specific device. Once a code has been redeemed, it cannot be used again on a different device.
+
+However, users can visit the manage page and request a new redemption link. This generates a new code that can be used to activate access on another device.
+
+#### Without accounts (`identify` not called)
+
+If you're not using accounts with Superwall (i.e. you never call `identify`), we allow up to **five active devices** per user. When a sixth device redeems a code, the **first device** to have redeemed a code will automatically lose access. This helps prevent abuse while still supporting reasonable multi-device usage.
+
+#### With accounts (`identify` called)
+
+If you are using accounts with Superwall (i.e. you call `identify` with an `appUserId` when someone logs in), then entitlements are tied to the user ID, not the individual device.
+
+- If two different `appUserIds` redeem codes, **only the most recently identified user will retain access**.
+- If the **same `appUserId` is used across multiple devices**, all those devices will **automatically share access** without needing to redeem again.
+
+This system ensures flexibility while protecting against unauthorized sharing of redemption codes.
+
+### How do I associate a web checkout purchase with a user in my app?
+
+The short answer — use Superwall's [user identification APIs](/identity-management#identified-users). When you configure Superwall, or a user signs in or out, you can always associate their login status to Superwall's SDK:
+
+```swift
+Superwall.shared.identify(userId: user.id)
+```
+
+This will ensure that the user is associated with the web checkout purchase.

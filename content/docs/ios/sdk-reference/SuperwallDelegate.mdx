@@ -1,0 +1,148 @@
+---
+title: "SuperwallDelegate"
+description: "A protocol that handles Superwall lifecycle events and analytics."
+---
+
+<Note>
+Set the delegate using `Superwall.shared.delegate = self` to receive these callbacks.
+</Note>
+
+<Tip>
+Use `handleSuperwallEvent(withInfo:)` to track Superwall analytics events in your own analytics platform for a complete view of user behavior.
+</Tip>
+
+## Purpose
+Provides callbacks for Superwall lifecycle events, analytics tracking, and custom paywall interactions.
+
+## Signature
+```swift
+public protocol SuperwallDelegate: AnyObject {
+  @MainActor
+  func subscriptionStatusDidChange(
+    from oldValue: SubscriptionStatus,
+    to newValue: SubscriptionStatus
+  )
+  
+  @MainActor
+  func handleSuperwallEvent(withInfo eventInfo: SuperwallEventInfo)
+  
+  @MainActor
+  func handleCustomPaywallAction(withName name: String)
+  
+  @MainActor
+  func willDismissPaywall(withInfo paywallInfo: PaywallInfo)
+  
+  @MainActor
+  func willPresentPaywall(withInfo paywallInfo: PaywallInfo)
+  
+  @MainActor
+  func didDismissPaywall(withInfo paywallInfo: PaywallInfo)
+  
+  @MainActor
+  func didPresentPaywall(withInfo paywallInfo: PaywallInfo)
+  
+  @MainActor
+  func paywallWillOpenURL(url: URL)
+  
+  @MainActor
+  func paywallWillOpenDeepLink(url: URL)
+  
+  @MainActor
+  func handleLog(
+    level: LogLevel,
+    scope: LogScope,
+    message: String,
+    info: [String: Any]?,
+    error: Error?
+  )
+}
+```
+
+## Parameters
+All methods are optional to implement. Key methods include:
+
+<ParamTable>
+| Method | Parameters | Description |
+|--------|------------|-------------|
+| `subscriptionStatusDidChange` | `oldValue`, `newValue` | Called when subscription status changes. |
+| `handleSuperwallEvent` | `eventInfo` | Called for all internal analytics events. Use for tracking in your own analytics. |
+| `handleCustomPaywallAction` | `name` | Called when user taps elements with `data-pw-custom` tags. |
+| `willPresentPaywall` | `paywallInfo` | Called before paywall presentation. |
+| `didPresentPaywall` | `paywallInfo` | Called after paywall presentation. |
+| `willDismissPaywall` | `paywallInfo` | Called before paywall dismissal. |
+| `didDismissPaywall` | `paywallInfo` | Called after paywall dismissal. |
+</ParamTable>
+
+## Returns / State
+All delegate methods return `Void`. They provide information about Superwall events and state changes.
+
+## Usage
+
+Basic delegate setup:
+```swift
+class ViewController: UIViewController, SuperwallDelegate {
+  
+  override func viewDidLoad() {
+    super.viewDidLoad()
+    Superwall.shared.delegate = self
+  }
+}
+```
+
+Track subscription status changes:
+```swift
+func subscriptionStatusDidChange(
+  from oldValue: SubscriptionStatus,
+  to newValue: SubscriptionStatus
+) {
+  print("Subscription changed from \(oldValue) to \(newValue)")
+  updateUI(for: newValue)
+}
+```
+
+Forward analytics events:
+```swift
+func handleSuperwallEvent(withInfo eventInfo: SuperwallEventInfo) {
+  switch eventInfo.event {
+  case .paywallOpen(let info):
+    Analytics.track("paywall_opened", properties: [
+      "paywall_id": info.id,
+      "placement": info.placement
+    ])
+  case .transactionComplete(let transaction, let product, _, let info):
+    Analytics.track("subscription_purchased", properties: [
+      "product_id": product.id,
+      "paywall_id": info.id
+    ])
+  default:
+    break
+  }
+}
+```
+
+Handle custom paywall actions:
+```swift
+func handleCustomPaywallAction(withName name: String) {
+  switch name {
+  case "help":
+    presentHelpScreen()
+  case "contact":
+    presentContactForm()
+  default:
+    print("Unknown custom action: \(name)")
+  }
+}
+```
+
+Handle paywall lifecycle:
+```swift
+func willPresentPaywall(withInfo paywallInfo: PaywallInfo) {
+  // Pause video, hide UI, etc.
+  pauseBackgroundTasks()
+}
+
+func didDismissPaywall(withInfo paywallInfo: PaywallInfo) {
+  // Resume video, show UI, etc.
+  resumeBackgroundTasks()
+}
+```

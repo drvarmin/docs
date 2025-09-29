@@ -1,0 +1,175 @@
+---
+title: "SuperwallDelegate"
+description: "An interface that handles Superwall lifecycle events and analytics."
+---
+
+<Note>
+Set the delegate using `Superwall.instance.delegate = this` to receive these callbacks. For Java, use `setJavaDelegate()` for better Java interop.
+</Note>
+
+<Tip>
+Use `handleSuperwallEvent(eventInfo)` to track Superwall analytics events in your own analytics platform for a complete view of user behavior.
+</Tip>
+
+## Purpose
+Provides callbacks for Superwall lifecycle events, analytics tracking, and custom paywall interactions.
+
+## Signature
+```kotlin
+interface SuperwallDelegate {
+    fun subscriptionStatusDidChange(
+        from: SubscriptionStatus,
+        to: SubscriptionStatus
+    ) {}
+    
+    fun handleSuperwallEvent(eventInfo: SuperwallEventInfo) {}
+    
+    fun handleCustomPaywallAction(name: String) {}
+    
+    fun willDismissPaywall(paywallInfo: PaywallInfo) {}
+    
+    fun willPresentPaywall(paywallInfo: PaywallInfo) {}
+    
+    fun didDismissPaywall(paywallInfo: PaywallInfo) {}
+    
+    fun didPresentPaywall(paywallInfo: PaywallInfo) {}
+    
+    fun paywallWillOpenURL(url: String) {}
+    
+    fun paywallWillOpenDeepLink(url: String) {}
+    
+    fun handleLog(
+        level: LogLevel,
+        scope: LogScope,
+        message: String,
+        info: Map<String, Any>?,
+        error: Throwable?
+    ) {}
+}
+```
+
+```java
+// Java - Use SuperwallDelegateJava for better Java interop
+public interface SuperwallDelegateJava {
+    default void subscriptionStatusDidChange(
+        SubscriptionStatus from, 
+        SubscriptionStatus to
+    ) {}
+    
+    default void handleSuperwallEvent(SuperwallEventInfo eventInfo) {}
+    
+    default void handleCustomPaywallAction(String name) {}
+    
+    // ... other methods
+}
+```
+
+## Parameters
+All methods are optional to implement. Key methods include:
+
+<ParamTable>
+| Method | Parameters | Description |
+|--------|------------|-------------|
+| `subscriptionStatusDidChange` | `from`, `to` | Called when subscription status changes. |
+| `handleSuperwallEvent` | `eventInfo` | Called for all internal analytics events. Use for tracking in your own analytics. |
+| `handleCustomPaywallAction` | `name` | Called when user taps elements with `data-pw-custom` tags. |
+| `willPresentPaywall` | `paywallInfo` | Called before paywall presentation. |
+| `didPresentPaywall` | `paywallInfo` | Called after paywall presentation. |
+| `willDismissPaywall` | `paywallInfo` | Called before paywall dismissal. |
+| `didDismissPaywall` | `paywallInfo` | Called after paywall dismissal. |
+</ParamTable>
+
+## Returns / State
+All delegate methods return `Unit`. They provide information about Superwall events and state changes.
+
+## Usage
+
+Basic delegate setup:
+```kotlin
+class MainActivity : AppCompatActivity(), SuperwallDelegate {
+    
+    override fun onCreate(savedInstanceState: Bundle?) {
+        super.onCreate(savedInstanceState)
+        Superwall.instance.delegate = this
+    }
+}
+```
+
+Track subscription status changes:
+```kotlin
+override fun subscriptionStatusDidChange(
+    from: SubscriptionStatus,
+    to: SubscriptionStatus
+) {
+    println("Subscription changed from $from to $to")
+    updateUI(to)
+}
+```
+
+Forward analytics events:
+```kotlin
+override fun handleSuperwallEvent(eventInfo: SuperwallEventInfo) {
+    when (val event = eventInfo.event) {
+        is SuperwallEvent.PaywallOpen -> {
+            Analytics.track("paywall_opened", mapOf(
+                "paywall_id" to event.paywallInfo.id,
+                "placement" to event.paywallInfo.placement
+            ))
+        }
+        is SuperwallEvent.TransactionComplete -> {
+            Analytics.track("subscription_purchased", mapOf(
+                "product_id" to event.product.id,
+                "paywall_id" to event.paywallInfo.id
+            ))
+        }
+        else -> {
+            // Handle other events
+        }
+    }
+}
+```
+
+Handle custom paywall actions:
+```kotlin
+override fun handleCustomPaywallAction(name: String) {
+    when (name) {
+        "help" -> presentHelpScreen()
+        "contact" -> presentContactForm()
+        else -> println("Unknown custom action: $name")
+    }
+}
+```
+
+Handle paywall lifecycle:
+```kotlin
+override fun willPresentPaywall(paywallInfo: PaywallInfo) {
+    // Pause video, hide UI, etc.
+    pauseBackgroundTasks()
+}
+
+override fun didDismissPaywall(paywallInfo: PaywallInfo) {
+    // Resume video, show UI, etc.
+    resumeBackgroundTasks()
+}
+```
+
+Java usage:
+```java
+public class MainActivity extends AppCompatActivity implements SuperwallDelegateJava {
+    
+    @Override
+    protected void onCreate(Bundle savedInstanceState) {
+        super.onCreate(savedInstanceState);
+        Superwall.getInstance().setJavaDelegate(this);
+    }
+    
+    @Override
+    public void subscriptionStatusDidChange(
+        SubscriptionStatus from, 
+        SubscriptionStatus to
+    ) {
+        System.out.println("Subscription changed from " + from + " to " + to);
+        updateUI(to);
+    }
+}
+```

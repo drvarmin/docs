@@ -1,0 +1,19 @@
+---
+title: "Handling Poor Network Conditions"
+description: "Superwall is built to handle any networking conditions, from poor network conditions to no network at all."
+sidebarTitle: "Handling Poor Network Conditions"
+---
+
+Superwall's SDK handles network issues as gracefully as possible, but there are still some scenarios to consider. The behavior will be different based on if `subscriptionStatus` evaluates to `.active(_)` or not.
+
+**If it is `.active(_)`** and Superwall has already fetched or cached its configuration, then paywall presentation proceeds as it normally would. If Superwall was unable to fetch its configuration, the SDK waits one second to give it a chance to be retrieved. After that time, if it's not available — then a timeout event is tracked and the `onError` handler will be invoked with the error code 105. The "feature" block or closure will not be invoked:
+
+```swift
+Superwall.shared.register(placement: "foo") {
+  // Your feature logic
+}
+```
+
+**If it's not `.active(_)`** then Superwall will retry network calls until we have retrieved the necessary data for up to one minute. If it's still unavailable, then the SDK fires the `onError` handler with the error code of `104`.
+
+For more information, please visit this [blog post](https://superwall.com/blog/handling-connectivity-interruptions-with-superwall).

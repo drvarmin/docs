@@ -1,0 +1,117 @@
+---
+title: "Migrating from v1 to v2 - React Native"
+description: "SuperwallKit 2.0 is a major release of Superwall's React Native SDK. This introduces breaking changes."
+---
+
+## Migration steps
+
+## 1\. Update code references
+
+### 1.1 Update the `configure`, `register`, and `identify` functions
+
+These functions now use an object with named parameters as their argument.
+
+Before:
+
+```typescript (Before)
+Superwall.configure(apiKey, options, purchaseController, completion)
+
+Superwall.shared.register(event, params, handler, feature)
+
+Superwall.shared.identify(userId, options)
+```
+
+Now:
+
+```typescript (Now)
+Superwall.configure({
+  apiKey,
+  options,
+  purchaseController,
+  completion,
+})
+
+Superwall.shared.register({
+  placement,
+  params,
+  handler,
+  feature,
+})
+
+Superwall.shared.identify({
+  userId,
+  options
+})
+```
+
+### 1.2 Rename references from `event` to `placement`
+
+In some cases, you should be able to update references using the automatic renaming suggestions in your editor. For other cases where this hasn't been possible, you'll need to run through this list to manually update your code.
+
+| Before                                     | After                                         |
+| ------------------------------------------ | --------------------------------------------- |
+| async register(event)                      | async register(placement)                     |
+| async preloadPaywalls(eventNames)          | async preloadPaywalls(placementNames)         |
+| async getPresentationResult(event, params) | async getPresentationResult(placement,params) |
+| TriggerResult.eventNotFound                | TriggerResult.placementNotFound               |
+| TriggerResult.noRuleMatch                  | TriggerResult.noAudienceMatch                 |
+
+### 2\. Getting the purchased product
+
+The `onDismiss` block of the `PaywallPresentationHandler` now accepts both a `PaywallInfo` object and a `PaywallResult` object. This allows you to easily access
+the purchased product from the result when the paywall dismisses.
+
+### 3\. Entitlements
+
+The `subscriptionStatus` has been changed to accept a set of `Entitlement` objects. This allows you to give access to entitlements based on products purchased.
+For example, in your app you might have Bronze, Silver, and Gold subscription tiers, i.e. entitlements, which entitle a user to access a certain set of features within your app.
+Every subscription product must be associated with one or more entitlements, which is controlled via the dashboard. Superwall will already have associated all your
+products with a default entitlement. If you don't use more than one entitlement tier within your app and you only use subscription products, you don't need to do anything extra.
+However, if you use one-time purchases or multiple entitlements, you should review your products and their entitlements. In general, consumables should not be associated with an
+entitlement, whereas non-consumables should be. Check your products [here](https://superwall.com/applications/:app/products/v2).
+
+If you're using a `PurchaseController`, you'll need to set the `entitlements.status` instead of the `subscriptionStatus`:
+
+| Before                                                            | After                                                                           |
+| ----------------------------------------------------------------- | ------------------------------------------------------------------------------- |
+| Superwall.shared.setSubscriptionStatus(SubscriptionStatus.ACTIVE) | Superwall.shared.setSubscriptionStatus(SubscriptionStatus.Active(entitlements)) |
+
+Here is an example of how you'd sync your subscription status with Superwall if you were using RevenueCat for example:
+
+<CodeGroup>
+
+```typescript RevenueCat
+syncSubscriptionStatus() {
+    Purchases.addCustomerInfoUpdateListener((customerInfo) => {
+      const entitlements = Object.keys(customerInfo.entitlements.active).map((id) => ({
+        id,
+      }))
+      Superwall.shared.setSubscriptionStatus(
+        entitlements.length === 0
+          ? SubscriptionStatus.Inactive()
+          : SubscriptionStatus.Active(entitlements)
+      )
+    })
+}
+```
+
+</CodeGroup>
+
+You can listen to the emitter property `Superwall.shared.subscriptionStatusEmitter` to be notified when the subscriptionStatus changes by passing in a `change` listener. Or you can use the `SuperwallDelegate`
+method `subscriptionStatusDidChange(from:to:)`, which replaces `subscriptionStatusDidChange(to:)`.
+
+### 4\. Paywall Presentation Condition
+
+In the Paywall Editor you can choose whether to always present a paywall or ask the SDK to check the user subscription before presenting a paywall.
+For users on v2 of the SDK, this is replaced with a check on the entitlements within the audience filter. As you migrate your users from v1 to v2 of the
+SDK, you'll need to make sure you set both the entitlements check and the paywall presentation condition in the paywall editor.
+
+<Frame>![](/images/camp-presentation-conditions.png)</Frame>
+
+## 5\. Check out the full change log
+
+You can view this on [our GitHub page](https://github.com/superwall/react-native-superwall/blob/master/CHANGELOG.md).
+
+## 6\. Check out our updated example apps
+
+All of our example apps ([standard React Native](https://github.com/superwall/react-native-superwall/tree/main/example) and [Expo](https://github.com/superwall/react-native-superwall/tree/main/expo-example)) have been updated to use the latest SDK. We now only have two apps: Basic and Advanced. Basic shows you the basic integration of Superwall without needing a purchase controller or multiple entitlements. Advanced shows you how to use entitlements within your app as well as optionally using a purchase controller with RevenueCat.

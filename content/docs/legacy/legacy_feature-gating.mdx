@@ -1,0 +1,600 @@
+---
+title: "Showing Paywalls (Legacy)"
+description: "At the heart of Superwall's SDK lies `Superwall.shared.register(event:params:handler:feature:)`. "
+sidebarTitle: "Overview"
+---
+
+This allows you to register a [placement](/campaigns-placements) to access a feature that may or may not be paywalled later in time. It also allows you to choose whether the user can access the feature even if they don't make a purchase.
+
+Here's an example.
+
+<Note>We are in the process of updating our docs and SDK to rename `event` to `placement`. If you see `event` anywhere, you can mentally replace it with `placement`. They mean the same thing.</Note>
+
+#### With Superwall
+
+<CodeGroup>
+
+```swift Swift
+func pressedWorkoutButton() {
+  // remotely decide if a paywall is shown and if
+  // navigation.startWorkout() is a paid-only feature
+  Superwall.shared.register(event: "StartWorkout") {
+    navigation.startWorkout()
+  }
+}
+```
+
+```swift Objective-C
+- (void)pressedWorkoutButton {
+  // remotely decide if a paywall is shown and if
+  // navigation.startWorkout() is a paid-only feature
+  [[Superwall sharedInstance] registerWithEvent:@"StartWorkout" params:nil handler:nil feature:^{
+    [navigation startWorkout];
+  }];
+}
+
+```
+
+```kotlin Kotlin
+fun pressedWorkoutButton() {
+  // remotely decide if a paywall is shown and if
+  // navigation.startWorkout() is a paid-only feature
+  Superwall.instance.register("StartWorkout") {
+    navigation.startWorkout()
+  }
+}
+```
+
+```dart Flutter
+void pressedWorkoutButton() {
+  // remotely decide if a paywall is shown and if
+  // navigation.startWorkout() is a paid-only feature
+  Superwall.shared.registerEvent('StartWorkout', feature: () {
+      navigation.startWorkout();
+  });
+}
+```
+
+```typescript React Native
+// remotely decide if a paywall is shown and if
+// navigation.startWorkout() is a paid-only feature
+Superwall.shared.register('StartWorkout').then(() => {
+  navigation.startWorkout();
+}
+```
+
+</CodeGroup>
+
+#### Without Superwall
+
+<CodeGroup>
+
+```swift Swift
+func pressedWorkoutButton() {
+  if (user.hasActiveSubscription) {
+    navigation.startWorkout()
+  } else {
+    navigation.presentPaywall() { result in
+      if (result) {
+        navigation.startWorkout()
+      } else {
+        // user didn't pay, developer decides what to do
+      }
+    }
+  }
+}
+```
+
+```swift Objective-C
+- (void)pressedWorkoutButton {
+  if (user.hasActiveSubscription) {
+    [navigation startWorkout];
+  } else {
+    [navigation presentPaywallWithCompletion:^(BOOL result) {
+      if (result) {
+        [navigation startWorkout];
+      } else {
+        // user didn't pay, developer decides what to do
+      }
+    }];
+  }
+}
+```
+
+```kotlin Kotlin
+fun pressedWorkoutButton() {
+  if (user.hasActiveSubscription) {
+    navigation.startWorkout()
+  } else {
+    navigation.presentPaywall { result ->
+      if (result) {
+        navigation.startWorkout()
+      } else {
+        // user didn't pay, developer decides what to do
+      }
+    }
+  }
+}
+```
+
+```dart Flutter
+void pressedWorkoutButton() {
+  if (user.hasActiveSubscription) {
+    navigation.startWorkout();
+  } else {
+    navigation.presentPaywall().then((result) {
+      if (result) {
+        navigation.startWorkout();
+      } else {
+        // user didn't pay, developer decides what to do
+      }
+    });
+  }
+}
+```
+
+```typescript React Native
+function pressedWorkoutButton() {
+  if (user.hasActiveSubscription) {
+    navigation.startWorkout()
+  } else {
+    navigation.presentPaywall().then((result: boolean) => {
+      if (result) {
+        navigation.startWorkout()
+      } else {
+        // user didn't pay, developer decides what to do
+      }
+    })
+  }
+}
+```
+
+</CodeGroup>
+
+### How it works:
+
+You can configure `"StartWorkout"` to present a paywall by [creating a campaign, adding the placement, and adding a rule](/campaigns) in the dashboard.
+
+1. The SDK retrieves your campaign settings from the dashboard on app launch.
+2. When a placement is called that belongs to a campaign, rules are evaluated _**on device**_ and the user enters an experiment — this means there's no delay between registering a placement and presenting a paywall.
+3. If it's the first time a user is entering an experiment, a paywall is decided for the user based on the percentages you set in the dashboard
+4. Once a user is assigned a paywall for a rule, they will continue to see that paywall until you remove the paywall from the rule or reset assignments to the paywall.
+5. After the paywall is closed, the Superwall SDK looks at the _Feature Gating_ value associated with your paywall, configurable from the paywall editor under General > Feature Gating (more on this below)
+   1. If the paywall is set to **_Non Gated_**, the `feature:` closure on `register(event: ...)` gets called when the paywall is dismissed (whether they paid or not)
+   2. If the paywall is set to **_Gated_**, the `feature:` closure on `register(event: ...)` gets called only if the user is already paying or if they begin paying.
+6. If no paywall is configured, the feature gets executed immediately without any additional network calls.
+
+Given the low cost nature of how register works, we strongly recommend registering **all core functionality** in order to remotely configure which features you want to gate – **without an app update**.
+
+<CodeGroup>
+
+```swift Swift
+// on the welcome screen
+func pressedSignUp() {
+  Superwall.shared.register(event: "SignUp") {
+    navigation.beginOnboarding()
+  }
+}
+
+// in another view controller
+func pressedWorkoutButton() {
+  Superwall.shared.register(event: "StartWorkout") {
+    navigation.startWorkout()
+  }
+}
+
+```
+
+```swift Objective-C
+// on the welcome screen
+- (void)pressedSignUp {
+  [[Superwall sharedInstance] registerWithEvent:@"SignUp" params:nil handler:nil feature:^{
+    [navigation beginOnboarding];
+  }];
+}
+
+// In another view controller
+- (void)pressedWorkoutButton {
+  [[Superwall sharedInstance] registerWithEvent:@"StartWorkout" params:nil handler:nil feature:^{
+    [navigation startWorkout];
+  }];
+}
+```
+
+```kotlin Kotlin
+// on the welcome screen
+fun pressedSignUp() {
+  Superwall.instance.register("SignUp") {
+    navigation.beginOnboarding()
+  }
+}
+
+// in another view controller
+fun pressedWorkoutButton() {
+  Superwall.instance.register("StartWorkout") {
+    navigation.startWorkout()
+  }
+}
+```
+
+```dart Flutter
+// on the welcome screen
+void pressedSignUp() {
+  Superwall.shared.registerEvent("SignUp", feature: () {
+    navigation.beginOnboarding();
+  });
+}
+
+// In another view controller
+void pressedWorkoutButton() {
+  Superwall.shared.registerEvent("StartWorkout", feature: () {
+    navigation.startWorkout();
+  });
+}
+```
+
+```typescript React Native
+// on the welcome screen
+function pressedSignUp() {
+  Superwall.shared.registerEvent("SignUp").then(() => {
+    navigation.beginOnboarding()
+  })
+}
+
+function pressedWorkoutButton() {
+  Superwall.shared.register("StartWorkout").then(() => {
+    navigation.startWorkout()
+  })
+}
+```
+
+</CodeGroup>
+
+### Placement Parameters 
+You can send parameters along with any placement you create. For example, if you had a caffeine logging app — perhaps you'd have a placement for logging caffeine:
+
+```swift
+// In iOS...
+Superwall.shared.register(event: "caffeineLogged") {
+    store.log(amountToLog)
+}
+```
+
+Now, imagine you could log caffeine from several different touch points in your app. You may wish to know _where_ the user tried to log caffeine from, and you could tie a parameter to the `caffeineLogged` placement to do this:
+
+<CodeGroup>
+
+```swift iOS
+Superwall.shared.register(event: "caffeineLogged", params: ["via":"logging_page"]) {
+  store.log(amountToLog)
+}
+```
+
+```kotlin Android
+val params: Map<String, Any> = mapOf(
+    "via" to "logging_page"
+)
+Superwall.instance.register("caffeineLogged", params = params)  {
+    store.log(amountToLog)
+}
+```
+
+```dart Flutter
+final params = <String, dynamic>{"via": "logging_page"};
+Superwall.shared.registerEvent(
+  "event", 
+  params: params,
+  feature: () {
+    logToStore(100);
+  }
+);
+``` 
+
+```typescript React Native
+Superwall.shared.register('caffeineLogged',
+  new Map([['via', 'logging_page']]),
+  undefined,
+  () => {
+    console.log('show coffee');
+  }
+);
+```
+
+</CodeGroup>
+
+The `via` parameter could now be used all throughout Superwall. You could create a new [audience](/campaigns-audience) which has filters for each place users logged caffeine from, and unique paywalls for each of them.
+
+Parameter placements can be used in three primary ways:
+
+1. **Audience Filtering:** As mentioned above, you can filter against parameters when creating audiences. Following our example, you'd create a **placement parameter** named **via** and then choose how to filter off of the parameter's value:
+<Frame>![](/../images/placementParamVia.png)</Frame>
+
+2. **Templating in Text:** Parameters are available in our [paywall editor](/paywall-editor-overview), so you can easily use them in text components too:
+```
+Hey {{user.firstName}}! FitnessAI offers tons of {{user.fitnessGoal}} workouts to help you reach your goals :)
+```
+
+3. **Interfacing with Analytics:** Another common scenario is cohorting with your own analytics. See this [doc](/cohorting-in-3rd-party-tools) for more.
+
+### Feature Gating from the Paywall Editor
+
+##### Paywall Editor > General > Settings > Feature Gating
+
+Feature gating allows your team to retroactively decide if this paywall is _Gated_ or _Non Gated_
+
+| Type                    | Behavior                                                                 | Example                                                                                                                          |
+| ----------------------- | ------------------------------------------------------------------------ | -------------------------------------------------------------------------------------------------------------------------------- |
+| **Non Gated** (default) | Show Paywall → Execute Feature                                           | When "Sign Up" button is pressed, show a paywall, then continue onboarding once the paywall is dismissed.                        |
+| **Gated**               | Show Paywall → Is user paying?If Yes → Execute FeatureIf No → Do Nothing | When "Start Workout" button is pressed, show a paywall, then continue once the paywall is dismissed only if the user subscribes. |
+
+![](/../images/1845a38-feature-gating.png)
+
+Remember, the feature is always executed if:
+
+1. No campaign is configured for the placement
+2. The user is already paying
+
+### Using the Handler
+
+You can provide a `PaywallPresentationHandler` to `register`, whose functions provide status updates for a paywall:
+
+- `onDismiss`: Called when the paywall is dismissed. Accepts a `PaywallInfo` object containing info about the dismissed paywall.
+- `onPresent`: Called when the paywall did present. Accepts a `PaywallInfo` object containing info about the presented paywall.
+- `onError`: Called when an error occurred when trying to present a paywall. Accepts an `Error` indicating why the paywall could not present.
+- `onSkip`: Called when a paywall is skipped. Accepts a `PaywallSkippedReason` enum indicating why the paywall was skipped.
+
+<CodeGroup>
+
+```swift Swift
+let handler = PaywallPresentationHandler()
+handler.onDismiss { paywallInfo in
+  print("The paywall dismissed. PaywallInfo:", paywallInfo)
+}
+handler.onPresent { paywallInfo in
+  print("The paywall presented. PaywallInfo:", paywallInfo)
+}
+handler.onError { error in
+  print("The paywall presentation failed with error \(error)")
+}
+handler.onSkip { reason in
+  switch reason {
+  case .userIsSubscribed:
+    print("Paywall not shown because user is subscribed.")
+  case .holdout(let experiment):
+    print("Paywall not shown because user is in a holdout group in Experiment: \(experiment.id)")
+  case .noRuleMatch:
+    print("Paywall not shown because user doesn't match any rules.")
+  case .eventNotFound:
+    print("Paywall not shown because this placement isn't part of a campaign.")
+  }
+}
+
+Superwall.shared.register(event: "campaign_trigger", handler: handler) {
+  // Feature launched
+}
+```
+
+```swift Objective-C
+SWKPaywallPresentationHandler *handler = [[SWKPaywallPresentationHandler alloc] init];
+
+[handler onDismiss:^(SWKPaywallInfo * _Nonnull paywallInfo) {
+  NSLog(@"The paywall dismissed. PaywallInfo: %@", paywallInfo);
+}];
+
+[handler onPresent:^(SWKPaywallInfo * _Nonnull paywallInfo) {
+  NSLog(@"The paywall presented. PaywallInfo: %@", paywallInfo);
+}];
+
+[handler onError:^(NSError * _Nonnull error) {
+  NSLog(@"The paywall presentation failed with error %@", error);
+}];
+
+[handler onSkip:^(enum SWKPaywallSkippedReason reason) {
+  switch (reason) {
+    case SWKPaywallSkippedReasonUserIsSubscribed:
+      NSLog(@"Paywall not shown because user is subscribed.");
+      break;
+    case SWKPaywallSkippedReasonHoldout:
+      NSLog(@"Paywall not shown because user is in a holdout group.");
+      break;
+    case SWKPaywallSkippedReasonNoRuleMatch:
+      NSLog(@"Paywall not shown because user doesn't match any rules.");
+      break;
+    case SWKPaywallSkippedReasonEventNotFound:
+      NSLog(@"Paywall not shown because this placement isn't part of a campaign.");
+      break;
+    case SWKPaywallSkippedReasonNone:
+      // The paywall wasn't skipped.
+      break;
+  }
+}];
+
+[[Superwall sharedInstance] registerWithEvent:@"campaign_trigger" params:nil handler:handler feature:^{
+  // Feature launched.
+}];
+```
+
+```kotlin Kotlin
+val handler = PaywallPresentationHandler()
+handler.onDismiss {
+  println("The paywall dismissed. PaywallInfo: ${it}")
+}
+handler.onPresent {
+  println("The paywall presented. PaywallInfo: ${it}")
+}
+handler.onError {
+  println("The paywall errored. Error: ${it}")
+}
+handler.onSkip {
+  when (it) {
+    is PaywallSkippedReason.EventNotFound -> {
+      println("The paywall was skipped because the placement was not found.")
+    }
+    is PaywallSkippedReason.Holdout -> {
+      println("The paywall was skipped because the user is in a holdout group.")
+    }
+    is PaywallSkippedReason.NoRuleMatch -> {
+      println("The paywall was skipped because no rule matched.")
+    }
+    is PaywallSkippedReason.UserIsSubscribed ->  {
+      println("The paywall was skipped because the user is subscribed.")
+    }
+  }
+}
+
+Superwall.instance.register(event = "campaign_trigger", handler = handler) {
+    // Feature launched
+}
+```
+
+```dart Flutter
+PaywallPresentationHandler handler = PaywallPresentationHandler();
+handler.onPresent((paywallInfo) async {
+  String name = await paywallInfo.name;
+  print("Handler (onPresent): $name");
+});
+handler.onDismiss((paywallInfo) async {
+  String name = await paywallInfo.name;
+  print("Handler (onDismiss): $name");
+});
+handler.onError((error) {
+  print("Handler (onError): ${error}");
+});
+handler.onSkip((skipReason) async {
+  String description = await skipReason.description;
+
+  if (skipReason is PaywallSkippedReasonHoldout) {
+    print("Handler (onSkip): $description");
+
+    final experiment = await skipReason.experiment;
+    final experimentId = await experiment.id;
+    print("Holdout with experiment: ${experimentId}");
+  } else if (skipReason is PaywallSkippedReasonNoRuleMatch) {
+    print("Handler (onSkip): $description");
+  } else if (skipReason is PaywallSkippedReasonEventNotFound) {
+    print("Handler (onSkip): $description");
+  } else if (skipReason is PaywallSkippedReasonUserIsSubscribed) {
+    print("Handler (onSkip): $description");
+  } else {
+    print("Handler (onSkip): Unknown skip reason");
+  }
+});
+
+Superwall.shared.registerEvent("campaign_trigger", handler: handler, feature: () {
+  // Feature launched
+});
+```
+
+```typescript React Native
+const handler = new PaywallPresentationHandler()
+handler.onPresent((paywallInfo) => {
+  const name = paywallInfo.name
+  console.log(`Handler (onPresent): ${name}`)
+})
+handler.onDismiss((paywallInfo) => {
+  const name = paywallInfo.name
+  console.log(`Handler (onDismiss): ${name}`)
+})
+handler.onError((error) => {
+  console.log(`Handler (onError): ${error}`)
+})
+handler.onSkipHandler((skipReason) => {
+  const description = skipReason.description
+
+  if (skipReason instanceof PaywallSkippedReasonHoldout) {
+    console.log(`Handler (onSkipHandler): ${description}`)
+    const experiment = skipReason.experiment
+    const experimentId = experiment.id
+    console.log(`Holdout with experiment: ${experimentId}`)
+  } else if (skipReason instanceof PaywallSkippedReasonNoRuleMatch) {
+    console.log(`Handler (onSkip): ${description}`)
+  } else if (skipReason instanceof PaywallSkippedReasonEventNotFound) {
+    console.log(`Handler (onSkip): ${description}`)
+  } else if (skipReason instanceof PaywallSkippedReasonUserIsSubscribed) {
+    console.log(`Handler (onSkip): ${description}`)
+  } else {
+    console.log(`Handler (onSkip): Unknown skip reason`)
+  }
+})
+
+Superwall.shared.register("campaign_trigger", undefined, handler).then(() => {
+  // Feature launched
+})
+```
+
+</CodeGroup>
+
+<Tip>Wanting to see which product was just purchased from a paywall? Use the [SuperwallDelegate](/3rd-party-analytics#using-events-to-see-purchased-products).</Tip>
+
+### Automatically Registered Placements
+
+The SDK [automatically registers](/docs/tracking-analytics) some internal placements which can be used to present paywalls:
+
+- `app_install`
+- `app_launch`
+- `deepLink_open`
+- `session_start`
+- `transaction_abandon`
+- `transaction_fail`
+- `paywall_close`
+
+### Register. Everything.
+
+To provide your team with ultimate flexibility, we recommend registering _all_ of your analytics events, even if you don't pass feature blocks through. This way you can retroactively add a paywall almost anywhere – **without an app update**!
+
+If you're already set up with an analytics provider, you'll typically have an `Analytics.swift` singleton (or similar) to disperse all your events from. Here's how that file might look:
+
+```Swift Swift
+import SuperwallKit
+import Mixpanel
+import Firebase
+
+final class Analytics {
+  static var shared = Analytics()
+
+  func track(
+    event: String,
+    properties: [String: Any]
+  ) {
+    // Superwall
+    Superwall.shared.register(event: event, params: properties)
+
+    // Firebase (just an example)
+    Firebase.Analytics.logEvent(event, parameters: properties)
+
+    // Mixpanel (just an example)
+    Mixpanel.mainInstance().track(event: event, properties: properties)
+  }
+}
+
+
+// And thus ...
+
+Analytics.shared.track(
+  event: "workout_complete",
+  properties: ["total_workouts": 17]
+)
+
+// ... can now be turned into a paywall moment :)
+```
+
+<Note>
+  **Need to know if a paywall will show beforehand?**
+
+In some circumstances, you might like to know if a particular event will present a paywall. To do this, you can use `Superwall.shared.getPresentationResult(forEvent:params:)`.
+
+</Note>
+
+### Handling Network Issues
+
+Superwall's SDK handles network issues as gracefully as possible, but there are still some scenarios to consider. The behavior will be different based on if `subscriptionStatus` evaluates to `.active` or not.
+
+**If it is `.active`** and Superwall has already fetched or cached its configuration, then paywall presentation proceeds as it normally would. If Superwall was unable to fetch its configuration, the SDK waits one second to give it a chance to be retrieved. After that time, if it's not available — then a timeout event is tracked and the `onSkip` handler will be invoked with a reason of `userIsSubscribed`. The "feature" block or closure will then be invoked:
+
+```swift
+Superwall.shared.register(event: "foo") {
+  // Your feature logic
+}
+```
+
+**If it's not `.active`** then Superwall will retry network calls until we have retrieved the necessary data for up to one minute. If it's still unavailable, then the SDK fires the `onError` handler with the error type of `noConfig`.

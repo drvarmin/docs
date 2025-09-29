@@ -1,0 +1,77 @@
+---
+title: "Install the SDK"
+description: Install the Superwall React Native SDK via your favorite package manager.
+---
+
+This guide is for Expo projects that want to integrate Superwall using our Expo SDK.
+
+<Note>
+  **This doesn't sound like you?**
+  
+  - **React Native app, new to Superwall** → See our [installation guide for bare React Native apps](/expo/guides/using-expo-sdk-in-bare-react-native)
+  - **React Native app with existing Superwall SDK** → See our [migration guide](/expo/guides/migrating-react-native)
+</Note>
+
+<Warning>
+
+**Important: Expo SDK 53+ Required**
+
+This SDK is exclusively compatible with Expo SDK version 53 and newer. For projects using older Expo versions, please use our [legacy React Native SDK](https://github.com/superwall/react-native-superwall).
+
+</Warning>
+
+To see the latest release, check out the [Superwall Expo SDK repo](https://github.com/superwall/expo-superwall).
+
+
+
+<CodeGroup>
+
+```bash bun
+bunx expo install expo-superwall
+```
+```bash pnpm
+pnpm dlx expo install expo-superwall
+```
+```bash npm
+npx expo install expo-superwall
+```
+```bash yarn
+yarn dlx expo install expo-superwall
+```
+</CodeGroup>
+
+## Version Targeting
+
+<Warning>Superwall requires iOS 14.0 or higher, aswell as Android SDK 26 or higher. Ensure you Expo targets the correct minimum OS version by updating app.json or app.config.js.</Warning>
+
+First, install the `expo-build-properties` config plugin if your Expo project hasn’t yet:
+
+```bash
+npx expo install expo-build-properties
+```
+
+Then, add the following to your `app.json` or `app.config.js` file:
+
+```json
+{
+  "expo": {
+    "plugins": [
+      ...
+      [
+        "expo-build-properties",
+        {
+          "android": {
+            "minSdkVersion": 26
+          },
+          "ios": {
+              "deploymentTarget": "14.0" // or higher
+          }
+        }
+      ]
+    ]
+  }
+}
+```
+
+
+<Check>**And you're done!** Now you're ready to configure the SDK </Check>

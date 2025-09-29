@@ -1,0 +1,93 @@
+---
+title: "SuperwallOptions"
+description: "Configuration options for customizing Superwall SDK behavior."
+---
+
+## Purpose
+Configures various aspects of the Superwall SDK including paywall behavior, logging, and network settings.
+
+## Signature
+```dart
+class SuperwallOptions {
+  final PaywallOptions paywalls;
+  final NetworkEnvironment networkEnvironment;
+  final bool isExternalDataCollectionEnabled;
+  final String? localeIdentifier;
+  final bool isGameControllerEnabled;
+  final Logging logging;
+}
+```
+
+## Parameters
+<ParamTable>
+| Property | Type | Description |
+|----------|------|-------------|
+| `paywalls` | [`PaywallOptions`](/flutter/sdk-reference/PaywallOptions) | Configuration for paywall presentation behavior. |
+| `networkEnvironment` | `NetworkEnvironment` | Network environment for API calls (release/staging). |
+| `isExternalDataCollectionEnabled` | `bool` | Enables external data collection for analytics. Defaults to `true`. |
+| `localeIdentifier` | `String?` | Override locale for paywall localization. Defaults to device locale. |
+| `isGameControllerEnabled` | `bool` | Enables game controller support. Defaults to `false`. |
+| `logging` | `Logging` | Configuration for SDK logging levels and behavior. |
+</ParamTable>
+
+## Usage
+
+Basic options:
+```dart
+final options = SuperwallOptions(
+  paywalls: PaywallOptions(
+    shouldPreload: true,
+    automaticallyDismiss: false,
+  ),
+  logging: Logging(
+    level: LogLevel.debug,
+  ),
+);
+
+await Superwall.configure(
+  'pk_your_api_key',
+  options: options,
+);
+```
+
+Production configuration:
+```dart
+final productionOptions = SuperwallOptions(
+  paywalls: PaywallOptions(
+    shouldPreload: true,
+    automaticallyDismiss: true,
+  ),
+  networkEnvironment: NetworkEnvironment.release,
+  isExternalDataCollectionEnabled: true,
+  logging: Logging(level: LogLevel.warn),
+);
+```
+
+Development configuration:
+```dart
+final developmentOptions = SuperwallOptions(
+  paywalls: PaywallOptions(
+    shouldPreload: false, // Faster builds
+    automaticallyDismiss: false, // Manual testing
+  ),
+  networkEnvironment: NetworkEnvironment.staging,
+  logging: Logging(
+    level: LogLevel.debug,
+    scopes: [LogScope.all],
+  ),
+);
+```
+
+Custom locale:
+```dart
+final localizedOptions = SuperwallOptions(
+  localeIdentifier: 'es_ES', // Spanish (Spain)
+  paywalls: PaywallOptions(
+    shouldPreload: true,
+  ),
+);
+```
+
+## Related
+
+- [`PaywallOptions`](/flutter/sdk-reference/PaywallOptions)

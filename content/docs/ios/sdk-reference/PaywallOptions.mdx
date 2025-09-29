@@ -1,0 +1,106 @@
+---
+title: "PaywallOptions"
+description: "Configuration for paywall presentation and behavior in the Superwall iOS SDK."
+---
+
+<Tip>
+`PaywallOptions` is provided via the `paywalls` property on [`SuperwallOptions`](/ios/sdk-reference/SuperwallOptions) and is passed when calling [`configure`](/ios/sdk-reference/configure).
+</Tip>
+
+## Purpose
+Customize how paywalls look and behave, including preload behavior, alerts, dismissal, and haptics.
+
+## Signature
+```swift
+@objcMembers
+public final class PaywallOptions: NSObject {
+  public var isHapticFeedbackEnabled: Bool = true
+
+  public final class RestoreFailed: NSObject {
+    public var title: String = "No Subscription Found"
+    public var message: String = "We couldn't find an active subscription for your account."
+    public var closeButtonTitle: String = "Okay"
+  }
+  public var restoreFailed: RestoreFailed = RestoreFailed()
+
+  public var shouldShowWebRestorationAlert: Bool = true
+
+  public final class NotificationPermissionsDenied: NSObject {
+    public var title: String = "Notification Permissions Denied"
+    public var message: String = "Please enable notification permissions from the Settings app so we can notify you when your free trial ends."
+    public var actionButtonTitle: String = "Open Settings"
+    public var closeButtonTitle: String = "Not now"
+  }
+  public var notificationPermissionsDenied: NotificationPermissionsDenied?
+
+  public var shouldShowPurchaseFailureAlert: Bool = true
+  public var shouldPreload: Bool = true
+  public var automaticallyDismiss: Bool = true
+
+  public var overrideProductsByName: [String: String]? = [:]
+  public var shouldShowWebPurchaseConfirmationAlert: Bool = true
+
+  public enum TransactionBackgroundView: Int {
+    case spinner
+    case none
+  }
+  public var transactionBackgroundView: TransactionBackgroundView = .spinner
+}
+```
+
+## Parameters
+<ParamTable>
+| Property | Type | Description |
+|----------|------|-------------|
+| `isHapticFeedbackEnabled` | `Bool` | Enables haptic feedback during key paywall interactions. Defaults to `true`. |
+| `restoreFailed` | `RestoreFailed` | Messaging for the restore-failed alert. |
+| `restoreFailed.title` | `String` | Title for restore-failed alert. Defaults to "No Subscription Found". |
+| `restoreFailed.message` | `String` | Message for restore-failed alert. Defaults to "We couldn't find an active subscription for your account." |
+| `restoreFailed.closeButtonTitle` | `String` | Close button title for restore-failed alert. Defaults to "Okay". |
+| `shouldShowWebRestorationAlert` | `Bool` | Shows an alert asking the user to try restoring on the web if web checkout is enabled. Defaults to `true`. |
+| `notificationPermissionsDenied` | `NotificationPermissionsDenied?` | Customize the alert shown when notification permissions are denied. `nil` disables the alert. |
+| `notificationPermissionsDenied.title` | `String` | Title for notification-permissions-denied alert. Defaults to "Notification Permissions Denied". |
+| `notificationPermissionsDenied.message` | `String` | Message for notification-permissions-denied alert. |
+| `notificationPermissionsDenied.actionButtonTitle` | `String` | Action button title for notification-permissions-denied alert. Defaults to "Open Settings". |
+| `notificationPermissionsDenied.closeButtonTitle` | `String` | Close button title for notification-permissions-denied alert. Defaults to "Not now". |
+| `shouldShowPurchaseFailureAlert` | `Bool` | Shows an alert after a purchase fails. Set to `false` if you handle failures via a `PurchaseController`. Defaults to `true`. |
+| `shouldPreload` | `Bool` | Preloads and caches trigger paywalls and products during SDK initialization. Defaults to `true`. |
+| `automaticallyDismiss` | `Bool` | Automatically dismisses the paywall on successful purchase or restore. Defaults to `true`. |
+| `overrideProductsByName` | `[String: String]?` | Overrides products on all paywalls using name→identifier mapping (e.g., `"primary"` → `"com.example.premium_monthly"`). |
+| `shouldShowWebPurchaseConfirmationAlert` | `Bool` | Shows a localized alert confirming a successful web checkout purchase. Defaults to `true`. |
+| `transactionBackgroundView` | `TransactionBackgroundView` | View shown behind the system payment sheet during a transaction. `.spinner` by default; set to `.none` to remove. |
+</ParamTable>
+
+## Usage
+```swift
+let paywallOptions = PaywallOptions()
+paywallOptions.isHapticFeedbackEnabled = true
+paywallOptions.shouldShowPurchaseFailureAlert = false
+paywallOptions.shouldPreload = true
+paywallOptions.automaticallyDismiss = true
+paywallOptions.transactionBackgroundView = .spinner
+paywallOptions.overrideProductsByName = [
+  "primary": "com.example.premium_monthly",
+  "tertiary": "com.example.premium_annual"
+]
+paywallOptions.shouldShowWebRestorationAlert = true
+paywallOptions.notificationPermissionsDenied = {
+  let n = PaywallOptions.NotificationPermissionsDenied()
+  n.title = "Notification Permissions Denied"
+  n.message = "Please enable notification permissions from the Settings app so we can notify you when your free trial ends."
+  n.actionButtonTitle = "Open Settings"
+  n.closeButtonTitle = "Not now"
+  return n
+}()
+
+let options = SuperwallOptions()
+options.paywalls = paywallOptions
+
+Superwall.configure(
+  apiKey: "pk_your_api_key",
+  options: options
+)
+```
+
+## Related
+- [`SuperwallOptions`](/ios/sdk-reference/SuperwallOptions)

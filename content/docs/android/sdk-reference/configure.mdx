@@ -1,0 +1,132 @@
+---
+title: "configure()"
+description: "A static function that configures a shared instance of Superwall for use throughout your app."
+---
+
+<Note>
+This is a static method called on the `Superwall` class itself, not on the shared instance. The Android SDK requires an Application context for initialization.
+</Note>
+
+## Purpose
+Configures the shared instance of Superwall with your API key and optional configurations, making it ready for use throughout your Android app.
+
+## Signature
+
+<CodeGroup>
+
+```swift iOS
+public static func configure(
+  apiKey: String,
+  purchaseController: PurchaseController? = nil,
+  options: SuperwallOptions? = nil,
+  completion: (() -> Void)? = nil
+) -> Superwall
+```
+
+```kotlin Android
+public fun configure(
+    application: Application,
+    apiKey: String,
+    purchaseController: PurchaseController? = null,
+    options: SuperwallOptions? = null,
+    completion: (() -> Unit)? = null
+)
+```
+
+```dart Flutter
+static Future<void> configure(
+  String apiKey, {
+  SuperwallOptions? options,
+  PurchaseController? purchaseController,
+})
+```
+
+```typescript React Native
+static configure(
+  apiKey: string,
+  purchaseController?: PurchaseController,
+  options?: SuperwallOptions
+): Promise<void>
+```
+
+</CodeGroup>
+
+## Parameters
+<ParamTable>
+| Name | Type | Description |
+|------|------|-------------|
+| `application` | `Application` | Your Android Application instance, required for SDK initialization and lifecycle management. |
+| `apiKey` | `String` | Your Public API Key from the Superwall dashboard settings. |
+| `purchaseController` | `PurchaseController?` | Optional object for handling all subscription-related logic yourself. If `null`, Superwall handles subscription logic. Defaults to `null`. |
+| `options` | `SuperwallOptions?` | Optional configuration object for customizing paywall appearance and behavior. See [`SuperwallOptions`](/android/sdk-reference/SuperwallOptions) for details. Defaults to `null`. |
+| `completion` | `(() -> Unit)?` | Optional completion handler called when Superwall finishes configuring. Defaults to `null`. |
+</ParamTable>
+
+## Returns / State
+Configures the Superwall instance which is accessible via [`Superwall.instance`](/android/sdk-reference/Superwall).
+
+## Usage
+
+<CodeGroup>
+
+```swift iOS
+// AppDelegate or SceneDelegate
+func application(_ application: UIApplication, didFinishLaunchingWithOptions launchOptions: [UIApplication.LaunchOptionsKey: Any]?) -> Bool {
+    Superwall.configure(apiKey: "pk_your_api_key")
+    return true
+}
+```
+
+```kotlin Android
+class MyApplication : Application() {
+    override fun onCreate() {
+        super.onCreate()
+        Superwall.configure(
+            application = this,
+            apiKey = "pk_your_api_key"
+        )
+    }
+}
+```
+
+```dart Flutter
+void main() async {
+  WidgetsFlutterBinding.ensureInitialized();
+  await Superwall.configure("pk_your_api_key");
+  runApp(MyApp());
+}
+```
+
+```typescript React Native
+// App.tsx
+export default function App() {
+  useEffect(() => {
+    Superwall.configure("pk_your_api_key");
+  }, []);
+  
+  return <MainNavigator />;
+}
+```
+
+</CodeGroup>
+
+With custom options:
+```kotlin
+class MyApplication : Application() {
+    override fun onCreate() {
+        super.onCreate()
+        
+        val options = SuperwallOptions().apply {
+            paywalls.shouldShowPurchaseFailureAlert = false
+        }
+        
+        Superwall.configure(
+            application = this,
+            apiKey = "pk_your_api_key",
+            options = options
+        ) {
+            println("Superwall configured successfully")
+        }
+    }
+}
+```

@@ -1,0 +1,88 @@
+---
+title: "Vibe Coding"
+description: "How to Vibe Code using the knowledge of the Superwall Docs"
+---
+
+## Overview
+
+We've built a few tools to help you Vibe Code using the knowledge of the Superwall Docs, right in your favorite AI tools:
+
+- [Superwall Docs MCP](#superwall-docs-mcp) in Claude Code, Cursor, etc.
+- [Superwall Docs GPT](#superwall-docs-gpt) in ChatGPT
+
+And right here in the Superwall Docs:
+- [Ask AI](#ask-ai)
+- [Docs Links](#docs-links)
+- [LLMs.txt](#llmstxt)
+
+
+
+## Superwall Docs MCP
+The Superwall Docs MCP ([Model Context Protocol](https://modelcontextprotocol.io/docs/tutorials/use-remote-mcp-server)) is a tool that allows your favorite AI tools to search the Superwall Docs and get context from the docs.
+
+### Cursor
+
+You can install the MCP server in Cursor by clicking this button:
+[![Install MCP Server](/images/cursor-mcp-install-light.svg)](https://cursor.com/en/install-mcp?name=superwall-docs-mcp&config=eyJ1cmwiOiJodHRwczovL21jcC5zdXBlcndhbGwuY29tL21jcCJ9)
+
+or by adding the following to your `~/.cursor/mcp.json` file:
+
+```json
+{
+  "mcpServers": {
+    "superwall-docs": {
+      "url": "https://mcp.superwall.com/mcp"
+    }
+  }
+}
+```
+
+### Claude Code
+
+You can install the MCP server in Claude Code by running the following command:
+
+```bash
+claude mcp add --transport sse superwall-docs https://mcp.superwall.com/sse
+```
+
+## Superwall Docs GPT
+
+You can use the [Superwall Docs GPT](https://chatgpt.com/g/g-6888175f1684819180302d66f4e61971-superwall-docs-gpt) right in the ChatGPT app, and use it to ask any Superwall question. 
+
+It has the full knowledge of the Superwall Docs, and can be used with all the ChatGPT features you love like using the context of your files straight from your IDE.
+
+
+## Ask AI
+
+The built-in [Ask AI tool](https://superwall.com/docs/ai) in the Superwall Docs is a great place to start if you have a question or issue.
+
+
+## Docs Links
+
+On each page of the Superwall Docs (including this one!), you can find in the top right corner:
+
+- **Copy page**: to copy the page in Markdown format.
+
+Also in the dropdown menu, you can access these options:
+
+- **View as markdown**: to view the page in Markdown format
+- **Open in ChatGPT**, **Open in Claude**: to open the page in the respective AI tool and add the page as context for your conversation
+
+
+## LLMs.txt
+The Superwall Docs website has `llms.txt` and `llms-full.txt` files, in total and for each SDK, that you can use to add context to your LLMs.
+
+`llms.txt` is a summary of the docs with links to each page.
+
+`llms-full.txt` is the full text of all of the docs.
+
+| SDK | Summary | Full Text |
+| -------- | ------- | --------- |
+| All | [`llms.txt`](https://superwall.com/docs/llms.txt) | [`llms-full.txt`](https://superwall.com/docs/llms-full.txt) |
+| Dashboard | [`llms-dashboard.txt`](https://superwall.com/docs/llms-dashboard.txt) | [`llms-full-dashboard.txt`](https://superwall.com/docs/llms-full-dashboard.txt) |
+| iOS | [`llms-ios.txt`](https://superwall.com/docs/llms-ios.txt) | [`llms-full-ios.txt`](https://superwall.com/docs/llms-full-ios.txt) |
+| Android | [`llms-android.txt`](https://superwall.com/docs/llms-android.txt) | [`llms-full-android.txt`](https://superwall.com/docs/llms-full-android.txt) |
+| Flutter | [`llms-flutter.txt`](https://superwall.com/docs/llms-flutter.txt) | [`llms-full-flutter.txt`](https://superwall.com/docs/llms-full-flutter.txt) |
+| Expo | [`llms-expo.txt`](https://superwall.com/docs/llms-expo.txt) | [`llms-full-expo.txt`](https://superwall.com/docs/llms-full-expo.txt) |
+
+To minimize token use, we recommend using the files specific to your SDK.

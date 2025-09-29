@@ -1,0 +1,77 @@
+---
+title: "Superwall"
+description: "The shared instance of Superwall that provides access to all SDK features."
+---
+
+<Note>
+You must call [`configure()`](/android/sdk-reference/configure) before accessing `Superwall.instance`, otherwise your app will crash.
+</Note>
+
+## Purpose
+Provides access to the configured Superwall instance after calling [`configure()`](/android/sdk-reference/configure).
+
+## Signature
+```kotlin
+companion object {
+    val instance: Superwall
+}
+```
+
+```java
+// Java
+public static Superwall getInstance()
+```
+
+## Parameters
+This is a companion object property with no parameters.
+
+## Returns / State
+Returns the shared `Superwall` instance that was configured via [`configure()`](/android/sdk-reference/configure).
+
+## Usage
+
+Configure first (typically in Application class):
+```kotlin
+class MyApplication : Application() {
+    override fun onCreate() {
+        super.onCreate()
+        Superwall.configure(
+            application = this,
+            apiKey = "pk_your_api_key"
+        )
+    }
+}
+```
+
+Then access throughout your app:
+```kotlin
+Superwall.instance.register("feature_access") {
+    // Feature code here
+}
+```
+
+Set user identity and attributes:
+```kotlin
+Superwall.instance.identify("user123")
+
+Superwall.instance.setUserAttributes(mapOf(
+    "plan" to "premium",
+    "signUpDate" to System.currentTimeMillis()
+))
+```
+
+Set delegate:
+```kotlin
+Superwall.instance.delegate = this
+```
+
+Java usage:
+```java
+// Access the instance
+Superwall.getInstance().register("feature_access", () -> {
+    // Feature code here
+});
+
+// Set user identity
+Superwall.getInstance().identify("user123");
+```

@@ -1,0 +1,25 @@
+---
+title: "Feature Gating in Paywall Settings"
+description: "You can toggle particular features to be either gated or non-gated without pushing app updates."
+sidebarTitle: "Feature Gating Settings"
+---
+
+When a paywall is open in the editor, you'll see a setting for "Feature Gating" in the leading sidebar:
+
+<Frame>![](/images/feature-gate-editor-setting.png)</Frame>
+
+Feature gating allows your team to retroactively decide if this paywall is _Gated_ or _Non Gated_
+
+| Type                    | Behavior                                                                 | Example                                                                                                                          |
+| ----------------------- | ------------------------------------------------------------------------ | -------------------------------------------------------------------------------------------------------------------------------- |
+| **Non Gated** (default) | Show Paywall → Execute Feature                                           | When "Sign Up" button is pressed, show a paywall, then continue onboarding once the paywall is dismissed.                        |
+| **Gated**               | Show Paywall → Is user paying?If Yes → Execute FeatureIf No → Do Nothing | When "Start Workout" button is pressed, show a paywall, then continue once the paywall is dismissed only if the user subscribes. |
+
+For a detailed explanation of how feature gating works, see the following flowchart:
+
+![](/images/feature-gate-flow.png)
+
+Remember, the feature is always executed if:
+
+1. No campaign is configured for the placement.
+2. The user is already paying or subscribed.

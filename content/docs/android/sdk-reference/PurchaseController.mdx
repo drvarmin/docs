@@ -1,0 +1,57 @@
+---
+title: "PurchaseController"
+description: "An interface for handling Superwall's subscription-related logic with your own purchase implementation."
+---
+
+<Info>
+**This interface is not required.** By default, Superwall handles all subscription-related logic automatically using Google Play Billing.
+</Info>
+
+<Warning>
+When implementing PurchaseController, you must manually update [`subscriptionStatus`](/android/sdk-reference/subscriptionStatus) whenever the user's entitlements change.
+</Warning>
+
+## Purpose
+Use this interface only if you want complete control over purchase handling, such as when using RevenueCat or other third-party purchase frameworks.
+
+## Signature
+```kotlin
+interface PurchaseController {
+    suspend fun purchase(
+        activity: Activity,
+        product: StoreProduct
+    ): PurchaseResult
+    
+    suspend fun restorePurchases(): RestorationResult
+}
+```
+
+```java
+// Java
+public interface PurchaseController {
+    CompletableFuture<PurchaseResult> purchase(
+        Activity activity, 
+        StoreProduct product
+    );
+    
+    CompletableFuture<RestorationResult> restorePurchases();
+}
+```
+
+## Parameters
+<ParamTable>
+| Method | Parameters | Return Type | Description |
+|--------|------------|-------------|-------------|
+| `purchase` | `activity: Activity`, `product: StoreProduct` | `PurchaseResult` | Called when user initiates purchasing. Implement your purchase logic here. Activity is needed for Google Play Billing. |
+| `restorePurchases` | None | `RestorationResult` | Called when user initiates restore. Implement your restore logic here. |
+</ParamTable>
+
+## Returns / State
+- `purchase()` returns a `PurchaseResult` (`.Purchased`, `.Failed(Throwable)`, `.Cancelled`, or `.Pending`)
+- `restorePurchases()` returns a `RestorationResult` (`.Restored` or `.Failed(Throwable?)`)
+
+When using a PurchaseController, you must also manage [`subscriptionStatus`](/android/sdk-reference/subscriptionStatus) yourself.
+
+## Usage
+
+For implementation examples and detailed guidance, see [Using RevenueCat](/android/guides/using-revenuecat).

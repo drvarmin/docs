@@ -1,0 +1,46 @@
+---
+title: "SuperwallLoading"
+---
+
+`<SuperwallLoading />` and `<SuperwallLoaded />` are helper components to help manage the loading state of the Superwall SDK.
+
+The `<SuperwallLoading />` component will render its children while the SDK is initializing.
+
+The `<SuperwallLoaded />` component will render its children when the SDK is ready.
+
+
+## Example
+
+```tsx
+import {
+  SuperwallProvider,
+  SuperwallLoading,
+  SuperwallLoaded,
+} from "expo-superwall";
+import { ActivityIndicator, View, Text } from "react-native";
+
+const API_KEY = "YOUR_SUPERWALL_API_KEY";
+
+export default function App() {
+  return (
+    <SuperwallProvider apiKeys={{ ios: API_KEY }}>
+      <SuperwallLoading>
+        <ActivityIndicator style={{ flex: 1 }} />
+      </SuperwallLoading>
+      <SuperwallLoaded>
+        {/* Your main app screen or component */}
+        <MainAppScreen />
+      </SuperwallLoaded>
+    </SuperwallProvider>
+  );
+}
+
+function MainAppScreen() {
+  return (
+    <View style={{ flex: 1, alignItems: "center", justifyContent: "center" }}>
+      <Text>Superwall SDK is ready!</Text>
+      {/* Rest of your app's UI */}
+    </View>
+  );
+}
+```

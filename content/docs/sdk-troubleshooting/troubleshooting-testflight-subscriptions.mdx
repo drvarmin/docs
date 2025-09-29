@@ -1,0 +1,39 @@
+---
+title: TestFlight Subscriptions
+description: Learn why subscriptions behave differently in TestFlight, including identity resets and accelerated renewal schedules.
+---
+
+When testing your app via TestFlight, subscription behavior differs from production in a few key ways that can lead to confusion. Here’s what to expect:
+
+**Reinstalling the app resets your identity:**
+In TestFlight, reinstalling the app (or clearing data) resets the app’s local state. Until the user attempts a purchase, they’ll appear as a **new anonymous user**—even if they’ve already purchased a subscription in a previous session.
+
+Once the user taps the purchase button:
+- StoreKit will attempt to purchase the subscription.
+- If they’re already subscribed, the system will **restore** the existing subscription.
+- Superwall will then receive the updated entitlement info and reflect the user as “subscribed.”
+
+<Note>This is expected behavior in TestFlight and is **not how things work in production**, where the app’s receipt is usually preserved across reinstalls from the App Store.</Note>
+
+## Subscription renewals are accelerated
+
+Apple speeds up renewals in TestFlight to help test subscription logic faster:
+- All subscription durations (weekly, monthly, yearly, etc.) renew **once per day**, up to 6 times.
+- After the 6th renewal, auto-renewal is disabled.
+
+For example, if a user starts a 1-month subscription on February 1:
+- It will renew every 24 hours through February 7.
+- On February 8, the subscription will no longer auto-renew.
+
+> Use [Sandbox Apple Accounts](https://developer.apple.com/documentation/xcode/configuring-sandbox-environment) in TestFlight to simulate renewal failures or billing retry scenarios.
+
+## Summary
+
+| Behavior | TestFlight | Production |
+|----------|------------|------------|
+| Reinstall resets identity | ✅ Yes | 🚫 No |
+| Purchase triggers restore | ✅ Yes | 🚫 No |
+| Subscription renewal | 🔁 Every 24 hrs (max 6) | Based on plan duration |
+| Receipt persists between installs | ❌ No | ✅ Yes |
+
+If you see unexpected subscription behavior in TestFlight, it’s often due to this accelerated lifecycle and reset state.

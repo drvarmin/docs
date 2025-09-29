@@ -1,0 +1,29 @@
+---
+title: "useUser"
+---
+
+## Purpose
+The `useUser` hook provides a convenient way to manage user identity and attributes, and access user-specific information like subscription status.
+
+## Returned Values
+
+An object containing:
+
+-   `identify: (userId: string, options?: IdentifyOptions) => Promise<void>`: Identifies the user with Superwall.
+    -   `userId: string`: The unique identifier for the user.
+    -   `options?: IdentifyOptions`: Optional parameters for identification.
+        -   `restorePaywallAssignments?: boolean`: If true, attempts to restore paywall assignments for this user.
+-   `update: (attributes: Record<string, any> | ((old: Record<string, any>) => Record<string, any>)) => Promise<void>`: Updates the current user's attributes.
+    -   `attributes`: Either an object of attributes to set/update, or a function that takes the old attributes and returns the new attributes.
+-   `signOut: () => void`: Resets the user's identity, effectively signing them out from Superwall's perspective.
+-   `refresh: () => Promise<Record<string, any>>`: Manually refreshes the user's attributes and subscription status from the Superwall servers. Returns the refreshed user attributes.
+-   `setSubscriptionStatus: (status: SubscriptionStatus) => void`: Manually sets the subscription status for the user. Useful when integrating with RevenueCat or other subscription providers.
+-   `subscriptionStatus?: SubscriptionStatus`: The current subscription status of the user.
+    -   `SubscriptionStatus`: (As defined in `useSuperwall` and `SuperwallExpoModule.types.ts`)
+        -   `status: "UNKNOWN" | "INACTIVE" | "ACTIVE"`
+        -   `entitlements?: Entitlement[]` (if status is "ACTIVE")
+-   `user?: UserAttributes | null`: An object containing the current user's attributes (e.g., `appUserId`, `aliasId`, custom attributes).
+    -   `UserAttributes`: (As defined in `useSuperwall`)
+
+## Usage
+[Managing Users](/expo/guides/managing-users)

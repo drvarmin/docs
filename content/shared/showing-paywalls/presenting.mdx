@@ -1,0 +1,297 @@
+---
+title: "Retrieving and Presenting a Paywall Yourself"
+description: "Use this technique to get an instance of a paywall manually, using either UIKit, SwiftUI, or Jetpack Compose."
+---
+
+If you want complete control over the paywall presentation process, you can use `getPaywall(forPlacement:params:paywallOverrides:delegate:)`. This returns the `UIViewController` subclass `PaywallViewController`, which you can then present however you like. Or, you can use a SwiftUI `View` via `PaywallView`. The following is code is how you'd mimic [register](/docs/feature-gating):
+
+<CodeGroup>
+
+```swift Swift
+final class MyViewController: UIViewController {
+  private func presentPaywall() async {
+    do {
+      // 1
+  	  let paywallVc = try await Superwall.shared.getPaywall(
+        forPlacement: "campaign_trigger",
+        delegate: self
+      )
+   	  self.present(paywallVc, animated: true)
+    } catch let skippedReason as PaywallSkippedReason {
+      // 2
+      switch skippedReason {
+       case .holdout,
+       .noAudienceMatch,
+       .placementNotFound:
+         break
+       }
+    } catch {
+      // 3
+      print(error)
+    }
+  }
+
+  private func launchFeature() {
+    // Insert code to launch a feature that's behind your paywall.
+  }
+}
+
+// 4
+extension MyViewController: PaywallViewControllerDelegate {
+  func paywall(
+    _ paywall: PaywallViewController,
+    didFinishWith result: PaywallResult,
+    shouldDismiss: Bool
+  ) {
+    if shouldDismiss {
+      paywall.dismiss(animated: true)
+    }
+
+    switch result {
+    case .purchased,
+      .restored:
+      launchFeature()
+    case .declined:
+      let closeReason = paywall.info.closeReason
+      let featureGating = paywall.info.featureGatingBehavior
+      if closeReason != .forNextPaywall && featureGating == .nonGated {
+        launchFeature()
+      }
+    }
+  }
+}
+```
+
+```swift Objective-C
+@interface MyViewController : UIViewController
+
+- (void)presentPaywall;
+
+@end
+
+@interface MyViewController () <SWKPaywallViewControllerDelegate>
+
+@end
+
+@implementation MyViewController
+
+- (void)presentPaywall {
+  // 1
+  [[Superwall sharedInstance] getPaywallForEvent:@"campaign_trigger" params:nil paywallOverrides:nil delegate:self completion:^(SWKGetPaywallResult * _Nonnull result) {
+    if (result.paywall != nil) {
+      [self presentViewController:result.paywall animated:YES completion:nil];
+    } else if (result.skippedReason != SWKPaywallSkippedReasonNone) {
+      switch (result.skippedReason) {
+      // 2
+        case SWKPaywallSkippedReasonHoldout:
+        case SWKPaywallSkippedReasonUserIsSubscribed:
+        case SWKPaywallSkippedReasonEventNotFound:
+        case SWKPaywallSkippedReasonNoRuleMatch:
+        case SWKPaywallSkippedReasonNone:
+          break;
+      };
+    } else if (result.error) {
+      // 3
+      NSLog(@"%@", result.error);
+    }
+  }];
+}
+
+-(void)launchFeature {
+  // Insert code to launch a feature that's behind your paywall.
+}
+
+// 4
+- (void)paywall:(SWKPaywallViewController *)paywall didFinishWithResult:(enum SWKPaywallResult)result shouldDismiss:(BOOL)shouldDismiss {
+  if (shouldDismiss) {
+    [paywall dismissViewControllerAnimated:true completion:nil];
+  }
+
+  SWKPaywallCloseReason closeReason;
+  SWKFeatureGatingBehavior featureGating;
+
+  switch (result) {
+  case SWKPaywallResultPurchased:
+  case SWKPaywallResultRestored:
+    [self launchFeature];
+    break;
+  case SWKPaywallResultDeclined:
+    closeReason = paywall.info.closeReason;
+    featureGating = paywall.info.featureGatingBehavior;
+
+    if (closeReason != SWKPaywallCloseReasonForNextPaywall && featureGating == SWKFeatureGatingBehaviorNonGated) {
+        [self launchFeature];
+    }
+    break;
+  }
+}
+
+@end
+```
+
+```swift SwiftUI
+import SuperwallKit
+
+struct MyAwesomeApp: App {
+  @State var store: AppStore = .init()
+
+  init() {
+    Superwall.configure(apiKey: "MyAPIKey")
+  }
+
+  var body: some Scene {
+    WindowGroup {
+      ContentView()
+        .fullScreenCover(isPresented: $store.showPaywall) {
+          // You can just use 'placement' at a minimum. The 'feature'
+          // Closure fires if they convert
+          PaywallView(placement: "a_placement", onSkippedView: { skip in
+            switch skip {
+            case .userIsSubscribed,
+              .holdout(_),
+              .noRuleMatch,
+              .eventNotFound:
+                MySkipView()
+            }
+          }, onErrorView: { error in
+            MyErrorView()
+          }, feature: {
+            // User is subscribed as a result of the paywall purchase
+            // Or they already were (which would happen in `onSkippedView`)
+          })
+        }
+    }
+  }
+}
+```
+
+```kotlin Kotlin
+
+// This is an example of how to use `getPaywall` to use a composable`
+
+import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.material3.CircularProgressIndicator
+import androidx.compose.material3.Text
+import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.ui.Alignment
+import androidx.compose.ui.Modifier
+import androidx.compose.ui.viewinterop.AndroidView
+import com.superwall.sdk.Superwall
+import com.superwall.sdk.paywall.presentation.get_paywall.getPaywall
+import com.superwall.sdk.paywall.presentation.internal.request.PaywallOverrides
+import com.superwall.sdk.paywall.vc.PaywallView
+import com.superwall.sdk.paywall.vc.delegate.PaywallViewCallback
+
+@Composable
+fun PaywallComposable(
+    event: String,
+    params: Map<String, Any>? = null,
+    paywallOverrides: PaywallOverrides? = null,
+    callback: PaywallViewCallback,
+    errorComposable: @Composable ((Throwable) -> Unit) = { error: Throwable ->
+        // Default error composable
+        Text(text = "No paywall to display")
+    },
+    loadingComposable: @Composable (() -> Unit) = {
+        // Default loading composable
+        Box(modifier = Modifier.fillMaxSize()) {
+            Column(
+                modifier = Modifier.align(Alignment.Center),
+                verticalArrangement = Arrangement.Center,
+                horizontalAlignment = Alignment.CenterHorizontally
+            ) {
+                CircularProgressIndicator()
+            }
+        }
+    }
+) {
+    val viewState = remember { mutableStateOf<PaywallView?>(null) }
+    val errorState = remember { mutableStateOf<Throwable?>(null) }
+    val context = LocalContext.current
+
+    LaunchedEffect(Unit) {
+        PaywallBuilder(event)
+            .params(params)
+            .overrides(paywallOverrides)
+            .delegate(delegate)
+            .activity(context as Activity)
+            .build()
+            .fold(onSuccess = {
+                viewState.value = it
+            }, onFailure = {
+                errorState.value = it
+            })
+    }
+
+    when {
+        viewState.value != null -> {
+            viewState.value?.let { viewToRender ->
+                DisposableEffect(viewToRender) {
+                    viewToRender.onViewCreated()
+
+                    onDispose {
+                        viewToRender.beforeOnDestroy()
+                        viewToRender.encapsulatingActivity = null
+
+                        CoroutineScope(Dispatchers.Main).launch {
+                            viewToRender.destroyed()
+                        }
+                    }
+                }
+                AndroidView(
+                    factory = { context ->
+                        viewToRender
+                    }
+                )
+            }
+        }
+        errorState.value != null -> {
+            errorComposable(errorState.value!!)
+        }
+        else -> {
+            loadingComposable()
+        }
+    }
+}
+```
+
+</CodeGroup>
+
+This does the following:
+
+1. Gets the paywall view controller.
+2. Handles the cases where the paywall was skipped.
+3. Catches any presentation errors.
+4. Implements the delegate. This is called when the user is finished with the paywall. First, it checks `shouldDismiss`. If this is true then is dismissed the paywall from view before launching any features. This may depend on the `result` depending on how you first presented your view. Then, it switches over the `result`. If the result is `purchased` or `restored` the feature can be launched. However, if the result is `declined`, it checks that the the `featureGating` property of `paywall.info` is `nonGated` and that the `closeReason` isn't `.forNextPaywall`.
+
+### Best practices
+
+1. **Make sure to prevent a paywall from being accessed after a purchase has occurred**.
+
+If a user purchases from a paywall, it is your responsibility to make sure that the user can't access that paywall again. For example, if after successful purchase you decide to push a new view on to the navigation stack, you should make sure that the user can't go back to access the paywall.
+
+2. **Make sure the paywall view controller deallocates before presenting it elsewhere**.
+
+If you have a paywall view controller presented somewhere and you try to present
+the same view controller elsewhere, you will get a crash. For example, you may
+have a paywall in a tab bar controller, and then you also try to present it
+modally. We plan on improving this, but currently it's your responsibility to
+ensure this doesn't happen.
+
+:::ios
+3. **Listening for Loading State Changes**.
+
+If you have logic that depends on the progress of the paywall's loading state, you can use the delegate function `paywall(_:loadingStateDidChange:)`. Or, if you have an instance of a `PaywallViewController`, you can use the published property:
+
+```swift
+let stateSub = paywall.$loadingState.sink { state in
+  print(state)
+}
+```
+:::

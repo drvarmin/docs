@@ -1,0 +1,80 @@
+---
+title: "Post-Checkout Redirecting"
+description: "Learn how to handle users redirecting back to your app after a web purchase."
+---
+
+Whether you’re showing a checkout page in Safari or using the In-App Browser, the Superwall SDK relies on deep links to redirect back to your app.
+
+#### Prerequisites
+1. [Configuring Stripe Keys and Settings](/web-checkout-configuring-stripe-keys-and-settings)
+2. [Deep Links](/in-app-paywall-previews)
+
+Here, we'll focus on how to handle the user experience when the user has been redirected back to your app after a web purchase, using `SuperwallDelegate` methods.
+
+<Warning>
+  If you're not using Superwall to handle purchases, then you'll need to follow extra steps to redeem the web purchase in your app.
+</Warning>
+
+- [Using RevenueCat](/web-checkout-using-revenuecat)
+- [Using a PurchaseController](/web-checkout-linking-membership-to-iOS-app#using-a-purchasecontroller)
+
+
+## willRedeemLink
+
+When your app opens via the deep link, we will call the delegate method `willRedeemLink()` before making a network call to redeem the code.
+At this point, you might wish to display a loading indicator in your app so the user knows that the purchase is being redeemed.
+
+```swift
+func willRedeemLink() {
+  ToastView.show(message: "Activating...", showActivityIndicator: true)
+}
+```
+
+To present your own loading UI on top of the paywall, you can access the view controller of the paywall via `Superwall.shared.presentedViewController`. You can manually dismiss the paywall here, but note that the completion block of the original `register` call won't be triggered. The paywall will be dismissed automatically when the `didRedeemLink` method is called.
+
+## didRedeemLink
+
+After receiving a response from the network, we will call `didRedeemLink(result:)` with the result of redeeming the code. This is an enum that has the following cases:
+
+- `success(code: String, redemptionInfo: RedemptionInfo)`: The redemption succeeded and `redemptionInfo` contains information about the redeemed code.
+- `error(code: String, error: ErrorInfo)`: An error occurred while redeeming. You can check the error message via the `error` parameter.
+- `expiredCode(code: String, expired: ExpiredCodeInfo)`: The code expired and `ExpiredCodeInfo` contains information about whether a redemption email has been resent and an optional obfuscated email address that the redemption email was sent to.
+- `invalidCode(code: String)`: The code that was redeemed was invalid.
+- `expiredSubscription(code: String, redemptionInfo: RedemptionInfo)`: The subscription that the code redeemed has expired.
+
+On network failure, the SDK will retry up to 6 times before returning an `error` `RedemptionResult` in `didRedeemLink(result:)`.
+
+
+Here, you should remove any loading UI you added in `willRedeemLink` and show a message to the user based on the result. If a paywall is presented, it will be dismissed automatically.
+
+```swift
+func didRedeemLink(result: RedemptionResult) {
+  switch result {
+    case .expiredCode(let code, let expiredInfo):
+      ToastView.show(message: "Expired Link", systemImageName: "exclamationmark.square.fill")
+      print("[!] code expired", code, expiredInfo)
+      break
+    case .error(let code, let error):
+      ToastView.show(message: error.message, systemImageName: "exclamationmark.square.fill")
+      print("[!] error", code, error)
+      break
+    case .expiredSubscription(let code, let redemptionInfo):
+      ToastView.show(message: "Expired Subscription", systemImageName: "exclamationmark.square.fill")
+      print("[!] expired subscription", code, redemptionInfo)
+      break
+    case .invalidCode(let code):
+      ToastView.show(message: "Invalid Link", systemImageName: "exclamationmark.square.fill")
+      print("[!] invalid code", code)
+      break
+    case .success(_, let redemptionInfo):
+      if let email = redemptionInfo.purchaserInfo.email {
+        Superwall.shared.setUserAttributes(["email": email])
+        ToastView.show(message: email, systemImageName: "person.circle.fill")
+      } 
+      else {
+        ToastView.show(message: "Welcome!", systemImageName: "person.circle.fill")
+      }
+      break
+  }
+}
+```

@@ -1,0 +1,57 @@
+---
+title: "API_NAME"
+description: "Short one‑liner explaining what this API does."
+---
+<!-- ex title: "exampleFunction()" or "ExampleClass" -->
+<!-- ex description: "A function that ..." or "A class that ..." -->
+
+<!-- Tips / Warnings / Info / Notes / Checks if needed -->
+<!-- Use the appropriate component, and only include this if it's needed. Always put at the top of the page, no heading. -->
+<!-- <Warning>
+Highlight common pitfalls or gotchas here.
+</Warning>
+
+<Info>
+Add any additional information here.
+</Info>
+
+<Tip>
+Add any additional information here.
+</Tip>
+
+<Note>
+Add any additional information here.
+</Note>
+
+<Check>
+Add any additional information here.
+</Check> -->
+
+## Purpose
+(One concise sentence on why this API exists.)
+
+## Signature
+<!-- Use the same syntax as the public signature, and tag with the appropriate language -->
+```ts
+// paste the public signature here
+```
+
+## Parameters
+<!-- Always wrap param tables in <ParamTable> -->
+<ParamTable>
+| Name | Type | Description |
+|------|------|-------------|
+| `param` | `type` | What the parameter does. |
+</ParamTable>
+
+<!-- Add sub‑tables here if you have callback objects or nested args -->
+
+## Returns / State
+Describe what the function returns **or** outline the state union if this is a hook.
+
+## Usage
+<!-- Provide a minimal example of how to call or use the API in the most common way, and tag with the appropriate language -->
+<!-- Provide more examples if the API has multiple use cases or ways to use it -->
+```ts
+// minimal example of how to call or use the API
+```

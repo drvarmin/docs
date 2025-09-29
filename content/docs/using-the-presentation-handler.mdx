@@ -1,0 +1,24 @@
+---
+title: "Using the Presentation Handler"
+description: "When and how to use per-presentation handlers for paywalls, and how they differ from global delegates."
+---
+
+Use a presentation handler when you need fine‑grained callbacks for a single paywall presentation. For global events across your app, use the platform’s delegate instead.
+
+- iOS: see [`PaywallPresentationHandler`](/ios/sdk-reference/PaywallPresentationHandler) and [`SuperwallDelegate`](/ios/sdk-reference/SuperwallDelegate)
+- Flutter: see [`PaywallPresentationHandler`](/flutter/sdk-reference/PaywallPresentationHandler) and [`SuperwallDelegate`](/flutter/sdk-reference/SuperwallDelegate)
+
+Typical use cases:
+
+- Show custom loading/placeholder UI while a specific paywall is presented
+- Gate navigation based on that presentation’s result only
+- Capture metrics tied to one presentation without implementing a global delegate
+
+For end‑to‑end presenting patterns (registering or retrieving a paywall yourself), see:
+
+- iOS: [`Presenting paywalls`](/ios/guides/advanced/presenting-paywalls)
+- Android: [`Presenting paywalls`](/android/guides/advanced/presenting-paywalls)
+- Flutter: [`Presenting paywalls`](/flutter/guides/advanced/presenting-paywalls)
+- Expo: [`Presenting paywalls`](/expo/guides/advanced/presenting-paywalls)
+
+

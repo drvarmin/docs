@@ -1,0 +1,105 @@
+---
+title: "Rules"
+description: "Rules allow you to decide _which users_ see a paywall."
+---
+
+<Warning>
+  This page is outdated. Please visit this [one](/campaigns-audience) for the most relevant
+  information.
+</Warning>
+<iframe
+  width="560"
+  height="315"
+  src="https://www.youtube.com/embed/lpxmYqgXtws?si=Ft8iEGNbg3tzxBlo"
+  title="YouTube video player"
+  frameBorder="0"
+  allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
+  referrerpolicy="strict-origin-when-cross-origin"
+  allowfullscreen
+></iframe>
+
+1. Rules are evaluated in order.
+2. Once a rule is matched, no other rules are evaluated within the campaign.
+3. A user's paywall assignment is sticky.
+
+<Note>
+
+    **Assignments Are "Sticky"**
+
+    Once a user is assigned a paywall or a holdout within a rule, they will continue to see that assignment, regardless of the paywall's percentage, unless you reset assignments by clicking the reset icon next to Assigned or remove the paywall from the rule via the X button.
+
+    Remember: Changing a paywall's percentage only affects **new users**. It doesn't affect assignments for users who already saw that paywall.
+
+    This allows you to decide if you should continue showing an old paywall to users who already saw it. For example, you may decide to increase prices but keep the paywall with the old pricing visible for those who've already seen it.
+
+</Note>
+
+### Adding Rules
+
+Add a rule to a campaign by clicking the **Add Rule** button from within a [campaign](/docs/campaigns).
+
+<Frame>
+  ![](/images/2d6a66b-Screen_Shot_2022-05-17_at_4.42.49_PM.png "Screen Shot 2022-05-17 at 4.42.49
+  PM.png")
+</Frame>
+
+### Updating Conditions with the Rule Editor
+
+Change a rule's condition by clicking the highlighted condition itself:
+
+<Frame>
+  ![In this example, we add a condition that evaluates to true if user has logged greater than or
+  equal to 3 days.](/images/f5938b2-Screenshot_2022-12-01_at_10.19.39.png "Screen Shot 2022-05-17 at
+  5.00.10 PM.png")
+</Frame>
+
+In this example, we add a condition that evaluates to true if user has logged greater than or equal to 3 days.
+
+This opens the **Rule Editor**. Here, you can edit the rule to set conditions based on user, device or event parameters and set a limit to how often the rule is matched:
+
+<Frame>![](/images/80da3f0-Screenshot_2022-12-01_at_10.28.33.png)</Frame>
+
+In this example, only users who have the `en` `deviceLanguageCode` and have a `creator` `account_type` will match this rule. They will only match this rule once every 2 days.
+
+Clicking on the condition reveals a dropdown of possible conditions which you can filter on:
+
+<Frame>![](/images/f91ba64-Screenshot_2022-12-01_at_10.55.45.png) </Frame>
+
+Conditions are added to this list when data is retrieved from the SDK via registering events or setting user attributes. If a condition doesn't yet exist in the drop down, you can manually add it by referencing it with dot syntax. For example, `user.custom_parameter` would reference `custom_parameter` on the `user` object. As with [paywall text variables](/paywall-editor-variables), the following objects are all available to use:
+
+| Object | Description                                                                                                                         |
+| ------ | ----------------------------------------------------------------------------------------------------------------------------------- |
+| user   | User attributes that you set via the SDK using setUserAttributes(\_:). See [Setting User Attributes](/docs/setting-user-properties) |
+| params | Parameters defined when [registering an event](/docs/feature-gating).                                                               |
+| device | Device attributes that are gathered by the SDK.                                                                                     |
+
+Additionally, you can use the following device properties: `device.minutesSince_X`, `device.hoursSince_X`, `device.daysSince_X`, `device.monthsSince_X`, and `device.yearsSince_X`, where X is the name of an event that you've [registered](/docs/feature-gating) or a [Superwall event](/docs/tracking-analytics). This gives you the days etc since the last occurrence of the event that you specify, excluding the event that triggered the paywall. For example, a campaign with an `app_open` event and the rule `device.daysSince_app_open > 3` will present a paywall on app open only if the last `app_open` event was over 3 days ago.
+
+### Limit
+
+You can also add a limit to how often a rule should trigger. This allows you to
+say "show this once per day" or "show this once per week". It allows you to
+balance between number of paywall impressions (which increase conversions) with
+the potential impact on retention if you show the paywall too often.
+
+<Frame>![limits](/images/campaigns/limit.png)</Frame>
+
+### Segmenting Users into Cohorts Across Campaigns
+
+Users are assigned a random number from 0 to 99 on app install (which is reassigned if you call `reset()`). You can use this to segment users into cohorts across campaigns. For example, in campaign A you may have a rule `if user.seed < 50 { show variant A } else { show variant B }`, in campaign B you may a rule `if user.seed < 50 { show variant X } else { show variant Y }`. Therefore users who see variant A will then see variant X.
+
+### Rule Settings
+
+The following settings can be access by clicking the ellipse icon to the right of any rule
+
+<Frame>
+  ![](/images/05bc541-Screen_Shot_2022-05-17_at_5.19.56_PM.png "Screen Shot 2022-05-17 at 5.19.56
+  PM.png")
+</Frame>
+
+| Setting   | Description                                                       |
+| --------- | ----------------------------------------------------------------- |
+| Move Up   | Swaps the rule's order with the rule directly above it.           |
+| Move Down | Swaps the rule's order with the rule directly below it.           |
+| Pause     | Pauses the rule, preventing it from being evaluated all together. |
+| Delete    | Deletes the rule.                                                 |

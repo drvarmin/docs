@@ -1,0 +1,111 @@
+---
+title: "React Native - Package.json (Legacy)"
+sidebarTitle: "React Native - Package.json"
+description: Install the Superwall React Native SDK via npm or yarn. To see the latest release, [check out the repository](https://github.com/superwall/react-native-superwall).
+---
+
+<Warning>
+Note that Superwall does **not** refetch its configuration during hot reloads. So, if you add products, edit a paywall, or otherwise change anything with Superwall, re-run your app to see those changes.
+</Warning>
+
+## Option 1: React-Native package
+
+To use Superwall in your React Native project, add `@superwall/react-native-superwall` as a dependency in your `package.json` file by using npm or yarn:
+
+<CodeGroup>
+
+```bash npm
+npm install @superwall/react-native-superwall
+```
+
+```bash yarn
+yarn add @superwall/react-native-superwall
+```
+
+</CodeGroup>
+
+## Option 2: Using Expo
+
+If you have an Expo project, you can add the dependency with npx:
+
+```
+npx expo install @superwall/react-native-superwall
+```
+
+Please note that Superwall does not support Expo Go. Expo Go only supports prebuilt Expo libraries; it cannot load third-party SDKs with custom native code. If you are using a **managed workflow**, create a [development build](https://docs.expo.dev/workflow/overview/#development-builds) to continue using Expo tools while including Superwall. Otherwise, you will encounter linking errors.
+
+Here's a quick table to review your installation methods:
+
+| **Workflow**               | **Superwall Support**                    | **Notes**                              |
+|----------------------------|-----------------------------------------|---------------------------------------|
+| **Expo Go**                | ❌ Not supported                       | Expo Go cannot load native SDKs.      |
+| **Managed Workflow**       | ℹ️ Requires additional step      | Use a **Development Build**.  |
+| **Development Build**      | ✅ Supported                           | Works with Expo tools + custom code.  |
+| **Unmanaged (Bare)**       | ✅ Supported                           | Full control over native code.        |
+
+
+### iOS Deployment Target
+
+Superwall requires iOS 14.0 or higher. Ensure your React Native project's iOS deployment target is 14.0 or higher by updating ios/Podfile.
+
+```ruby
+platform :ios, '14.0'
+```
+
+## Android Configuration
+
+For Android projects, you'll also need to include Superwall's Maven repository.
+
+<Tabs>
+<Tab title="Expo Projects">
+First, install the `expo-build-properties` config plugin if your Expo project hasn’t yet:
+
+```bash
+npx expo install expo-build-properties
+```
+
+Then, add the following to your `app.json` or `app.config.js` file:
+
+```json
+{
+  "expo": {
+    "plugins": [
+      ...
+      [
+        "expo-build-properties",
+        {
+          "android": {
+            "minSdkVersion": 26
+          }
+        }
+      ]
+    ]
+  }
+}
+```
+
+</Tab>
+<Tab title="Non-Expo Projects">
+Superwall requires a minimum SDK version of 26 or higher. Ensure your React Native project's Android SDK target is set to 26 or higher by updating `android/app/build.gradle`.
+
+```gradle
+android {
+    ...
+    defaultConfig {
+        ...
+        minSdkVersion 26
+        ...
+    }
+}
+```
+
+</Tab>
+</Tabs>
+
+<Check>**And you're done!** Now you're ready to configure the SDK 👇</Check>
+
+<CardGroup cols={1}>
+  <Card title="Next Up" icon="forward" href="/legacy/legacy_configuring-the-sdk">
+    Begin configuring the SDK to show paywalls inside your App!
+  </Card>
+</CardGroup>

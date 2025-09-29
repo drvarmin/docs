@@ -1,0 +1,405 @@
+---
+title: "Purchases and Subscription Status (Legacy)"
+sidebarTitle: "Purchases and Subscription Status"
+---
+
+By default, Superwall handles basic subscription-related logic for you:
+
+1. **Purchasing**: When the user initiates a checkout on a paywall.
+2. **Restoring**: When the user restores previously purchased products.
+3. **Subscription Status**: When the user's subscription status changes to active or expired (by checking the local receipt).
+
+However, if you want more control, you can pass in a `PurchaseController` when configuring the SDK via `configure(apiKey:purchaseController:options:)` and manually set `Superwall.shared.subscriptionStatus` to take over this responsibility.
+
+### Step 1: Creating a `PurchaseController`
+
+A `PurchaseController` handles purchasing and restoring via protocol methods that you implement. You pass in your purchase controller when configuring the SDK:
+
+<CodeGroup>
+
+```swift Swift
+// MyPurchaseController.swift
+
+import SuperwallKit
+import StoreKit
+
+final class MyPurchaseController: PurchaseController {
+  static let shared = MyPurchaseController()
+
+  // 1
+  func purchase(product: SKProduct) async -> PurchaseResult {
+
+    // TODO
+    // ----
+   	// Purchase via StoreKit, RevenueCat, Qonversion or however
+    // you like and return a valid PurchaseResult
+
+    return .purchased // .cancelled,  .pending, .failed(Error), .restored
+  }
+
+  // 2
+  func restorePurchases() async -> Bool {
+
+    // TODO
+    // ----
+    // Restore purchases and return true if successful.
+
+    return true // false
+  }
+}
+```
+
+```swift Objective-C
+@import SuperwallKit;
+@import StoreKit;
+
+// MyPurchaseController
+
+@interface MyPurchaseController: NSObject <SWKPurchaseController>
+  + (instancetype)sharedInstance;
+@end
+
+@implementation MyPurchaseController
+
++ (instancetype)sharedInstance
+{
+  static MyPurchaseController *sharedInstance = nil;
+  static dispatch_once_t onceToken;
+  dispatch_once(&onceToken, ^{
+    sharedInstance = [MyPurchaseController new];
+  });
+  return sharedInstance;
+}
+
+// 1
+- (void)purchaseWithProduct:(SKProduct * _Nonnull)product completion:(void (^ _Nonnull)(enum SWKPurchaseResult, NSError * _Nullable))completion {
+
+  // TODO
+  // ----
+  // Purchase via StoreKit, RevenueCat, Qonversion or however
+  // you like and return a valid SWKPurchaseResult
+
+  completion(SWKPurchaseResultPurchased, nil);
+}
+
+// 2
+- (void)restorePurchasesWithCompletion:(void (^ _Nonnull)(BOOL))completion {
+
+  // TODO
+  // ----
+  // Restore purchases and return YES if successful.
+
+  completion(YES);
+}
+
+@end
+```
+
+```kotlin Kotlin
+// MyPurchaseController.kt
+
+class MyPurchaseController(val context: Context): PurchaseController {
+
+  // 1
+  override suspend fun purchase(activity: Activity, product: SkuDetails): PurchaseResult {
+
+    // TODO
+    // ----
+    // Purchase via GoogleBilling, RevenueCat, Qonversion or however
+    // you like and return a valid PurchaseResult
+
+    return PurchaseResult.Purchased()
+  }
+
+  // 2
+  override suspend fun restorePurchases(): RestorationResult {
+
+    // TODO
+    // ----
+    // Restore purchases and return true if successful.
+
+    return RestorationResult.Success()
+  }
+}
+```
+
+```dart Flutter
+// MyPurchaseController.dart
+
+class MyPurchaseController extends PurchaseController {
+  // 1
+  @override
+  Future<PurchaseResult> purchaseFromAppStore(String productId) async {
+
+    // TODO
+    // ----
+    // Purchase via StoreKit, RevenueCat, Qonversion or however
+    // you like and return a valid PurchaseResult
+
+    return PurchaseResult.purchased;
+  }
+
+  @override
+  Future<PurchaseResult> purchaseFromGooglePlay(
+    String productId,
+    String? basePlanId,
+    String? offerId
+  ) async {
+
+    // TODO
+    // ----
+    // Purchase via Google Billing, RevenueCat, Qonversion or however
+    // you like and return a valid PurchaseResult
+
+    return PurchaseResult.purchased;
+  }
+
+  // 2
+  @override
+  Future<RestorationResult> restorePurchases() async {
+
+    // TODO
+    // ----
+    // Restore purchases and return true if successful.
+
+    return RestorationResult.restored;
+  }
+}
+```
+
+```typescript React Native
+export class MyPurchaseController extends PurchaseController {
+  // 1
+  async purchaseFromAppStore(productId: string): Promise<PurchaseResult> {
+    // TODO
+    // ----
+    // Purchase via StoreKit, RevenueCat, Qonversion or however
+    // you like and return a valid PurchaseResult
+  }
+
+  async purchaseFromGooglePlay(
+    productId: string,
+    basePlanId?: string,
+    offerId?: string
+  ): Promise<PurchaseResult> {
+    // TODO
+    // ----
+    // Purchase via Google Billing, RevenueCat, Qonversion or however
+    // you like and return a valid PurchaseResult
+  }
+
+  // 2
+  async restorePurchases(): Promise<RestorationResult> {
+    // TODO
+    // ----
+    // Restore purchases and return true if successful.
+  }
+}
+```
+
+</CodeGroup>
+
+Here’s what each method is responsible for:
+
+1. Purchasing a given product. In here, enter your code that you use to purchase a product. Then, return the result of the purchase as a `PurchaseResult`. For Flutter, this is separated into purchasing from the App Store and Google Play. This is an enum that contains the following cases, all of which must be handled:
+   1. `.cancelled`: The purchase was cancelled.
+   2. `.purchased`: The product was purchased.
+   3. `.pending`: The purchase is pending/deferred and requires action from the developer.
+   4. `.failed(Error)`: The purchase failed for a reason other than the user cancelling or the payment pending.
+   5. `.restored`: The purchase was restored. This happens when the user tries to purchase a product that they've already purchased, resulting in a transaction whose `transactionDate` is before the the date you initiated the purchase.
+2. Restoring purchases. Here, you restore purchases and return a boolean indicating whether the restoration was successful or not.
+
+### Step 2: Configuring the SDK With Your `PurchaseController`
+
+Pass your purchase controller to the `configure(apiKey:purchaseController:options:)` method:
+
+<CodeGroup>
+
+```swift Swift
+// AppDelegate.swift
+
+import UIKit
+import SuperwallKit
+
+@main
+class AppDelegate: UIResponder, UIApplicationDelegate {
+  func application(_ application: UIApplication, didFinishLaunchingWithOptions launchOptions: [UIApplication.LaunchOptionsKey: Any]?) -> Bool {
+
+    Superwall.configure(
+      apiKey: "MY_API_KEY",
+      purchaseController: MyPurchaseController.shared // <- Handle purchases on your own
+    )
+
+    return true
+  }
+}
+```
+
+```swift Objective-C
+// AppDelegate.m
+
+@import SuperwallKit;
+
+@implementation AppDelegate
+
+- (BOOL)application:(UIApplication *)application didFinishLaunchingWithOptions:(NSDictionary *)launchOptions {
+  // Override point for customization after application launch.
+  [Superwall configureWithApiKey:@"MY_API_KEY" purchaseController:[MyPurchaseController sharedInstance] options:nil completion:nil];
+  return YES;
+}
+```
+
+```kotlin Kotlin
+// MainApplication.kt
+
+class MainApplication : android.app.Application(), SuperwallDelegate {
+
+    override fun onCreate() {
+        super.onCreate()
+
+        Superwall.configure(this, "MY_API_KEY", MyPurchaseController(this))
+        // OR using the DSL
+        configureSuperwall("MY_API_KEY") {
+           purchaseController = MyPurchaseController(this@MainApplication)
+        }
+    }
+}
+
+```
+
+```dart Flutter
+// main.dart
+
+void initState() {
+  // Determine Superwall API Key for platform
+  String apiKey = Platform.isIOS ? "MY_IOS_API_KEY" : "MY_ANDROID_API_KEY";
+
+  // Create the purchase controller
+  MyPurchaseController purchaseController = MyPurchaseController();
+
+  Superwall.configure(apiKey, purchaseController);
+}
+```
+
+```typescript React Native
+export default function App() {
+  React.useEffect(() => {
+    const apiKey = Platform.OS === "ios" ? "MY_IOS_API_KEY" : "MY_ANDROID_API_KEY"
+    const purchaseController = new MyPurchaseController()
+    Superwall.configure(apiKey, undefined, purchaseController)
+  }, [])
+}
+```
+
+</CodeGroup>
+
+### Step 3: Keeping `subscriptionStatus` Up-To-Date
+
+You **must** set `Superwall.shared.subscriptionStatus` every time the user's subscription status changes, otherwise the SDK won't know who to show a paywall to. This is an enum that has three possible cases:
+
+1. **`.unknown`**: This is the default value. In this state, paywalls will not show and their presentation will be **_automatically delayed_** until `subscriptionStatus` changes to a different value.
+2. **`.active`**: Indicates that the user has an active subscription. Paywalls will not show in this state unless you remotely set the paywall to ignore subscription status.
+3. **`.inactive`**: Indicates that the user doesn't have an active subscription. Paywalls can show in this state.
+
+Here's how you might do this:
+
+<CodeGroup>
+
+```swift Swift
+import SuperwallKit
+
+// On app launch, when you are waiting to determine a user's subscription status.
+Superwall.shared.subscriptionStatus = .unknown
+
+// When a subscription is purchased, restored, validated, expired, etc...
+myService.subscriptionStatusDidChange {
+ 	if user.hasActiveSubscription {
+    Superwall.shared.subscriptionStatus = .active
+  } else {
+   	Superwall.shared.subscriptionStatus = .inactive
+  }
+}
+```
+
+```swift Objective-C
+@import SuperwallKit;
+
+// when you are waiting to determine a user's subscription status
+[Superwall sharedInstance].subscriptionStatus = SWKSubscriptionStatusUnknown;
+
+// when a subscription is purchased, restored, validated, expired, etc...
+[myService setSubscriptionStatusDidChange:^{
+  if (user.hasActiveSubscription) {
+    [Superwall sharedInstance].subscriptionStatus = SWKSubscriptionStatusActive;
+  } else {
+    [Superwall sharedInstance].subscriptionStatus = SWKSubscriptionStatusInactive;
+  }
+}];
+```
+
+```kotlin Kotlin
+// On app launch, when you are waiting to determine a user's subscription status.
+Superwall.instance.subscriptionStatus = SubscriptionStatus.UNKNOWN
+
+// When a subscription is purchased, restored, validated, expired, etc...
+myService.subscriptionStatusDidChange {
+  if (it.hasActiveSubscription) {
+    Superwall.instance.subscriptionStatus = SubscriptionStatus.ACTIVE
+  } else {
+    Superwall.instance.subscriptionStatus = SubscriptionStatus.INACTIVE
+  }
+}
+```
+
+```dart Flutter
+// On app launch, when you are waiting to determine a user's subscription status.
+Superwall.shared.setSubscriptionStatus(SubscriptionStatus.unknown);
+
+// When a subscription is purchased, restored, validated, expired, etc...
+myService.addSubscriptionStatusListener((hasActiveSubscription) {
+  if (hasActiveSubscription) {
+    Superwall.shared.setSubscriptionStatus(SubscriptionStatus.active);
+  } else {
+    Superwall.shared.setSubscriptionStatus(SubscriptionStatus.inactive);
+  }
+});
+```
+
+```typescript React Native
+// On app launch, when you are waiting to determine a user's subscription status.
+Superwall.shared.setSubscriptionStatus(SubscriptionStatus.UNKNOWN)
+
+// When a subscription is purchased, restored, validated, expired, etc...
+myService.addSubscriptionStatusListener((hasActiveSubscription: boolean) => {
+  if (hasActiveSubscription) {
+    Superwall.shared.setSubscriptionStatus(SubscriptionStatus.ACTIVE)
+  } else {
+    Superwall.shared.setSubscriptionStatus(SubscriptionStatus.INACTIVE)
+  }
+})
+```
+
+</CodeGroup>
+<br />
+<Note> `subscriptionStatus` is cached between app launches </Note>
+
+### Listening for subscription status changes
+
+If you need a simple way to observe when a user's subscription status changes, on iOS you can use the `Publisher` for it. Here's an example:
+
+```swift
+subscribedCancellable = Superwall.shared.$subscriptionStatus
+  .receive(on: DispatchQueue.main)
+  .sink { [weak self] status in
+    switch status {
+    case .unknown:
+      self?.subscriptionLabel.text = "Loading subscription status."
+    case .active:
+      self?.subscriptionLabel.text = "You currently have an active subscription. Therefore, the paywall will never show. For the purposes of this app, delete and reinstall the app to clear subscriptions."
+    case .inactive:
+      self?.subscriptionLabel.text = "You do not have an active subscription so the paywall will show when clicking the button."
+    }
+  }
+```
+
+You can do similar tasks with the `SuperwallDelegate`, such as [viewing which product was purchased from a paywall](/legacy/legacy_3rd-party-analytics#using-events-to-see-purchased-products).

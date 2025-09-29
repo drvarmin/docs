@@ -1,0 +1,57 @@
+---
+title: "register()"
+description: "A function that registers a placement that can be remotely configured to show a paywall and gate feature access."
+---
+
+## Purpose
+Registers a placement so that when it's added to a campaign on the Superwall Dashboard, it can trigger a paywall and optionally gate access to a feature.
+
+## Signature
+```swift
+public func register(
+  placement: String,
+  params: [String: Any]? = nil,
+  handler: PaywallPresentationHandler? = nil,
+  feature: @escaping () -> Void
+)
+```
+
+```swift
+public func register(
+  placement: String,
+  params: [String: Any]? = nil,
+  handler: PaywallPresentationHandler? = nil
+)
+```
+
+## Parameters
+<ParamTable>
+| Name | Type | Description |
+|------|------|-------------|
+| `placement` | `String` | The name of the placement you wish to register. |
+| `params` | `[String: Any]?` | Optional parameters to pass with your placement. These can be referenced within audience filters in your campaign. Keys beginning with `$` are reserved for Superwall and will be dropped. Arrays and dictionaries are currently unsupported and will be ignored. Defaults to `nil`. |
+| `handler` | `PaywallPresentationHandler?` | A handler whose functions provide status updates for the paywall lifecycle. Defaults to `nil`. |
+| `feature` | `(() -> Void)?` | An optional completion block representing the gated feature. It is executed based on the paywall's gating mode: called immediately for **Non-Gated**, called after the user subscribes or if already subscribed for **Gated**. |
+</ParamTable>
+
+## Returns / State
+This function returns `Void`. If you supply a `feature` block, it will be executed according to the paywall's gating configuration, as described above.
+
+## Usage
+```swift
+Superwall.shared.register(
+  placement: "premium_feature",
+  params: ["source": "onboarding"]
+) {
+  // Code that unlocks the premium feature
+  openPremiumScreen()
+}
+```
+
+```swift
+Superwall.shared.register(
+  placement: "onboarding_complete",
+  params: ["source": "onboarding"],
+  handler: self
+)
+```

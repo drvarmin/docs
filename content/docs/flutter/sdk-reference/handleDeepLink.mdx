@@ -1,0 +1,59 @@
+---
+title: "handleDeepLink()"
+description: "Processes deep links to trigger paywall previews and handle Superwall URLs."
+---
+
+<Info>
+This method is used to handle deep links that can trigger paywall previews or other Superwall functionality. It's commonly used for testing paywalls during development.
+</Info>
+
+## Purpose
+Processes deep links to handle Superwall-specific URLs for paywall previews and testing.
+
+## Signature
+```dart
+Future<bool> handleDeepLink(Uri url)
+```
+
+## Parameters
+<ParamTable>
+| Name | Type | Description |
+|------|------|-------------|
+| `url` | `Uri` | The deep link URL to process. |
+</ParamTable>
+
+## Returns / State
+Returns a `Future<bool>` indicating whether the URL was handled by Superwall (`true`) or should be processed by your app (`false`).
+
+## Usage
+
+Basic deep link handling:
+```dart
+Future<void> _handleIncomingLink(String link) async {
+  final uri = Uri.parse(link);
+  
+  // Let Superwall handle the link first
+  final handled = await Superwall.shared.handleDeepLink(uri);
+  
+  if (!handled) {
+    // Handle non-Superwall deep links
+    _handleAppDeepLink(uri);
+  }
+}
+```
+
+With error handling:
+```dart
+Future<void> _safeHandleDeepLink(String linkString) async {
+  try {
+    final uri = Uri.parse(linkString);
+    final handled = await Superwall.shared.handleDeepLink(uri);
+    
+    if (!handled) {
+      _routeToAppScreen(uri);
+    }
+  } catch (e) {
+    print('Error handling deep link: $e');
+  }
+}
+```

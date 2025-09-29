@@ -1,0 +1,101 @@
+---
+title: "subscriptionStatus"
+description: "A published property that indicates the subscription status of the user."
+---
+
+<Info>
+If you're using a custom [`PurchaseController`](/ios/sdk-reference/PurchaseController), you must update this property whenever the user's entitlements change.
+</Info>
+
+<Note>
+You can also observe changes via the [`SuperwallDelegate`](/ios/sdk-reference/SuperwallDelegate) method `subscriptionStatusDidChange(from:to:)`.
+</Note>
+
+## Purpose
+Indicates the current subscription status of the user and can be observed for changes using Combine or SwiftUI.
+
+## Signature
+```swift
+@Published
+public var subscriptionStatus: SubscriptionStatus { get set }
+```
+
+## Parameters
+This property accepts a `SubscriptionStatus` enum value:
+- `.unknown` - Status is not yet determined
+- `.active(Set<Entitlement>)` - User has active entitlements (set of entitlement identifiers)
+- `.inactive` - User has no active entitlements
+
+## Returns / State
+Returns the current `SubscriptionStatus`. When using a [`PurchaseController`](/ios/sdk-reference/PurchaseController), you must set this property yourself. Otherwise, Superwall manages it automatically.
+
+## Usage
+
+Set subscription status (when using PurchaseController):
+```swift
+Superwall.shared.subscriptionStatus = .active(["premium", "pro_features"])
+Superwall.shared.subscriptionStatus = .inactive
+```
+
+Get current subscription status:
+```swift
+let status = Superwall.shared.subscriptionStatus
+switch status {
+case .unknown:
+  print("Subscription status unknown")
+case .active(let entitlements):
+  print("User has active entitlements: \(entitlements)")
+case .inactive:
+  print("User has no active subscription")
+}
+```
+
+Observe changes with Combine:
+```swift
+import Combine
+
+class ViewController: UIViewController {
+  private var cancellables = Set<AnyCancellable>()
+  
+  override func viewDidLoad() {
+    super.viewDidLoad()
+    
+    Superwall.shared.$subscriptionStatus
+      .sink { [weak self] status in
+        self?.updateUI(for: status)
+      }
+      .store(in: &cancellables)
+  }
+  
+  func updateUI(for status: SubscriptionStatus) {
+    switch status {
+    case .active:
+      showPremiumContent()
+    case .inactive:
+      showFreeContent()
+    case .unknown:
+      showLoadingState()
+    }
+  }
+}
+```
+
+SwiftUI observation:
+```swift
+struct ContentView: View {
+  @StateObject var superwall = Superwall.shared
+  
+  var body: some View {
+    VStack {
+      switch superwall.subscriptionStatus {
+      case .active(let entitlements):
+        Text("Premium user with: \(entitlements.joined(separator: ", "))")
+      case .inactive:
+        Text("Free user")
+      case .unknown:
+        Text("Loading...")
+      }
+    }
+  }
+}
+```

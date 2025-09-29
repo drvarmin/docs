@@ -1,0 +1,135 @@
+---
+title: "setSubscriptionStatus()"
+description: "A function that manually sets the subscription status when using a custom PurchaseController."
+---
+
+<Warning>
+This function should only be used when implementing a custom [`PurchaseController`](/android/sdk-reference/PurchaseController). When using Superwall's built-in purchase handling, the subscription status is managed automatically.
+</Warning>
+
+<Info>
+You must call this function whenever the user's entitlements change to keep Superwall's subscription status synchronized with your purchase system.
+</Info>
+
+## Purpose
+Manually updates the subscription status when using a custom [`PurchaseController`](/android/sdk-reference/PurchaseController) to ensure paywall gating and analytics work correctly.
+
+## Signature
+```kotlin
+fun Superwall.setSubscriptionStatus(status: SubscriptionStatus)
+```
+
+```java
+// Java
+public void setSubscriptionStatus(SubscriptionStatus status)
+```
+
+## Parameters
+<ParamTable>
+| Name | Type | Description |
+|------|------|-------------|
+| `status` | `SubscriptionStatus` | The subscription status to set. Can be `SubscriptionStatus.Unknown`, `SubscriptionStatus.Active(entitlements)`, or `SubscriptionStatus.Inactive`. |
+</ParamTable>
+
+## Returns / State
+This function returns `Unit`. The new status will be reflected in the [`subscriptionStatus`](/android/sdk-reference/subscriptionStatus) StateFlow and will trigger the [`SuperwallDelegate.subscriptionStatusDidChange`](/android/sdk-reference/SuperwallDelegate) callback.
+
+## Usage
+
+Set active subscription with entitlements:
+```kotlin
+// User purchased premium subscription
+Superwall.instance.setSubscriptionStatus(
+    SubscriptionStatus.Active(setOf("premium", "pro_features"))
+)
+```
+
+Set inactive subscription:
+```kotlin
+// User's subscription expired or was cancelled
+Superwall.instance.setSubscriptionStatus(SubscriptionStatus.Inactive)
+```
+
+Set unknown status during initialization:
+```kotlin
+// While checking subscription status on app launch
+Superwall.instance.setSubscriptionStatus(SubscriptionStatus.Unknown)
+```
+
+Usage with RevenueCat:
+```kotlin
+class RevenueCatPurchaseController : PurchaseController {
+    
+    override suspend fun purchase(
+        activity: Activity,
+        product: StoreProduct
+    ): PurchaseResult {
+        return try {
+            val result = Purchases.sharedInstance.purchase(activity, product.sku)
+            
+            // Update Superwall subscription status based on RevenueCat result
+            if (result.isSuccessful) {
+                val entitlements = result.customerInfo.entitlements.active.keys
+                Superwall.instance.setSubscriptionStatus(
+                    SubscriptionStatus.Active(entitlements)
+                )
+                PurchaseResult.Purchased
+            } else {
+                PurchaseResult.Failed(Exception("Purchase failed"))
+            }
+        } catch (e: Exception) {
+            PurchaseResult.Failed(e)
+        }
+    }
+    
+    override suspend fun restorePurchases(): RestorationResult {
+        return try {
+            val customerInfo = Purchases.sharedInstance.restorePurchases()
+            val activeEntitlements = customerInfo.entitlements.active.keys
+            
+            if (activeEntitlements.isNotEmpty()) {
+                Superwall.instance.setSubscriptionStatus(
+                    SubscriptionStatus.Active(activeEntitlements)
+                )
+            } else {
+                Superwall.instance.setSubscriptionStatus(SubscriptionStatus.Inactive)
+            }
+            
+            RestorationResult.Restored
+        } catch (e: Exception) {
+            RestorationResult.Failed(e)
+        }
+    }
+}
+```
+
+Listen for external subscription changes:
+```kotlin
+class SubscriptionManager {
+    
+    fun onSubscriptionStatusChanged(isActive: Boolean, entitlements: Set<String>) {
+        val status = if (isActive) {
+            SubscriptionStatus.Active(entitlements)
+        } else {
+            SubscriptionStatus.Inactive
+        }
+        
+        // Update Superwall whenever subscription status changes externally
+        Superwall.instance.setSubscriptionStatus(status)
+    }
+}
+```
+
+Java usage:
+```java
+// Set active subscription
+Set<String> entitlements = Set.of("premium", "pro_features");
+Superwall.getInstance().setSubscriptionStatus(
+    new SubscriptionStatus.Active(entitlements)
+);
+
+// Set inactive subscription
+Superwall.getInstance().setSubscriptionStatus(
+    SubscriptionStatus.Inactive.INSTANCE
+);
+```

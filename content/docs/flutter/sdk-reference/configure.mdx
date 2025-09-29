@@ -1,0 +1,112 @@
+---
+title: "configure()"
+description: "A static method that configures the Superwall SDK with your API key."
+---
+
+<Note>
+This method is typically called once in your app's initialization, such as in your `main()` function or during app startup.
+</Note>
+
+## Purpose
+Configures the Superwall SDK with your API key and optional configuration settings.
+
+## Signature
+<CodeGroup>
+
+```dart Flutter
+static Superwall configure(
+  String apiKey, {
+  PurchaseController? purchaseController,
+  SuperwallOptions? options,
+  Function? completion,
+})
+```
+
+```swift iOS
+static func configure(
+  apiKey: String,
+  purchaseController: PurchaseController? = nil,
+  options: SuperwallOptions? = nil,
+  completion: ((Result<Void, Error>) -> Void)? = nil
+)
+```
+
+```kotlin Android
+fun configure(
+  application: Application,
+  apiKey: String,
+  purchaseController: PurchaseController? = null,
+  options: SuperwallOptions? = null,
+  completion: ((Result<Unit>) -> Unit)? = null
+)
+```
+
+</CodeGroup>
+
+## Parameters
+<ParamTable>
+| Name | Type | Description |
+|------|------|-------------|
+| `apiKey` | `String` | Your Superwall API key from the dashboard. |
+| `purchaseController` | `PurchaseController?` | Optional custom purchase controller. Defaults to `null` to use the default controller. |
+| `options` | `SuperwallOptions?` | Optional configuration options. Defaults to `null` for default settings. |
+| `completion` | `Function?` | Optional callback called when configuration completes. |
+</ParamTable>
+
+## Returns / State
+Returns a `Superwall` instance that is immediately configured and ready to use.
+
+## Usage
+
+Basic configuration:
+```dart
+import 'package:superwallkit_flutter/superwallkit_flutter.dart';
+
+void main() async {
+  WidgetsFlutterBinding.ensureInitialized();
+  
+  Superwall.configure('pk_your_api_key_here');
+  
+  runApp(MyApp());
+}
+```
+
+With options:
+```dart
+void main() async {
+  WidgetsFlutterBinding.ensureInitialized();
+  
+  final options = SuperwallOptions(
+    paywalls: PaywallOptions(
+      shouldPreload: true,
+      automaticallyDismiss: false,
+    ),
+    logging: Logging(
+      level: LogLevel.debug,
+    ),
+  );
+  
+  Superwall.configure(
+    'pk_your_api_key_here',
+    options: options,
+  );
+  
+  runApp(MyApp());
+}
+```
+
+With completion callback:
+```dart
+void main() async {
+  WidgetsFlutterBinding.ensureInitialized();
+  
+  Superwall.configure(
+    'pk_your_api_key_here',
+    completion: () {
+      print('Superwall configuration completed');
+    },
+  );
+  
+  runApp(MyApp());
+}
+```

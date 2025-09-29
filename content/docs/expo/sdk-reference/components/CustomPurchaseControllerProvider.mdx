@@ -1,0 +1,157 @@
+---
+title: CustomPurchaseControllerProvider
+description: A modern, hooks-based approach to handling purchases and purchase restores with the Superwall SDK.
+---
+
+The `CustomPurchaseControllerProvider` component allows you to integrate your own purchase handling logic with the Superwall SDK. It provides a modern, hooks-based approach to handling purchases and purchase restores.
+
+## Usage
+
+```tsx
+import { CustomPurchaseControllerProvider } from 'expo-superwall'
+import { SuperwallProvider } from 'expo-superwall'
+
+export default function App() {
+  return (
+    <CustomPurchaseControllerProvider
+      controller={{
+        onPurchase: async (params) => {
+          if (params.platform === "ios") {
+            console.log("iOS purchase:", params)
+            // Handle iOS purchase with StoreKit
+          } else {
+            console.log("Android purchase:", params.productId)
+            // Handle Android purchase with Google Play Billing
+          }
+        },
+        onPurchaseRestore: async () => {
+          console.log("Restore purchases requested")
+          // Handle restore purchases logic
+        },
+      }}
+    >
+      <SuperwallProvider apiKeys={{ ios: "YOUR_IOS_KEY", android: "YOUR_ANDROID_KEY" }}>
+        {/* Your app content */}
+      </SuperwallProvider>
+    </CustomPurchaseControllerProvider>
+  )
+}
+```
+
+## Props
+
+### `controller`
+
+**Type:** `CustomPurchaseControllerContext`
+
+An object implementing the purchase controller interface with the following methods:
+
+#### `onPurchase: (params: OnPurchaseParams) => Promise<void>`
+
+Called when a user initiates a purchase from a paywall. The `params` object contains different properties based on the platform:
+
+**iOS Parameters:**
+- `platform: "ios"`
+- `productId: string` - The App Store product identifier
+- Additional iOS-specific purchase parameters
+
+**Android Parameters:**
+- `platform: "android"`
+- `productId: string` - The Google Play product identifier
+- `basePlanId?: string` - The subscription base plan ID (for subscriptions)
+- `offerId?: string` - The promotional offer ID (if applicable)
+
+#### `onPurchaseRestore: () => Promise<void>`
+
+Called when a user requests to restore previous purchases. This typically happens when users tap a "Restore Purchases" button in your paywall.
+
+### `children`
+
+**Type:** `React.ReactNode`
+
+The child components that will be wrapped by this provider.
+
+## Hook
+
+### `useCustomPurchaseController()`
+
+A hook that provides access to the custom purchase controller context from child components.
+
+```tsx
+import { useCustomPurchaseController } from 'expo-superwall'
+
+function MyComponent() {
+  const controller = useCustomPurchaseController()
+  
+  if (!controller) {
+    // Not within a CustomPurchaseControllerProvider
+    return null
+  }
+  
+  const handlePurchase = async () => {
+    // Access controller methods if needed
+  }
+  
+  return <Button onPress={handlePurchase}>Purchase</Button>
+}
+```
+
+**Returns:** `CustomPurchaseControllerContext | null`
+
+Returns the controller object passed to the provider, or `null` if the component is not within a `CustomPurchaseControllerProvider`.
+
+## How It Works
+
+The `CustomPurchaseControllerProvider` listens for purchase events from the Superwall SDK using the `useSuperwallEvents` hook internally. When a purchase or restore event occurs:
+
+1. It calls your provided `onPurchase` or `onPurchaseRestore` method
+2. After your method completes, it notifies the Superwall SDK that the purchase was successful
+3. Superwall then dismisses the paywall and continues with the user flow
+
+## Integration with RevenueCat
+
+When using RevenueCat, you can integrate it with the `CustomPurchaseControllerProvider` like this:
+
+```tsx
+import Purchases from 'react-native-purchases'
+
+const controller = {
+  onPurchase: async (params) => {
+    try {
+      if (params.platform === "ios") {
+        // iOS purchase logic
+        const products = await Purchases.getProducts([params.productId])
+        const product = products[0]
+        if (product) {
+          await Purchases.purchaseStoreProduct(product)
+        }
+      } else {
+        // Android purchase logic
+        const products = await Purchases.getProducts([params.productId])
+        const product = products[0]
+        if (product) {
+          await Purchases.purchaseStoreProduct(product)
+        }
+      }
+    } catch (error) {
+      console.error("Purchase failed:", error)
+      throw error // Re-throw to indicate failure to Superwall
+    }
+  },
+  onPurchaseRestore: async () => {
+    try {
+      await Purchases.restorePurchases()
+    } catch (error) {
+      console.error("Restore failed:", error)
+      throw error // Re-throw to indicate failure to Superwall
+    }
+  },
+}
+```
+
+## Notes
+
+- The provider must wrap your app at a level where both the Superwall SDK and your purchase logic can access it
+- Purchase success/failure handling is automatic - you just need to perform the actual purchase
+- **Important:** The `onPurchase` and `onPurchaseRestore` callbacks should not return any values. Success is indicated by the Promise resolving normally, and failure by throwing an error
+- For RevenueCat integration, see the [Using RevenueCat](/docs/expo/guides/using-revenuecat) guide for complete examples

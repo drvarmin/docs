@@ -1,0 +1,692 @@
+---
+title: "Passing in options (Legacy)"
+sidebarTitle: "Passing in options"
+description: "When configuring the SDK you can pass in options that configure Superwall, the paywall presentation, and its appearance."
+---
+
+### Logging
+
+Logging is enabled by default in the SDK and is controlled by two properties: `level` and `scopes`.
+
+`level` determines the minimum log level to print to the console. There are five types of log level:
+
+1. **debug**: Prints all logs from the SDK to the console. Useful for debugging your app if something isn't working as expected.
+2. **info**: Prints errors, warnings, and useful information from the SDK to the console.
+3. **warn**: Prints errors and warnings from the SDK to the console.
+4. **error**: Only prints errors from the SDK to the console.
+5. **none**: Turns off all logs.
+
+The SDK defaults to `info`.
+
+`scopes` defines the scope of logs to print to the console. For example, you might only care about logs relating to `paywallPresentation` and `paywallTransactions`. This defaults to `.all`. Check out [LogScope](https://sdk.superwall.me/documentation/superwallkit/logscope) for all possible cases.
+
+You set these properties like this:
+
+<CodeGroup>
+
+```swift Swift
+let options = SuperwallOptions()
+options.logging.level = .warn
+options.logging.scopes = [.paywallPresentation, .paywallTransactions]
+
+Superwall.configure(apiKey:"MY_API_KEY", options: options);
+
+// Or you can set:
+Superwall.shared.logLevel = .warn
+```
+
+```swift Objective-C
+SWKSuperwallOptions *options = [[SWKSuperwallOptions alloc] init];
+options.logging.level = SWKLogLevelWarn;
+
+[Superwall
+   configureWithApiKey:@"pk_e6bd9bd73182afb33e95ffdf997b9df74a45e1b5b46ed9c9"
+   purchaseController:nil
+   options:options
+   completion:nil
+];
+
+[Superwall sharedInstance].logLevel = SWKLogLevelWarn;
+```
+
+```kotlin Kotlin
+val options = SuperwallOptions()
+options.logging.level = LogLevel.warn
+options.logging.scopes = EnumSet.of(LogScope.paywallPresentation, LogScope.paywallTransactions)
+
+Superwall.configure(
+  this,
+  apiKey = "MY_API_KEY",
+  options = options
+)
+
+// Or you can set:
+Superwall.instance.logLevel = LogLevel.warn
+
+// Or use the configuration DSL
+configureSuperwall("MY_API_KEY") {
+    options {
+        logging {
+            level = LogLevel.warn
+            scopes = EnumSet.of(LogScope.paywallPresentation, LogScope.paywallTransactions)
+        }
+    }
+}
+```
+
+```dart Flutter
+SuperwallOptions options = SuperwallOptions();
+options.logging.level = LogLevel.arn;
+options.logging.scopes = { LogScope.paywallPresentation, LogScope.paywallTransactions };
+
+Superwall.configure(
+  "MY_API_KEY",
+  options: options
+);
+
+// Or you can set:
+Superwall.instance.logLevel = LogLevel.warn;
+```
+
+```typescript React Native
+const options = SuperwallOptions()
+options.logging.level = LogLevel.Warn
+options.logging.scopes = [LogScope.PaywallPresentation, LogScope.PaywallTransactions]
+
+Superwall.configure(
+  "MY_API_KEY",
+  null,
+  options: options
+);
+
+// Or you can set:
+Superwall.instance.logLevel = LogLevel.Warn
+```
+
+</CodeGroup>
+
+### Preloading Paywalls
+
+Paywalls are preloaded by default when the app is launched from a cold start. The paywalls that are preloaded are determined by the list of events that result in a paywall for the user when [registered](/docs/feature-gating). Preloading is smart, only preloading paywalls that belong to rules that could be matched.
+
+Paywalls are cached by default, which means after they load once, they don't need to be reloaded from the network unless you make a change to them on the dashboard. However, if you have a lot of paywalls, preloading may increase network usage of your app on first load of the paywalls and result in slower loading times overall.
+
+You can turn off preloading by setting `shouldPreload` to `false`:
+
+<CodeGroup>
+
+```swift Swift
+let options = SuperwallOptions()
+options.paywalls.shouldPreload = false
+
+Superwall.configure(apiKey: "MY_API_KEY", options: options)
+```
+
+```swift Objective-C
+SWKSuperwallOptions *options = [[SWKSuperwallOptions alloc] init];
+options.paywalls.shouldPreload = false;
+
+[Superwall
+  configureWithApiKey:@"MY_API_KEY"
+  purchaseController:nil
+  options:options
+  completion:nil
+];
+```
+
+```kotlin Kotlin
+val options = SuperwallOptions()
+options.paywalls.shouldPreload = false
+
+Superwall.configure(
+  this,
+  apiKey = "MY_API_KEY",
+  options = options
+)
+
+// Or using the configuration DSL
+configureSuperwall("MY_API_KEY") {
+    options {
+        paywalls {
+            shouldPreload = false
+        }
+    }
+}
+```
+
+```dart Flutter
+SuperwallOptions options = SuperwallOptions();
+options.paywalls.shouldPreload = false;
+
+Superwall.configure(
+  "MY_API_KEY",
+  options: options
+);
+```
+
+```typescript React Native
+const options = SuperwallOptions()
+options.paywalls.shouldPreload = false
+
+Superwall.configure(
+  "MY_API_KEY",
+  null,
+  options: options
+);
+
+// Or you can set:
+Superwall.instance.logLevel = LogLevel.Warn
+```
+
+</CodeGroup>
+
+Then, if you'd like to preload paywalls for specific event names you can use `preloadPaywalls(forEvents:)`:
+
+<CodeGroup>
+
+```swift Swift
+Superwall.shared.preloadPaywalls(forEvents: ["campaign_trigger"]);
+```
+
+```swift Objective-C
+NSMutableSet<NSString *> *eventNames = [NSMutableSet set];
+[eventNames addObject:@"campaign_trigger"];
+
+[[Superwall sharedInstance] preloadPaywallsForEvents:eventNames];
+```
+
+```kotlin Kotlin
+val eventNames = setOf("campaign_trigger")
+Superwall.instance.preloadPaywalls(eventNames)
+```
+
+```dart Flutter
+var eventNames = {"campaign_trigger"};
+Superwall.shared.preloadPaywallsForEvents(eventNames);
+```
+
+```typescript React Native
+// Coming soon
+```
+
+</CodeGroup>
+
+If you'd like to preload all paywalls you can use `preloadAllPaywalls()`:
+
+<CodeGroup>
+
+```swift Swift
+Superwall.shared.preloadAllPaywalls()
+```
+
+```swift Objective-C
+[[Superwall sharedInstance] preloadAllPaywalls];
+```
+
+```kotlin Kotlin
+Superwall.instance.preloadAllPaywalls()
+```
+
+```dart Flutter
+Superwall.shared.preloadAllPaywalls();
+```
+
+```typescript React Native
+// Coming soon
+```
+
+</CodeGroup>
+
+Note: These methods will not reload any paywalls that have already been preloaded.
+
+### External Data Collection
+
+By default, Superwall sends all registered events and properties back to the Superwall servers. However, if you have privacy concerns, you can stop this by setting `isExternalDataCollectionEnabled` to `false`:
+
+<CodeGroup>
+
+```swift Swift
+let options = SuperwallOptions()
+options.isExternalDataCollectionEnabled = false
+
+Superwall.configure(apiKey: "MY_API_KEY", options: options)
+```
+
+```swift Objective-C
+SWKSuperwallOptions *options = [[SWKSuperwallOptions alloc] init];
+options.isExternalDataCollectionEnabled = false;
+
+[Superwall configureWithApiKey:@"MY_API_KEY" purchaseController:nil options:options completion:nil];
+```
+
+```kotlin Kotlin
+val options = SuperwallOptions()
+options.isExternalDataCollectionEnabled = false
+
+Superwall.configure(
+  this,
+  apiKey = "MY_API_KEY",
+  options = options
+)
+
+// Or using the configuration DSL
+configureSuperwall("MY_API_KEY") {
+    options {
+        isExternalDataCollectionEnabled = false
+    }
+}
+```
+
+```dart Flutter
+SuperwallOptions options = SuperwallOptions();
+options.isExternalDataCollectionEnabled = false;
+
+Superwall.configure(
+  "MY_API_KEY",
+  options: options
+);
+```
+
+```typescript React Native
+const options = SuperwallOptions()
+options.isExternalDataCollectionEnabled = false
+
+Superwall.configure(
+  "MY_API_KEY",
+  options: options
+);
+```
+
+</CodeGroup>
+
+Disabling this will not affect your ability to create triggers based on properties.
+
+### Automatically Dismissing the Paywall
+
+By default, Superwall automatically dismisses the paywall when a product is purchased or restored. You can disable this by setting `automaticallyDismiss` to `false`:
+
+<CodeGroup>
+
+```swift Swift
+let options = SuperwallOptions()
+options.paywalls.automaticallyDismiss = false
+
+Superwall.configure(apiKey: "MY_API_KEY", options: options)
+```
+
+```swift Objective-C
+SWKSuperwallOptions *options = [[SWKSuperwallOptions alloc] init];
+options.automaticallyDismiss = false;
+
+[Superwall configureWithApiKey:@"MY_API_KEY" purchaseController:nil options:options completion:^{}];
+```
+
+```kotlin Kotlin
+val options = SuperwallOptions()
+options.paywalls.automaticallyDismiss = false
+
+Superwall.configure(
+  this,
+  apiKey = "MY_API_KEY",
+  options = options
+)
+
+// Or using the configuration DSL
+configureSuperwall("MY_API_KEY") {
+    options {
+        paywalls {
+            automaticallyDismiss = false
+        }
+    }
+}
+```
+
+```dart Flutter
+SuperwallOptions options = SuperwallOptions();
+options.paywalls.automaticallyDismiss = false;
+
+Superwall.configure(
+  "MY_API_KEY",
+  options: options
+);
+```
+
+```typescript React Native
+const options = SuperwallOptions()
+options.paywalls.automaticallyDismiss = false
+
+Superwall.configure(
+  "MY_API_KEY",
+  null,
+  options: options
+);
+```
+
+</CodeGroup>
+
+To manually dismiss the paywall , call `Superwall.shared.dismiss()`.
+
+### Custom Restore Failure Message
+
+You can set the title, message and close button title for the alert that appears after a restoration failure:
+
+<CodeGroup>
+
+```swift Swift
+let options = SuperwallOptions()
+options.paywalls.restoreFailed.title = "My Title"
+options.paywalls.restoreFailed.message = "My message"
+options.paywalls.restoreFailed.closeButtonTitle = "Close"
+
+Superwall.configure(apiKey: "MY_API_KEY", options: options)
+```
+
+```swift Objective-C
+SWKSuperwallOptions *options = [[SWKSuperwallOptions alloc] init];
+options.paywalls.restoreFailed.title = @"My Title";
+options.paywalls.restoreFailed.message = @"My message";
+options.paywalls.restoreFailed.closeButtonTitle = @"Close";
+
+[Superwall configureWithApiKey:@"MY_API_KEY" purchaseController:nil options:options completion:nil];
+```
+
+```kotlin Kotlin
+val options = SuperwallOptions()
+options.paywalls.restoreFailed.title = "My Title"
+options.paywalls.restoreFailed.message = "My message"
+options.paywalls.restoreFailed.closeButtonTitle = "Close"
+
+Superwall.configure(
+  this,
+  apiKey = "MY_API_KEY",
+  options = options
+)
+
+// Or using the configuration DSL
+configureSuperwall("MY_API_KEY") {
+    options {
+        paywalls {
+            restoreFailed.title = "My Title"
+            restoreFailed.message = "My message"
+            restoreFailed.closeButtonTitle = "Close"
+        }
+    }
+}
+```
+
+```dart Flutter
+SuperwallOptions options = SuperwallOptions();
+options.paywalls.restoreFailed.title = "My Title";
+options.paywalls.restoreFailed.message = "My message";
+options.paywalls.restoreFailed.closeButtonTitle = "Close";
+
+Superwall.configure(
+  "MY_API_KEY",
+  options: options
+);
+```
+
+```typescript React Native
+const options = SuperwallOptions()
+options.paywalls.restoreFailed.title = "My Title"
+options.paywalls.restoreFailed.message = "My message";
+options.paywalls.restoreFailed.closeButtonTitle = "Close";
+
+Superwall.configure(
+  "MY_API_KEY",
+  null,
+  options: options
+);
+```
+
+</CodeGroup>
+
+### Haptic Feedback
+
+On iOS, the paywall uses haptic feedback by default after a user purchases or restores a product, opens a URL from the paywall, or closes the paywall. To disable this, set the `isHapticFeedbackEnabled` `PaywallOption` to false:
+
+<CodeGroup>
+
+```swift Swift
+let options = SuperwallOptions()
+options.paywalls.isHapticFeedbackEnabled = false
+
+Superwall.configure(apiKey: "MY_API_KEY", options: options)
+```
+
+```swift Objective-C
+SWKSuperwallOptions *options = [[SWKSuperwallOptions alloc] init];
+options.isHapticFeedbackEnabled = false;
+
+[Superwall configureWithApiKey:@"MY_API_KEY" purchaseController:nil options:options completion:^{}];
+```
+
+```dart Flutter
+SuperwallOptions options = SuperwallOptions();
+options.paywalls.isHapticFeedbackEnabled = false;
+
+Superwall.configure(
+  "MY_API_KEY",
+  options: options
+);
+```
+
+```typescript React Native
+const options = SuperwallOptions()
+options.paywalls.isHapticFeedbackEnabled = false;
+
+Superwall.configure(
+  "MY_API_KEY",
+  null,
+  options: options
+);
+```
+
+</CodeGroup>
+
+Note: Android does not use haptic feedback.
+
+### Transaction Background View
+
+During a transaction, we add a `UIActivityIndicator` behind the view to indicate a loading status. However, you can remove this by setting the `transactionBackgroundView` to `nil`:
+
+<CodeGroup>
+
+```swift Swift
+let options = SuperwallOptions()
+options.paywalls.transactionBackgroundView = nil
+
+Superwall.configure(apiKey: "MY_API_KEY", options: options)
+```
+
+```swift Objective-C
+SWKSuperwallOptions *options = [[SWKSuperwallOptions alloc] init];
+options.paywalls.transactionBackgroundView = SWKTransactionBackgroundViewNone;
+
+[Superwall
+  configureWithApiKey:@"MY_API_KEY"
+  purchaseController:nil
+  options:options
+  completion:nil
+];
+```
+
+```kotlin Kotlin
+val options = SuperwallOptions()
+options.paywalls.transactionBackgroundView = null
+
+Superwall.configure(
+  this,
+  apiKey = "MY_API_KEY",
+  options = options
+)
+
+// Or using the configuration DSL
+configureSuperwall("MY_API_KEY") {
+    options {
+        paywalls {
+            transactionBackgroundView = null
+        }
+    }
+}
+```
+
+```dart Flutter
+SuperwallOptions options = SuperwallOptions();
+options.paywalls.transactionBackgroundView = TransactionBackgroundView.none;
+
+Superwall.configure(
+  "MY_API_KEY",
+  options: options
+);
+```
+
+```typescript React Native
+const options = SuperwallOptions()
+options.paywalls.transactionBackgroundView = TransactionBackgroundView.none
+
+Superwall.configure(
+  "MY_API_KEY",
+  null,
+  options: options
+);
+```
+
+</CodeGroup>
+
+### Purchase Failure Alert
+
+When a purchase fails, we automatically present an alert with the error message. If you'd like to show your own alert after failure, set the `shouldShowPurchaseFailureAlert` `PaywallOption` to `false`:
+
+<CodeGroup>
+
+```swift Swift
+let options = SuperwallOptions()
+options.paywalls.shouldShowPurchaseFailureAlert = false
+
+Superwall.configure(apiKey: "MY_API_KEY", options: options)
+```
+
+```swift Objective-C
+SWKSuperwallOptions *options = [[SWKSuperwallOptions alloc] init];
+options.paywalls.shouldShowPurchaseFailureAlert = false;
+
+[Superwall
+  configureWithApiKey:@"MY_API_KEY"
+  purchaseController:nil
+  options:options
+  completion:nil
+];
+```
+
+```kotlin Kotlin
+val options = SuperwallOptions()
+options.paywalls.shouldShowPurchaseFailureAlert = false
+
+Superwall.configure(
+  this,
+  apiKey = "MY_API_KEY",
+  options = options
+)
+
+// Or using the configuration DSL
+configureSuperwall("MY_API_KEY") {
+    options {
+        paywalls {
+            shouldShowPurchaseFailureAlert = false
+        }
+    }
+}
+```
+
+```dart Flutter
+SuperwallOptions options = SuperwallOptions();
+options.paywalls.shouldShowPurchaseFailureAlert = false;
+
+Superwall.configure(
+  "MY_API_KEY",
+  options: options
+);
+```
+
+```typescript React Native
+const options = SuperwallOptions()
+options.paywalls.shouldShowPurchaseFailureAlert = false;
+
+Superwall.configure(
+  "MY_API_KEY",
+  null,
+  options: options
+);
+```
+
+</CodeGroup>
+
+### Locale Identifier
+
+When evaluating rules, the device locale identifier is set to `autoupdatingCurrent`. However, you can override this if you want to test a specific locale:
+
+<CodeGroup>
+
+```swift Swift
+let options = SuperwallOptions()
+options.localeIdentifier = "en_GB"
+
+Superwall.configure(apiKey: "MY_API_KEY", options: options)
+```
+
+```swift Objective-C
+SWKSuperwallOptions *options = [[SWKSuperwallOptions alloc] init];
+options.localeIdentifier = @"en_GB";
+
+[Superwall configureWithApiKey:@"MY_API_KEY" purchaseController:nil options:options completion:^{}];
+```
+
+```kotlin Kotlin
+val options = SuperwallOptions()
+options.localeIdentifier = "en_GB"
+
+Superwall.configure(
+  this,
+  apiKey = "MY_API_KEY",
+  options = options
+)
+
+// Or using the configuration DSL
+configureSuperwall("MY_API_KEY") {
+    options {
+        localeIdentifier = "en_GB"
+    }
+}
+```
+
+```dart Flutter
+SuperwallOptions options = SuperwallOptions();
+options.localeIdentifier = "en_GB";
+
+Superwall.configure(
+  "MY_API_KEY",
+  options: options
+);
+```
+
+```typescript React Native
+const options = SuperwallOptions()
+options.localeIdentifier = "en_GB";
+
+Superwall.configure(
+  "MY_API_KEY",
+  null,
+  options: options
+);
+```
+
+</CodeGroup>
+
+For a list of locales that are available on iOS, take a look at [this list](https://gist.github.com/jacobbubu/1836273). You can also preview your paywall in different locales using [In-App Previews](/legacy/legacy_in-app-paywall-previews).
+
+### Game Controller
+
+If you're using a game controller, you can enable this in `SuperwallOptions` too. Check out our [Game Controller Support](../game-controller-support) article.
+
+Take a look at [SuperwallOptions](https://sdk.superwall.me/documentation/superwallkit/superwalloptions) in our SDK reference for more info.

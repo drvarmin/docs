@@ -1,0 +1,123 @@
+# On push to main with docs content or app changes, deploy to docs production
+
+name: Deploy Docs to Production
+
+on:
+  push:
+    branches:
+      - main
+    paths:
+      - "src/**"
+      - "content/**"
+      - "scripts/**"
+      - "package.json"
+      - "next.config.ts"
+
+jobs:
+  deploy_docs_prod:
+    # Temporarily disabled to prevent automatic production deploys
+    if: ${{ false }}
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      deployments: write
+    env:
+      # Depot Turbo Cache Configuration
+      TURBO_API: https://cache.depot.dev
+      TURBO_TOKEN: ${{ secrets.DEPOT_TOKEN }}
+      TURBO_TEAM: ${{ secrets.DEPOT_ORG_ID }}
+      # Cloudflare configuration
+      CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+      CF_ACCOUNT_ID: ${{ secrets.CF_ACCOUNT_ID }}
+      CF_ZONE_ID: ${{ secrets.CF_ZONE_ID }}
+      CF_ROUTE_PATTERN: ${{ secrets.CF_ROUTE_PATTERN }}
+      CF_WORKER_NAME: ${{ secrets.CF_WORKER_NAME }}
+      DOCS_SLACK_FEEDBACK_WEBHOOK: ${{ secrets.DOCS_SLACK_FEEDBACK_WEBHOOK }}
+      DOCS_NEXT_PUBLIC_MESH_SDK_KEY: ${{ secrets.DOCS_NEXT_PUBLIC_MESH_SDK_KEY }}
+      DOCS_NEXT_PUBLIC_UNIFY_SCRIPT_SRC: ${{ secrets.DOCS_NEXT_PUBLIC_UNIFY_SCRIPT_SRC }}
+      DOCS_NEXT_PUBLIC_UNIFY_API_KEY: ${{ secrets.DOCS_NEXT_PUBLIC_UNIFY_API_KEY }}
+      DOCS_NEXT_PUBLIC_RB2B_KEY: ${{ secrets.DOCS_NEXT_PUBLIC_RB2B_KEY }}
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          submodules: true
+
+      - name: Use Node.js 20.x
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20.18.1
+
+      - name: Enable Corepack
+        run: corepack enable
+
+      - name: Install dependencies
+        run: yarn install
+
+      - name: Generate production env file
+        run: |
+          cat <<EOF > .env.production
+          NEXTJS_ENV=production
+          SLACK_FEEDBACK_WEBHOOK=${DOCS_SLACK_FEEDBACK_WEBHOOK}
+          NEXT_PUBLIC_MESH_SDK_KEY=${DOCS_NEXT_PUBLIC_MESH_SDK_KEY}
+          NEXT_PUBLIC_UNIFY_SCRIPT_SRC=${DOCS_NEXT_PUBLIC_UNIFY_SCRIPT_SRC}
+          NEXT_PUBLIC_UNIFY_API_KEY=${DOCS_NEXT_PUBLIC_UNIFY_API_KEY}
+          NEXT_PUBLIC_RB2B_KEY=${DOCS_NEXT_PUBLIC_RB2B_KEY}
+          EOF
+
+      - name: Generate Wrangler config for CI
+        run: |
+          cat <<EOF > wrangler.ci.jsonc
+          {
+            "$schema": "node_modules/wrangler/config-schema.json",
+            "account_id": "${CF_ACCOUNT_ID}",
+            "main": ".open-next/worker.js",
+            "name": "${CF_WORKER_NAME}",
+            "compatibility_date": "2024-12-30",
+            "compatibility_flags": [
+              "nodejs_compat",
+              "global_fetch_strictly_public"
+            ],
+            "assets": {
+              "directory": ".open-next/assets",
+              "binding": "ASSETS"
+            },
+            "services": [{
+              "binding": "WORKER_SELF_REFERENCE",
+              "service": "${CF_WORKER_NAME}"
+            }],
+            "routes": [
+              {
+                "pattern": "${CF_ROUTE_PATTERN}",
+                "zone_id": "${CF_ZONE_ID}"
+              }
+            ],
+            "env": {
+              "staging": {
+                "workers_dev": true,
+                "routes": []
+              }
+            }
+          }
+          EOF
+
+      - name: Sync production Worker secrets
+        run: |
+          node <<'EOF'
+          const fs = require('fs');
+          const secrets = {
+            NEXT_PUBLIC_MESH_SDK_KEY: process.env.DOCS_NEXT_PUBLIC_MESH_SDK_KEY,
+            NEXT_PUBLIC_UNIFY_SCRIPT_SRC: process.env.DOCS_NEXT_PUBLIC_UNIFY_SCRIPT_SRC,
+            NEXT_PUBLIC_UNIFY_API_KEY: process.env.DOCS_NEXT_PUBLIC_UNIFY_API_KEY,
+            NEXT_PUBLIC_RB2B_KEY: process.env.DOCS_NEXT_PUBLIC_RB2B_KEY,
+            SLACK_FEEDBACK_WEBHOOK: process.env.DOCS_SLACK_FEEDBACK_WEBHOOK
+          };
+          fs.writeFileSync('worker-secrets.json', JSON.stringify(secrets));
+          EOF
+          yarn wrangler --config wrangler.ci.jsonc secret bulk worker-secrets.json
+          rm worker-secrets.json
+
+      - name: Deploy to Cloudflare Workers (Production)
+        env:
+          WRANGLER_CONFIG: wrangler.ci.jsonc
+        run: yarn deploy
+

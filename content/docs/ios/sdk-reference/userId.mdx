@@ -1,0 +1,58 @@
+---
+title: "userId"
+description: "A property on Superwall.shared that returns the current user's ID."
+---
+
+<Info>
+The anonymous user ID is automatically generated and persisted to disk, so it remains consistent across app launches until the user is identified.
+</Info>
+
+## Purpose
+Returns the current user's unique identifier, either from a previous call to [`identify()`](/ios/sdk-reference/identify) or an anonymous ID if not identified.
+
+## Signature
+```swift
+// Accessed via Superwall.shared
+public var userId: String { get }
+```
+
+## Parameters
+This is a read-only computed property on the [`Superwall.shared`](/ios/sdk-reference/Superwall) instance with no parameters.
+
+## Returns / State
+Returns a `String` representing the user's ID. If [`identify()`](/ios/sdk-reference/identify) has been called, returns that user ID. Otherwise, returns an automatically generated anonymous user ID that is cached to disk.
+
+## Usage
+
+Get the current user ID:
+```swift
+let currentUserId = Superwall.shared.userId
+print("User ID: \(currentUserId)")
+```
+
+Check if user is identified:
+```swift
+if Superwall.shared.isLoggedIn {
+  print("User is identified with ID: \(Superwall.shared.userId)")
+} else {
+  print("User is anonymous with ID: \(Superwall.shared.userId)")
+}
+```
+
+Example usage in analytics:
+```swift
+func trackAnalyticsEvent() {
+  let userId = Superwall.shared.userId
+  Analytics.track("feature_used", properties: [
+    "user_id": userId,
+    "timestamp": Date()
+  ])
+}
+```
+
+Example usage in custom logging:
+```swift
+func logError(_ error: Error) {
+  Logger.log("Error for user \(Superwall.shared.userId): \(error)")
+}
+```

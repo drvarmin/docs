@@ -1,0 +1,77 @@
+/* @tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@import "fumadocs-ui/css/neutral.css";
+@import "fumadocs-ui/css/preset.css"; */
+
+@import 'tailwindcss';
+/* @import 'fumadocs-ui/css/black.css'; */
+@import 'fumadocs-ui/css/neutral.css';
+@import 'fumadocs-ui/css/preset.css';
+
+:root {
+    /* 
+    --radius-md: 0.375rem;
+    --radius-lg: 0.5rem;
+    --radius-xl: 0.75rem;
+    --radius-2xl: 1rem; 
+    --spacing: 0.25rem;
+    */
+    --radius-lg: 0.75rem;
+    --spacing: 0.3rem;
+}
+
+.dark {
+    --color-fd-background: #13151A;
+    --color-fd-foreground: #F6F8FA;
+
+    --color-fd-primary: #74F8F0;
+    --color-fd-primary-foreground: #13151A;
+
+    --color-fd-secondary: #1C212B;
+    /* --color-fd-secondary-foreground: #F6F8FA; */
+    --color-fd-secondary-foreground: #8A94A6;
+
+    --color-fd-muted: #1F2630;
+    --color-fd-muted-foreground: #9FA0A0; /* ≈ text-zinc-300 */
+    color: var(--color-fd-muted-foreground);
+
+    --color-fd-accent: #2C313C;
+    --color-fd-accent-foreground: #F6F8FA;
+
+    --color-fd-border: #2A303C;
+    --color-fd-input: #2A303C;
+    --color-fd-ring: #2C313C;
+
+    --color-fd-card: #13151A;
+    --color-fd-popover: #13151A;
+    --color-fd-popover-foreground: #F6F8FA;
+}
+
+.dark .prose {
+    --tw-prose-body: var(--color-fd-muted-foreground);
+    --tw-prose-bullets: var(--color-fd-muted-foreground);
+    --tw-prose-counters: var(--color-fd-muted-foreground);
+}
+
+/* colored pill on first column for <ParamTable> */
+.fd-param tbody td:first-child code {
+    background: #74F8F020;
+    color: #74F8F0;
+    border-color: #74F8F030;
+}
+
+/* Remove the default vertical spacing that Fumadocs adds around tables
+   when they’re wrapped in our <ParamTable>. */
+.fd-param > .relative {
+  margin-top: 0 !important;
+  margin-bottom: 0 !important;
+}
+
+
+/* kill clicks on the nav-chevron */
+[data-role="expand"],
+svg[data-icon="true"] {      /* ← arrow in current Fumadocs build */
+  pointer-events: none;
+}

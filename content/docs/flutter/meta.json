@@ -1,0 +1,52 @@
+{
+    "title": "Flutter SDK",
+    "icon": "Flutter",
+    "root": true,
+    "pages": [
+        "[Dashboard Docs](https://superwall.com/docs/dashboard)",
+        "index",
+
+        "---Quickstart---",
+        "quickstart/install",
+        "quickstart/configure",
+        "quickstart/user-management",
+        "quickstart/feature-gating",
+        "quickstart/tracking-subscription-state",
+        "quickstart/setting-user-properties",
+        "quickstart/in-app-paywall-previews",
+
+        "---Common Use Cases---",
+        "guides/web-checkout",
+        "guides/advanced-configuration",
+        "guides/configuring",
+        "guides/using-superwall-delegate",
+        "guides/3rd-party-analytics",
+
+        "---SDK Reference---",
+        "sdk-reference/index",
+        "sdk-reference/configure",
+        "sdk-reference/Superwall",
+        "sdk-reference/register",
+        "sdk-reference/identify",
+        "sdk-reference/setUserAttributes",
+        "sdk-reference/getUserId",
+        "sdk-reference/subscriptionStatus",
+        "sdk-reference/SuperwallDelegate",
+        "sdk-reference/PaywallPresentationHandler",
+        "sdk-reference/SuperwallOptions",
+        "sdk-reference/PaywallOptions",
+        "sdk-reference/PurchaseController",
+        "sdk-reference/handleDeepLink",
+        "sdk-reference/advanced",
+
+        "---Guides---",
+        "guides/vibe-coding",
+        "guides/using-revenuecat",
+        "guides/experimental-flags",
+        "guides/advanced",
+        "guides/migrations",
+        "[Integration Guide](https://superwall.com/blog/integrating-superwall-in-your-flutter-app)",
+        "[Troubleshooting](https://support.superwall.com/articles/6999598520-troubleshooting-flutter-sdk)",
+        "[Example App](https://github.com/superwall/Superwall-Flutter/tree/main/example)"
+    ]
+}

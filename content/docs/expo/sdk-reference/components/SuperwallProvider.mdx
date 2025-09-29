@@ -1,0 +1,25 @@
+---
+title: "SuperwallProvider"
+---
+
+`<SuperwallProvider />` is the root component for the Superwall SDK. It is used to initialize the SDK with your API key.
+
+## Props
+
+### `apiKeys`
+
+The `apiKeys` prop is an object that contains the API keys for the Superwall SDK.
+
+## Example
+
+```tsx
+import { SuperwallProvider } from "expo-superwall";
+
+// Replace with your actual Superwall API key
+export default function App() {
+  return (
+    <SuperwallProvider apiKeys={{ ios: "YOUR_SUPERWALL_API_KEY" /* android: API_KEY */ }}>
+      {/* Your app content goes here */}
+    </SuperwallProvider>
+  );
+}
