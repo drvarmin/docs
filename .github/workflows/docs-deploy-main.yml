@@ -60,7 +60,7 @@ jobs:
 
       - name: Generate Wrangler config for CI
         run: |
-          cat <<EOF > wrangler.ci.jsonc
+          cat <<EOF > wrangler.jsonc
           {
             "$schema": "node_modules/wrangler/config-schema.json",
             "account_id": "${CF_ACCOUNT_ID}",
@@ -79,12 +79,7 @@ jobs:
               "binding": "WORKER_SELF_REFERENCE",
               "service": "${CF_WORKER_NAME}"
             }],
-            "routes": [
-              {
-                "pattern": "${CF_ROUTE_PATTERN}",
-                "zone_id": "${CF_ZONE_ID}"
-              }
-            ],
+            "routes": [],
             "env": {
               "staging": {
                 "workers_dev": true,
@@ -95,5 +90,7 @@ jobs:
           EOF
 
       - name: Deploy to Cloudflare Workers (Production)
-        run: yarn build:prep && yarn opennextjs-cloudflare build && yarn opennextjs-cloudflare deploy -- --config wrangler.ci.jsonc
-
+        run: |
+          yarn build:prep && \
+          yarn opennextjs-cloudflare build --config wrangler.jsonc && \
+          yarn opennextjs-cloudflare deploy --config wrangler.jsonc

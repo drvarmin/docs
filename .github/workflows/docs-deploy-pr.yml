@@ -67,7 +67,7 @@ jobs:
 
       - name: Generate Wrangler config for CI
         run: |
-          cat <<EOF > wrangler.ci.jsonc
+          cat <<EOF > wrangler.jsonc
           {
             "$schema": "node_modules/wrangler/config-schema.json",
             "account_id": "${CF_ACCOUNT_ID}",
@@ -98,9 +98,7 @@ jobs:
 
 
       - name: Build docs
-        env:
-          WRANGLER_CONFIG: wrangler.ci.jsonc
-        run: yarn build:prep && opennextjs-cloudflare build
+        run: yarn build:prep && opennextjs-cloudflare build --config wrangler.jsonc
 
       - name: Upload Worker version with PR alias
         id: upload
@@ -110,7 +108,7 @@ jobs:
           accountId: ${{ secrets.CF_ACCOUNT_ID }}
           wranglerVersion: "4.25.0"
           workingDirectory: .
-          command: --config wrangler.ci.jsonc --env staging versions upload --name ${{ secrets.CF_STAGING_WORKER_NAME }} --preview-alias pr-${{ github.event.pull_request.number }}
+          command: --config wrangler.jsonc --env staging versions upload --name ${{ secrets.CF_STAGING_WORKER_NAME }} --preview-alias pr-${{ github.event.pull_request.number }}
 
       - name: Capture preview URLs
         id: parse
@@ -163,4 +161,3 @@ jobs:
             } else {
               await github.rest.issues.createComment({ issue_number: context.issue.number, owner: context.repo.owner, repo: context.repo.repo, body });
             }
-

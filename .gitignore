@@ -15,6 +15,7 @@ node_modules
 .DS_Store
 .env.local
 .env.production
+.env.ci
 /.turbo
 /.yarn
 .pnp.loader.mjs
