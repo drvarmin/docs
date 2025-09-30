@@ -1,0 +1,71 @@
+{
+  "name": "Superwall Documentation",
+  "build": {
+    "dockerfile": "Dockerfile",
+    "context": ".."
+  },
+  
+  // Features to add to the dev container
+  "features": {
+    "ghcr.io/devcontainers/features/git:1": {},
+    "ghcr.io/devcontainers/features/github-cli:1": {}
+  },
+  
+  // Forward the Next.js dev server port
+  "forwardPorts": [8293],
+  "portsAttributes": {
+    "8293": {
+      "label": "Documentation Site",
+      "onAutoForward": "openBrowser"
+    }
+  },
+  
+  // VS Code specific settings
+  "customizations": {
+    "vscode": {
+      "extensions": [
+        "dbaeumer.vscode-eslint",
+        "esbenp.prettier-vscode",
+        "unifiedjs.vscode-mdx",
+        "bradlc.vscode-tailwindcss",
+        "ms-azuretools.vscode-docker",
+        "GitHub.copilot",
+        "eamodio.gitlens",
+        "mdx-js.mdx",
+        "yoavbls.pretty-ts-errors"
+      ],
+      "settings": {
+        "editor.defaultFormatter": "esbenp.prettier-vscode",
+        "editor.formatOnSave": true,
+        "editor.codeActionsOnSave": {
+          "source.fixAll.eslint": true
+        },
+        "typescript.updateImportsOnFileMove.enabled": "always",
+        "typescript.preferences.includePackageJsonAutoImports": "auto",
+        "mdx.experimentalLanguageServer": true,
+        "tailwindCSS.includeLanguages": {
+          "mdx": "html"
+        },
+        "files.associations": {
+          "*.mdx": "mdx"
+        }
+      }
+    }
+  },
+  
+  // Run commands after creating the container
+  "postCreateCommand": "bash .devcontainer/post-create.sh",
+  
+  // Environment variables
+  "remoteEnv": {
+    "NODE_ENV": "development"
+  },
+  
+  // Mount points
+  "mounts": [
+    "source=${localWorkspaceFolder},target=/workspace/docs,type=bind,consistency=cached"
+  ],
+  
+  // Workspace folder
+  "workspaceFolder": "/workspace/docs"
+}
