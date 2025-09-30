@@ -3,10 +3,6 @@ set -e
 
 echo "🚀 Setting up Superwall Documentation development environment..."
 
-# Ensure we're in the right directory
-cd /workspace/docs
-
-# Disable Corepack download prompt
 export COREPACK_ENABLE_DOWNLOAD_PROMPT=0
 
 # Verify Yarn version

@@ -4,13 +4,13 @@
     "dockerfile": "Dockerfile",
     "context": ".."
   },
-  
+
   // Features to add to the dev container
   "features": {
     "ghcr.io/devcontainers/features/git:1": {},
     "ghcr.io/devcontainers/features/github-cli:1": {}
   },
-  
+
   // Forward the Next.js dev server port
   "forwardPorts": [8293],
   "portsAttributes": {
@@ -19,7 +19,7 @@
       "onAutoForward": "openBrowser"
     }
   },
-  
+
   // VS Code specific settings
   "customizations": {
     "vscode": {
@@ -52,20 +52,17 @@
       }
     }
   },
-  
+
   // Run commands after creating the container
   "postCreateCommand": "bash .devcontainer/post-create.sh",
-  
+
   // Environment variables
   "remoteEnv": {
     "NODE_ENV": "development"
   },
-  
-  // Mount points
+
   "mounts": [
-    "source=${localWorkspaceFolder},target=/workspace/docs,type=bind,consistency=cached"
+    "source=${localWorkspaceFolder},target=/workspace,type=bind,consistency=cached"
   ],
-  
-  // Workspace folder
-  "workspaceFolder": "/workspace/docs"
+  "workspaceFolder": "/workspace"
 }
