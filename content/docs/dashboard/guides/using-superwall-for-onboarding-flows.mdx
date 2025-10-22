@@ -18,13 +18,14 @@ Start by creating a [campaign](/campaigns) specifically for onboarding:
 
 There are two main approaches to triggering onboarding:
 
-### Using the `app_launch` placement
+### Using the `app_install` placement
 
-The [`app_launch`](/campaigns-standard-placements) standard placement fires automatically when your app launches. This is ideal for showing onboarding on first launch:
+The [`app_install`](/campaigns-standard-placements) standard placement fires automatically when a user first installs your app. This is ideal for showing onboarding since it only fires once:
 
-1. Add `app_launch` as a [placement](/campaigns-placements) to your onboarding campaign
-2. In your [audience filters](/dashboard/dashboard-campaigns/campaigns-audience#using-user-properties-or-placement-parameters), add a custom user attribute called something like `hasCompletedOnboarding` and set the condition to "is not equal to" `true`.
-3. When onboarding completes, [set the user attribute](/sdk/quickstart/setting-user-properties) in your SDK:
+1. Add `app_install` as a [placement](/campaigns-placements) to your onboarding campaign
+2. Optionally, in your [audience filters](/dashboard/dashboard-campaigns/campaigns-audience#using-user-properties-or-placement-parameters), add a condition like `user.totalPaywallViews` equals `0` to ensure it only shows to brand new users
+
+Since `app_install` only fires once per install, you don't need additional logic to prevent it from showing multiple times. However, if users complete onboarding and you want to track that for other purposes, you can still [set a user attribute](/sdk/quickstart/setting-user-properties):
 
 ```swift iOS
 // Swift
@@ -41,8 +42,6 @@ Superwall.instance.setUserAttributes({
 // React Native / Expo
 await Superwall.shared.setUserAttributes({ hasCompletedOnboarding: true });
 ```
-
-This prevents the onboarding from showing again on subsequent launches.
 
 ### Using a custom placement
 
@@ -103,9 +102,13 @@ This means you can go to certain pages based off a button they tapped showing a 
 
 Track which slide users are on using the [slides element variable](/paywall-editor-slides-component#tracking-or-updating-the-displayed-element-in-slides) and conditionally show/hide elements or change copy accordingly.
 
+## Tracking onboarding analytics
+
+Superwall automatically tracks all interactions with your onboarding flow, including when it opens, closes, and which pages users view. These [Superwall Events](/tracking-analytics) are available in your campaign metrics and can be sent to your own analytics service. You can also use [custom paywall actions](/sdk/guides/advanced/custom-paywall-actions) to trigger specific tracking events when users interact with buttons or elements in your onboarding flow, giving you detailed insights into user behavior and drop-off points.
+
 ## Best practices
 
-- **Keep it concise:** 3-5 slides is usually optimal for onboarding
+- **Length:** 3-10 pages is usually optimal for onboarding
 - **Use user attributes:** Track onboarding completion and progress to avoid showing it repeatedly
 - **Test variations:** Create multiple audiences to A/B test different onboarding flows
 - **Make it dismissible:** Consider adding a skip option for returning users
