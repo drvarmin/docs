@@ -9,7 +9,7 @@
     "optimize:images": "tsx scripts/resize-large-images.ts",
     "check:images": "tsx scripts/check-image-sizes.ts",
     "convert:webp": "tsx scripts/convert-to-webp.ts",
-    "build:prep": "tsx scripts/generate-title-map.ts && tsx scripts/generate-llm-files.ts && tsx scripts/generate-md-files.ts && bun run copy:docs-images && bun run check:images",
+    "build:prep": "tsx scripts/generate-title-map.ts && tsx scripts/generate-llm-files.ts && tsx scripts/generate-md-files.ts && bun run copy:docs-images && tsx scripts/post-copy-optimize.ts",
     "build": "bun run build:prep && fumadocs-mdx && bun run build:next",
     "build:next": "next build",
     "build:cf": "bun run build:prep && opennextjs-cloudflare build",

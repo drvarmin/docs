@@ -22,10 +22,10 @@ tsx scripts/generate-md-files.ts
 # Copy documentation images
 bun run copy:docs-images
 
-# Check for oversized images (runs automatically during build)
+# Check for oversized images
 bun run check:images
 
-# Optimize oversized images (resizes large images)
+# Manually optimize oversized images (resizes large images)
 bun run optimize:images
 
 # Convert all images to WebP format
@@ -41,6 +41,16 @@ bun run deploy:staging
 bun run deploy
 ```
 DO NOT EVER DEPLOY WITHOUT CHECKING WITH THE USER
+
+### Image Optimization
+
+The build process automatically optimizes images by:
+1. Copying images from content/docs to public
+2. Converting large PNG/JPEG images to WebP format
+3. Resizing images wider than 1920px
+4. Updating MDX references automatically
+
+This happens during `bun run build:prep` which is part of the standard build process.
 
 ## Documentation Site Architecture
 

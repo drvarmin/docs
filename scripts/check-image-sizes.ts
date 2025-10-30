@@ -88,11 +88,9 @@ async function main() {
   console.log('\nTo optimize these images, run:');
   console.log('  bun run optimize:images\n');
   
-  // Exit with error code to fail the build
-  if (process.env.CI === 'true') {
-    console.error('Build failed: Oversized images detected');
-    process.exit(1);
-  }
+  // Log a warning but don't fail the build
+  console.warn('\n⚠️  Warning: Oversized images will impact performance');
+  console.warn('Consider running optimization before deploying to production.');
 }
 
 main().catch(console.error);
