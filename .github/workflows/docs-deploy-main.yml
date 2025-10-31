@@ -36,6 +36,8 @@ jobs:
       DOCS_NEXT_PUBLIC_UNIFY_SCRIPT_SRC: ${{ secrets.DOCS_NEXT_PUBLIC_UNIFY_SCRIPT_SRC }}
       DOCS_NEXT_PUBLIC_UNIFY_API_KEY: ${{ secrets.DOCS_NEXT_PUBLIC_UNIFY_API_KEY }}
       DOCS_NEXT_PUBLIC_RB2B_KEY: ${{ secrets.DOCS_NEXT_PUBLIC_RB2B_KEY }}
+      NEXT_PUBLIC_PYLON_APP_ID: ${{ secrets.NEXT_PUBLIC_PYLON_APP_ID }}
+      PYLON_IDENTITY_SECRET: ${{ secrets.PYLON_IDENTITY_SECRET }}
     steps:
       - uses: actions/checkout@v4
         with:
@@ -62,6 +64,8 @@ jobs:
           NEXT_PUBLIC_UNIFY_API_KEY=${DOCS_NEXT_PUBLIC_UNIFY_API_KEY}
           NEXT_PUBLIC_RB2B_KEY=${DOCS_NEXT_PUBLIC_RB2B_KEY}
           SEARCH_MODE=${SEARCH_MODE}
+          NEXT_PUBLIC_PYLON_APP_ID=${NEXT_PUBLIC_PYLON_APP_ID}
+          PYLON_IDENTITY_SECRET=${PYLON_IDENTITY_SECRET}
           EOF
 
       - name: Generate Wrangler config for CI
