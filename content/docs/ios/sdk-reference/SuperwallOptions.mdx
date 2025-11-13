@@ -150,3 +150,23 @@ func configureSuperwallForDebug() {
 ## Related
 
 - [`PaywallOptions`](/ios/sdk-reference/PaywallOptions)
+
+## Runtime Interface Style Configuration
+
+While `SuperwallOptions` provides initial configuration, you can dynamically change the interface style (light/dark mode) for paywalls at runtime using:
+
+```swift
+// Force dark mode for all paywalls
+Superwall.shared.setInterfaceStyle(to: .dark)
+
+// Force light mode for all paywalls  
+Superwall.shared.setInterfaceStyle(to: .light)
+
+// Revert to system default
+Superwall.shared.setInterfaceStyle(to: nil)
+```
+
+Use this method if you have a themeing system that is different than
+the system. 
+
+The change takes effect immediately and persists until changed again or the app restarts.
