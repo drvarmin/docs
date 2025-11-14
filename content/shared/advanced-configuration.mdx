@@ -536,3 +536,56 @@ Superwall.shared.subscriptionStatusEmitter.addListener("change", (status) => {
 :::
 
 You can do similar tasks with the `SuperwallDelegate`, such as [viewing which product was purchased from a paywall](/3rd-party-analytics#using-events-to-see-purchased-products).
+
+### Product Overrides
+
+<Note>Product overrides allow you to dynamically substitute products on paywalls without modifying the paywall design in the Superwall dashboard.</Note>
+
+When using a `PurchaseController`, you may want to override specific products shown on your paywalls. This is useful for:
+- A/B testing different subscription tiers
+- Showing region-specific products
+- Dynamically changing products based on user segments
+- Testing promotional pricing without modifying paywalls
+
+:::ios
+```swift Swift
+// Configure product overrides when setting up Superwall
+let paywallOptions = PaywallOptions()
+paywallOptions.overrideProductsByName = [
+  "primary": "com.example.premium_monthly_promo",
+  "secondary": "com.example.premium_annual_promo",
+  "tertiary": "com.example.premium_lifetime"
+]
+
+Superwall.configure(
+  apiKey: "MY_API_KEY",
+  purchaseController: MyPurchaseController.shared,
+  options: paywallOptions
+)
+```
+
+```swift Objective-C
+// Configure product overrides when setting up Superwall
+SWKPaywallOptions *paywallOptions = [[SWKPaywallOptions alloc] init];
+paywallOptions.overrideProductsByName = @{
+  @"primary": @"com.example.premium_monthly_promo",
+  @"secondary": @"com.example.premium_annual_promo", 
+  @"tertiary": @"com.example.premium_lifetime"
+};
+
+[Superwall configureWithApiKey:@"MY_API_KEY" 
+              purchaseController:[MyPurchaseController sharedInstance]
+                        options:paywallOptions 
+                     completion:nil];
+```
+:::
+
+**How Product Overrides Work:**
+1. Product names (e.g., "primary", "secondary") must match exactly as defined in the Superwall dashboard's Paywall Editor
+2. The SDK substitutes the original product IDs with your override IDs before fetching from the App Store
+3. The paywall maintains its visual design while showing the substituted products
+4. Your `PurchaseController` will receive the overridden products when `purchase(product:)` is called
+
+<Warning>
+Product overrides only affect the products shown on paywalls. They don't change your subscription logic or entitlement validation.
+</Warning>
