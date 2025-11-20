@@ -1,0 +1,22 @@
+---
+title: Using Stripe's New Payment Sheet Checkout In-App
+---
+
+For users in the United States, you can offer Stripe checkout inside of your app's experience. For more information on how to configure Stripe checkout, review the documentation [here](/web-checkout-direct-stripe-checkout). This specific guide shows you how to use Stripe's new bottom sheet checkout flow.
+
+<Steps>
+<Step title="Choose a Stripe product on your paywall">
+<Frame>![](/images/scbs_1.jpeg)</Frame>
+</Step>
+<Step title="Choose 'Payment Sheet' for 'Web Checkout Location'">
+<Frame>![](/images/scbs_2.jpeg)</Frame>
+</Step>
+<Step title="Ensure your audience filter matches US customers only to remain compliant">
+<Frame>![](/images/scbd_3.jpeg)</Frame>
+</Step>
+<Step title="Stripe payment sheet will now show">
+<Frame>![](/images/stripe_bottom.jpg)</Frame>
+</Step>
+</Steps>
+
+This process works by attaching the Stripe product to a purchase tap behavior. Once the user checks out, the [web redemption flow](/web-checkout-direct-stripe-checkout) will occur.
