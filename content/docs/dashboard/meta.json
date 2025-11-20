@@ -23,6 +23,7 @@
         "manage-account",
 
         "---Guides---",
+        "guides/using-stripe-bottom-sheet-checkout-in-app",
         "guides/migrating-from-revenuecat-to-superwall",
         "guides/pre-launch-checklist",
         "guides/using-superwall-for-onboarding-flows",
