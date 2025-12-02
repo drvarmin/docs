@@ -45,7 +45,7 @@ It's divided into these sections:
 
 1. **Overview:** Displays key user information including App User ID, Country, Total Spent, SDK Version, and user registration/last seen dates.
 2. **Recent Events:** View revenue events and conversions, SDK events, and see the overall breadcrumb of actions the user has taken. You can filter or search by certain events as well.
-3. **Entitlements:** Displays any active entitlements the user has attached, how long they'll be active and their corresponding indentifiers.
+3. **Entitlements:** Displays any active entitlements the user has attached, how long they'll be active and their corresponding identifiers. See "Granting entitlements" below for more.
 4. **Aliases:** Any alias that Superwall has assigned the user will show here. Read more about how user aliases are created [here](/identity-management).
 5. **Apple Search Ads:** If you have the [Apple Search Ads](/integrations/apple-search-ads) integration activated, you'll see any A.S.A. data that relates to the user (such as the keywords used which led to install, etc).
 6. **User:** This houses basic information about the user, such as their install date, user seed and more.
@@ -66,3 +66,23 @@ The domains of events you can search and filter by are:
 Click on any of them to see more information about the event:
 
 <Frame>![](/images/overview-users-toggle-metadata.jpeg)</Frame>
+
+
+### Granting entitlements
+
+You can manually grant a user any entitlement your app offers. This is useful for activating pro features for someone, handling support issues, and more. 
+
+To grant an entitlement, **click** on the **+** icon:
+<Frame>![](/images/grantEntitlement.png)</Frame>
+
+Then, select an entitlement, expiration date, and optionally a reason for granting it:
+<Frame>![](/images/grantEntitlementOptions.jpeg)</Frame>
+
+**Click** on the **Grant Entitlement** button to save your changes.
+
+To revoke any entitlement you've granted, **click** on the **Trash icon**:
+<Frame>![](/images/revokeEntitlement.jpeg)</Frame>
+
+<Warning>
+If you are using a purchase controller, take care to follow our [implementation guide](/docs/ios/guides/advanced-configuration). For example, manually granted entitlements register in our SDK as web entitlements. If you aren't accounting for those in your purchase controller code, manually granted entitlements will not work. See the example linked above under "Complete example for iOS" for guidance.
+</Warning>
