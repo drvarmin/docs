@@ -115,15 +115,19 @@ For a hands on tutorial of creating multiple filters to show different paywalls,
   that paywall.
 </Note>
 
-#### Matching to entitlements
+#### Matching to entitlements or subscription status
 
-To match your campaign to specific entitlement, **click** the entitlements button and choose an option:
+To match your campaign to specific entitlement, or base it on the user's current subscription status, **click** the entitlements button and choose an option:
 
 <Frame>![](/images/campaign-filter-match-via-entitlement.png)</Frame>
 
-1. **Show to unsubscribed users (default):** Users without an active entitlement match.
+1. **Unsubscribed users (default):** Users without an active entitlement match.
 2. **All users**: All users match.
-3. **Specify entitlement**: Users with the specified entitlement(s) and state are matched. Here, you can combine multiple entitlement checks, too. For example, if `gold` is `active` but `platinum` is `inactive`:
+3. **Auto-renew disabled**: Users who have opted out of auto-renew.
+4. **Active trials, auto-renew disabled**: Users currently in an active trial, but they've already cancelled it before their trial period expired.
+5. **Active subscriptions, auto-renew disabled**: Users with an active subscription who have auto-renew turned off (i.e. these users will eventually churn).
+6. **Expired entitlements**: Users whose entitlements have expired.
+7. **Specify entitlements...**: Users with the specified entitlement(s) and state are matched. Here, you can combine multiple entitlement checks, too. For example, if `gold` is `active` but `platinum` is `inactive`:
 
 <Frame>![](/images/entitlementDuelCheck.png)</Frame>
 
