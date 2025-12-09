@@ -31,6 +31,9 @@ let attributes = Superwall.shared.integrationAttributes
 if let amplitudeUserId = attributes["amplitudeUserId"] {
   print("Amplitude User ID: \(amplitudeUserId)")
 }
+if let firebaseInstallationId = attributes["firebaseInstallationId"] {
+  print("Firebase installation ID: \(firebaseInstallationId)")
+}
 
 // Iterate over all attributes
 for (key, value) in attributes {

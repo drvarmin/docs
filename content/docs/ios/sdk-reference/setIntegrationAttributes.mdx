@@ -33,6 +33,7 @@ Set integration attributes:
 Superwall.shared.setIntegrationAttributes([
   .amplitudeUserId: "user123",
   .mixpanelDistinctId: "distinct456",
+  .firebaseInstallationId: "abc123",
   .custom("myCustomKey"): "customValue"
 ])
 ```
@@ -55,6 +56,7 @@ print("Current attributes: \(attributes)")
 Common integration attributes include:
 - `.amplitudeUserId` - Amplitude user ID
 - `.mixpanelDistinctId` - Mixpanel distinct ID
+- `.firebaseInstallationId` - Firebase installation ID (4.10.8+)
 - `.custom(String)` - Custom attribute key
 
 ## Related

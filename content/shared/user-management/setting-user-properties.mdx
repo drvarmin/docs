@@ -5,6 +5,10 @@ description: "Customize paywalls and target users by setting user attributes"
 
 By setting user attributes, you can display information about the user on the paywall. You can also define [audiences](/campaigns-audience) in a campaign to determine which paywall to show to a user, based on their user attributes.
 
+<Note>
+If a paywall uses the **Set user attributes** action, the merged attributes are sent back to your app via `SuperwallDelegate.userAttributesDidChange(newAttributes:)`.
+</Note>
+
 You do this by passing a `[String: Any?]` dictionary of attributes to `Superwall.shared.setUserAttributes(_:)`:
 
 :::ios

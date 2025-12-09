@@ -61,6 +61,9 @@ public protocol SuperwallDelegate: AnyObject {
     from oldValue: CustomerInfo,
     to newValue: CustomerInfo
   )
+
+  @MainActor
+  func userAttributesDidChange(newAttributes: [String: Any])
 }
 ```
 
@@ -78,6 +81,7 @@ All methods are optional to implement. Key methods include:
 | `willDismissPaywall` | `paywallInfo` | Called before paywall dismissal. |
 | `didDismissPaywall` | `paywallInfo` | Called after paywall dismissal. |
 | `customerInfoDidChange` | `oldValue`, `newValue` | Called when customer info changes. Available in version 4.10.0+. |
+| `userAttributesDidChange` | `newAttributes` | Called when user attributes change outside your app (for example via the “Set user attributes” paywall action). |
 </ParamTable>
 
 ## Returns / State
@@ -170,5 +174,10 @@ func customerInfoDidChange(
   
   // Update purchase history UI
   updatePurchaseHistoryUI(with: newValue)
+}
+
+func userAttributesDidChange(newAttributes: [String: Any]) {
+  // React to server-driven or paywall-triggered updates
+  refreshProfileUI(with: newAttributes)
 }
 ```

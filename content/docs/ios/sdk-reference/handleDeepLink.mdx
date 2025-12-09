@@ -12,11 +12,12 @@ Deep link events are also tracked via [`SuperwallEvent.deepLink`](/ios/sdk-refer
 </Info>
 
 ## Purpose
-Processes a deep link URL and triggers any associated paywall campaigns configured on the Superwall dashboard.
+Processes a deep link URL and triggers any associated paywall campaigns configured on the Superwall dashboard. Returns whether Superwall will handle the URL so you can fall back to your own routing.
 
 ## Signature
 ```swift
-public func handleDeepLink(_ url: URL)
+@discardableResult
+public static func handleDeepLink(_ url: URL) -> Bool
 ```
 
 ## Parameters
@@ -27,7 +28,7 @@ public func handleDeepLink(_ url: URL)
 </ParamTable>
 
 ## Returns / State
-This function returns `Void`. If the URL matches a campaign configured on the dashboard, it may trigger a paywall presentation.
+Returns `true` when Superwall will handle the URL. If called before `Superwall.configure(...)` completes, it only returns `true` for known Superwall URL formats or when cached config contains a `deepLink_open` trigger. Use the return value to continue your own deep-link handling when it is `false`.
 
 ## Usage
 
@@ -37,10 +38,12 @@ func scene(_ scene: UIScene, openURLContexts URLContexts: Set<UIOpenURLContext>)
   guard let url = URLContexts.first?.url else { return }
   
   // Handle the deep link with Superwall
-  Superwall.shared.handleDeepLink(url)
+  let handled = Superwall.handleDeepLink(url)
   
-  // Continue with your app's deep link handling
-  handleAppDeepLink(url)
+  // Continue with your app's deep link handling if Superwall won't
+  if !handled {
+    handleAppDeepLink(url)
+  }
 }
 ```
 
@@ -49,8 +52,10 @@ iOS 13+ SceneDelegate:
 func scene(_ scene: UIScene, willConnectTo session: UISceneSession, options connectionOptions: UIScene.ConnectionOptions) {
   // Handle deep link on app launch
   if let url = connectionOptions.urlContexts.first?.url {
-    Superwall.shared.handleDeepLink(url)
-    handleAppDeepLink(url)
+    let handled = Superwall.handleDeepLink(url)
+    if !handled {
+      handleAppDeepLink(url)
+    }
   }
 }
 ```
@@ -59,9 +64,12 @@ Legacy AppDelegate:
 ```swift
 func application(_ app: UIApplication, open url: URL, options: [UIApplication.OpenURLOptionsKey : Any] = [:]) -> Bool {
   // Handle the deep link with Superwall
-  Superwall.shared.handleDeepLink(url)
+  let handled = Superwall.handleDeepLink(url)
   
   // Continue with your app's deep link handling
+  if handled {
+    return true
+  }
   return handleAppDeepLink(url)
 }
 ```
