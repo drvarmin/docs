@@ -9,6 +9,7 @@
         "apple-search-ads",
         "mixpanel",
         "amplitude",
+        "firebase",
         "statsig",
         "slack"
     ]

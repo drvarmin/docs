@@ -1,0 +1,438 @@
+---
+title: "Firebase"
+description: "The Firebase integration automatically sends Superwall subscription and payment events to Firebase Analytics (Google Analytics 4) using the Measurement Protocol. Track subscription lifecycle events, analyze revenue metrics, and leverage Firebase's powerful analytics capabilities."
+---
+
+The Firebase integration automatically sends Superwall subscription and payment events to Firebase Analytics (Google Analytics 4) using the Measurement Protocol. Track subscription lifecycle events, analyze revenue metrics, and leverage Firebase's powerful analytics capabilities with automatic event mapping and ecommerce tracking.
+
+## Features
+
+- **Standard Ecommerce Events**: Uses Firebase's standard `purchase` and `refund` events for revenue tracking
+- **Measurement Protocol**: Direct server-side integration via Google Analytics Measurement Protocol
+- **Revenue Tracking**: Automatic revenue attribution with ecommerce parameters
+- **Sandbox Isolation**: Separate tracking for production and sandbox events
+- **Custom Event Mapping**: Non-revenue events mapped to custom Firebase events
+- **Cross-Platform User Tracking**: Optional `user_id` for cross-device analysis
+- **Debug Validation**: Built-in validation via Firebase's debug endpoint
+- **Platform Attribution**: Tracks which store (App Store, Play Store, Stripe) generated revenue
+
+## Configuration
+
+Firebase requires separate credentials for iOS and Android apps since each platform has its own data stream in Firebase Analytics. You can configure one or both platforms depending on your app.
+
+### iOS Settings
+
+| Field | Description | Example |
+|-------|-------------|---------|
+| `ios_firebase_app_id` | iOS Firebase App ID from Firebase Console → Project Settings → Your Apps → iOS App ID | `"1:123456789:ios:abc123def456"` |
+| `ios_api_secret` | iOS API Secret from Firebase Console → Google Analytics → Admin → iOS Data Stream → Measurement Protocol API secrets | `"AbCdEfGhIjKlMnOp"` |
+| `sandbox_ios_firebase_app_id` | Optional: iOS Firebase App ID for sandbox events | `"1:123456789:ios:xyz789"` |
+| `sandbox_ios_api_secret` | Optional: iOS API Secret for sandbox events | `"QrStUvWxYz123456"` |
+
+### Android Settings
+
+| Field | Description | Example |
+|-------|-------------|---------|
+| `android_firebase_app_id` | Android Firebase App ID from Firebase Console → Project Settings → Your Apps → Android App ID | `"1:123456789:android:def456abc123"` |
+| `android_api_secret` | Android API Secret from Firebase Console → Google Analytics → Admin → Android Data Stream → Measurement Protocol API secrets | `"ZyXwVuTsRqPo9876"` |
+| `sandbox_android_firebase_app_id` | Optional: Android Firebase App ID for sandbox events | `"1:123456789:android:sandbox123"` |
+| `sandbox_android_api_secret` | Optional: Android API Secret for sandbox events | `"SandboxSecret1234"` |
+
+### Common Settings
+
+| Field | Description | Example |
+|-------|-------------|---------|
+| `sales_reporting` | Which value to report | `"Revenue"` or `"Proceeds"` |
+| `anonymous_user_behavior` | How to handle events from anonymous users | `"send"` or `"dontSend"` |
+
+> **Note**: At least one platform (iOS or Android) must have both `firebase_app_id` and `api_secret` configured. Events from platforms without credentials will be skipped.
+
+### Example Configuration (Both Platforms)
+
+```json
+{
+  "ios_firebase_app_id": "1:123456789012:ios:abcdef1234567890",
+  "ios_api_secret": "your_ios_api_secret",
+  "sandbox_ios_firebase_app_id": "1:123456789012:ios:sandbox1234567890",
+  "sandbox_ios_api_secret": "your_ios_sandbox_api_secret",
+  "android_firebase_app_id": "1:123456789012:android:fedcba0987654321",
+  "android_api_secret": "your_android_api_secret",
+  "sandbox_android_firebase_app_id": "1:123456789012:android:sandbox0987654321",
+  "sandbox_android_api_secret": "your_android_sandbox_api_secret",
+  "sales_reporting": "Revenue",
+  "anonymous_user_behavior": "send"
+}
+```
+
+### Example Configuration (iOS Only)
+
+```json
+{
+  "ios_firebase_app_id": "1:123456789012:ios:abcdef1234567890",
+  "ios_api_secret": "your_ios_api_secret",
+  "sales_reporting": "Revenue"
+}
+```
+
+## App Instance ID Requirement
+
+**Critical**: The Firebase integration requires `firebaseAppInstanceId` to be set in the user's `userAttributes` from your client app. This is the unique installation identifier from the Firebase Analytics SDK.
+
+### How to Set It Up
+
+1. In your app, retrieve the Firebase App Instance ID:
+
+**iOS (Swift):**
+```swift
+import FirebaseAnalytics
+
+Analytics.appInstanceID { appInstanceId, error in
+    if let appInstanceId = appInstanceId {
+        Superwall.shared.setUserAttributes([
+            "firebaseAppInstanceId": appInstanceId
+        ])
+    }
+}
+```
+
+**Android (Kotlin):**
+```kotlin
+import com.google.firebase.analytics.FirebaseAnalytics
+
+FirebaseAnalytics.getInstance(context).appInstanceId.addOnSuccessListener { appInstanceId ->
+    Superwall.instance.setUserAttributes(mapOf(
+        "firebaseAppInstanceId" to appInstanceId
+    ))
+}
+```
+
+### What Happens Without It
+
+If `firebaseAppInstanceId` is not found in `userAttributes`:
+- The event is **skipped** (not sent to Firebase)
+
+### Revenue Events (Standard Ecommerce)
+
+Events with non-zero amounts use Firebase's standard ecommerce events for proper revenue tracking:
+
+| Condition | Firebase Event | Description |
+|-----------|----------------|-------------|
+| `price > 0` | `purchase` | Purchase/renewal with positive revenue |
+| `price < 0` | `refund` | Refund with negative revenue |
+
+### Non-Revenue Events (Custom Events)
+
+Events without revenue are mapped to custom Firebase events (lowercase, underscores):
+
+| Superwall Event | Firebase Event | Description |
+|-----------------|----------------|-------------|
+| `initial_purchase` + TRIAL | `trial_start` | Trial begins |
+| `initial_purchase` + INTRO | `intro_offer_start` | Intro offer begins |
+| `initial_purchase` + NORMAL | `subscription_start` | Paid subscription begins |
+| `renewal` + trial conversion | `trial_conversion` | Trial converts to paid |
+| `renewal` + INTRO | `intro_offer_conversion` | Intro converts to regular |
+| `renewal` + NORMAL | `subscription_renewal` | Regular renewal |
+| `cancellation` + TRIAL | `trial_cancellation` | Trial cancelled |
+| `cancellation` + INTRO | `intro_offer_cancellation` | Intro cancelled |
+| `cancellation` + NORMAL | `subscription_cancellation` | Subscription cancelled |
+| `uncancellation` + TRIAL | `trial_uncancellation` | Trial reactivated |
+| `uncancellation` + INTRO | `intro_offer_uncancellation` | Intro reactivated |
+| `uncancellation` + NORMAL | `subscription_uncancellation` | Subscription reactivated |
+| `expiration` + TRIAL | `trial_expiration` | Trial ended |
+| `expiration` + INTRO | `intro_offer_expiration` | Intro ended |
+| `expiration` + NORMAL | `subscription_expiration` | Subscription ended |
+| `billing_issue` | `billing_issue` | Payment failed |
+| `subscription_paused` | `subscription_paused` | Subscription paused |
+| `product_change` | `product_change` | Plan changed |
+| `non_renewing_purchase` | `non_renewing_purchase` | One-time purchase |
+| `test` | `test` | Test event |
+
+## Event Parameters
+
+### Required Parameters (All Events)
+
+Every Firebase event includes these parameters:
+
+| Parameter | Description | Example |
+|-----------|-------------|---------|
+| `session_id` | Event timestamp (required for Firebase Console display) | `1699876543000` |
+| `engagement_time_msec` | Engagement time (required for Firebase Console display) | `100` |
+| `store` | Payment source | `"APP_STORE"` |
+| `environment` | Production or Sandbox | `"Production"` |
+| `country_code` | User's country | `"US"` |
+| `period_type` | Subscription period type | `"NORMAL"` |
+
+### Ecommerce Parameters (Revenue Events)
+
+Purchase and refund events include additional ecommerce fields:
+
+| Parameter | Description | Example |
+|-----------|-------------|---------|
+| `currency` | ISO 4217 currency code | `"USD"` |
+| `value` | Transaction amount (absolute value) | `9.99` |
+| `transaction_id` | Unique transaction identifier | `"1000000123456789"` |
+| `coupon` | Offer code (if applicable) | `"SUMMER2024"` |
+| `items` | Array of purchased items | See below |
+
+**Items Array Structure:**
+```json
+{
+  "items": [
+    {
+      "item_id": "com.example.premium_monthly",
+      "item_name": "com.example.premium_monthly",
+      "price": 9.99,
+      "quantity": 1
+    }
+  ]
+}
+```
+
+### Non-Revenue Event Parameters
+
+Non-revenue events include:
+
+| Parameter | Description | Example |
+|-----------|-------------|---------|
+| `transaction_id` | Transaction identifier | `"1000000123456789"` |
+| `product_id` | Product identifier | `"com.example.premium"` |
+
+## Revenue Tracking
+
+### Automatic Revenue Attribution
+
+Revenue is tracked using Firebase's standard ecommerce events:
+- **Positive revenue**: `purchase` event with positive `value`
+- **Negative revenue**: `refund` event with positive `value` (Firebase expects absolute values)
+- **Zero revenue**: Custom event (no ecommerce parameters)
+
+### Revenue Reporting Options
+
+The `sales_reporting` setting determines which value is used:
+
+| Setting | Value Used | Description |
+|---------|------------|-------------|
+| `"Revenue"` | `price` | Gross revenue before store fees |
+| `"Proceeds"` | `proceeds` | Net revenue after store fees |
+
+### Revenue Examples
+
+**Initial Purchase ($9.99):**
+```json
+{
+  "name": "purchase",
+  "params": {
+    "currency": "USD",
+    "value": 9.99,
+    "transaction_id": "1000000123456789",
+    "items": [
+      {
+        "item_id": "com.example.premium",
+        "item_name": "com.example.premium",
+        "price": 9.99,
+        "quantity": 1
+      }
+    ],
+    "session_id": "1699876543000",
+    "engagement_time_msec": 100,
+    "store": "APP_STORE",
+    "environment": "Production"
+  }
+}
+```
+
+**Refund (-$9.99):**
+```json
+{
+  "name": "refund",
+  "params": {
+    "currency": "USD",
+    "value": 9.99,
+    "transaction_id": "1000000123456789",
+    "items": [
+      {
+        "item_id": "com.example.premium",
+        "item_name": "com.example.premium",
+        "price": 9.99,
+        "quantity": 1
+      }
+    ],
+    "session_id": "1699876543000",
+    "engagement_time_msec": 100,
+    "store": "APP_STORE",
+    "environment": "Production"
+  }
+}
+```
+
+
+### Platform Tracking & Automatic Credential Selection
+
+The integration automatically selects the correct Firebase credentials based on the `store` field in each event:
+
+| Store | Platform | Credentials Used |
+|-------|----------|------------------|
+| `APP_STORE` | iOS | `ios_firebase_app_id` + `ios_api_secret` |
+| `PLAY_STORE` | Android | `android_firebase_app_id` + `android_api_secret` |
+| `STRIPE` | iOS (default) | `ios_firebase_app_id` + `ios_api_secret` |
+| `PADDLE` | iOS (default) | `ios_firebase_app_id` + `ios_api_secret` |
+
+> **Note**: If credentials are not configured for a platform, events from that platform will be skipped. For example, if you only configure iOS credentials, Play Store events will be skipped.
+
+### With Platform Sandbox Credentials
+
+If sandbox credentials are configured for a platform:
+- Production events → Production Firebase project (using production credentials)
+- Sandbox events → Sandbox Firebase project (using sandbox credentials)
+
+**Example for iOS:**
+- iOS production event → Uses `ios_firebase_app_id` + `ios_api_secret`
+- iOS sandbox event → Uses `sandbox_ios_firebase_app_id` + `sandbox_ios_api_secret`
+
+### Without Platform Sandbox Credentials
+
+If sandbox credentials are NOT provided for a platform:
+- Production events → Production Firebase project
+- Sandbox events → **Skipped** (not sent)
+
+This behavior is per-platform, so:
+- You can have iOS sandbox credentials but skip Android sandbox events
+- You can configure sandbox for Android but not iOS
+- Each platform is independent
+
+This prevents test data from polluting production analytics.
+
+## Testing the Integration
+
+### 1. Validate Credentials
+
+The integration validates settings using Firebase's debug endpoint:
+- Sends a test event to Firebase
+- Validates event format and structure
+- **Important**: The debug step does NOT validate `api_secret` or `firebase_app_id`
+
+### 2. Verify in Firebase Console
+
+After sending events, verify in Firebase:
+1. **DebugView**: Firebase Console → Analytics → DebugView (for real-time debugging)
+2. **Events**: Firebase Console → Analytics → Events (may take up to 24 hours)
+3. **Revenue**: Firebase Console → Analytics → Revenue (for purchase/refund events)
+
+## Best Practices
+
+1. **Set App Instance ID Early**: Call `setUserAttributes` with `firebaseAppInstanceId` as soon as the app launches to ensure all subscription events are tracked.
+
+2. **Separate Environments**: Use separate Firebase projects (or at minimum, separate measurement streams) for sandbox and production to keep analytics clean.
+
+3. **Revenue Model Consistency**: Choose gross (`Revenue`) vs net (`Proceeds`) consistently and document your choice for reporting alignment.
+
+4. **Enable DebugView**: During testing, enable Firebase DebugView on your test device to see events in real-time.
+
+5. **Use User ID**: Set `originalAppUserId` in Superwall to enable cross-device user tracking in Firebase Analytics.
+
+## Common Use Cases
+
+### Revenue Analytics
+```
+Event: purchase
+Breakdown by: store, country_code, product_id (via items)
+Metric: Sum of value
+```
+
+### Conversion Funnel
+```
+1. trial_start
+2. purchase (trial conversion)
+Conversion Rate: Step 2 / Step 1
+```
+
+### Churn Analysis
+```
+Events: subscription_cancellation, subscription_expiration
+Segment by: period_type, store
+```
+
+### LTV Calculation
+```
+Event: purchase
+Group by: user_id
+Calculate: Sum of value per user
+```
+
+## Troubleshooting
+
+### Events Not Appearing in Firebase
+
+1. **Check App Instance ID**: Ensure `firebaseAppInstanceId` is set in `userAttributes`
+2. **Verify Platform Credentials**: Confirm the correct platform credentials are configured:
+   - iOS events (App Store) require `ios_firebase_app_id` + `ios_api_secret`
+   - Android events (Play Store) require `android_firebase_app_id` + `android_api_secret`
+3. **Check Environment**: Sandbox events require sandbox credentials for that platform
+4. **Wait for Processing**: Events may take up to 24 hours to appear in standard reports (use DebugView for real-time)
+
+### Events Skipped Due to Missing Platform Credentials
+
+**Problem**: Events are being skipped with warning "No [platform] credentials configured"
+
+**Solutions**:
+1. **iOS events skipped**: Add `ios_firebase_app_id` and `ios_api_secret`
+2. **Android events skipped**: Add `android_firebase_app_id` and `android_api_secret`
+3. **Sandbox events skipped**: Add sandbox credentials for the specific platform (e.g., `sandbox_ios_firebase_app_id` + `sandbox_ios_api_secret`)
+
+**Single-Platform Apps**: If your app is iOS-only or Android-only, you only need to configure credentials for that platform. Events from unconfigured platforms will be skipped (this is expected behavior).
+
+### Missing firebaseAppInstanceId
+
+**Problem**: Events are being skipped with warning about missing `firebaseAppInstanceId`
+
+**Solutions**:
+1. Ensure your app calls `FirebaseAnalytics.getAppInstanceId()` and passes it to Superwall
+2. Verify `setUserAttributes` is called before any purchases occur
+3. Check that the attribute key is exactly `firebaseAppInstanceId` (case-sensitive)
+
+### Revenue Not Tracking
+
+1. **Check Event Type**: Only `purchase` and `refund` events track revenue
+2. **Check Amount**: Zero amounts don't create revenue events
+3. **Check Currency**: Ensure `currencyCode` is present in the webhook data
+4. **Check Firebase Reports**: Revenue appears in Analytics → Revenue (not Events)
+
+### Debug Validation Errors
+
+**Problem**: Credential validation returns errors
+
+**Common Causes**:
+- Invalid event parameter names (must be alphanumeric with underscores)
+- Missing required parameters (`session_id`, `engagement_time_msec`)
+- Invalid `app_instance_id` format
+
+**Note**: The debug endpoint validates event format but cannot validate whether your `api_secret` or `firebase_app_id` are correct. You must verify events appear in Firebase Console.
+
+### Duplicate Events
+
+Firebase handles deduplication via `transaction_id`:
+- Same `transaction_id` within 72 hours is deduplicated
+- Ensure unique transaction IDs for each event
+
+## Rate Limits
+
+Google Analytics Measurement Protocol limits:
+
+| Limit | Value |
+|-------|-------|
+| Events per request | 25 (we send 1 at a time) |
+| Requests per user per day | No hard limit (fair use applies) |
+| Payload size | 130KB maximum |
+| Event name length | 40 characters |
+| Parameter value length | 100 characters |
+
+The integration sends one event per request, well within all limits.
+
+## Data Privacy
+
+- **App Instance ID**: Pseudonymous device identifier
+- **User ID**: Optional, only sent if `originalAppUserId` is set
+- **Data Retention**: Follows your Firebase project settings
+- **Deletion**: Handle via Google Analytics User Deletion API
+- **GDPR**: Firebase Analytics provides data processing agreements and privacy controls
+- **PII**: Avoid sending PII in custom parameters
