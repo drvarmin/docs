@@ -51,7 +51,8 @@ const filters = [
   { name: 'react-native', suffix: '-react-native', readableName: 'Superwall React Native SDK (Deprecated)' },
   { name: 'integrations', suffix: '-integrations', readableName: 'Superwall Integrations' },
   { name: 'web-checkout', suffix: '-web-checkout', readableName: 'Superwall Web Checkout' },
-  { name: 'dashboard', suffix: '-dashboard', readableName: 'Superwall Dashboard' }
+  { name: 'dashboard', suffix: '-dashboard', readableName: 'Superwall Dashboard' },
+  { name: 'support', suffix: '-support', readableName: 'Superwall Support' },
 ]
 
 // 4) Main script

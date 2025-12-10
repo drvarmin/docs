@@ -1,0 +1,46 @@
+---
+title: "Products Not Loading: iOS Simulator"
+---
+
+
+This is a guide to getting products to load in:
+
+*   ✅ iOS Simulator
+    
+*   ❌ [Real iOS device](/support/troubleshooting/products-not-loading/1253018505-products-not-loading-ios)
+    
+
+If you're having issues with products loading elsewhere please reference the [Products Not Loading: Troubleshooting Guide](/support/troubleshooting/products-not-loading).
+
+* * *
+
+Problem
+=======
+
+The iOS simulator **cannot** load products directly from Apple like real devices do.
+
+Solution
+========
+
+In order to load products in an iOS simulator you **have** to set up a [local StoreKit config file](https://superwall.com/docs/ios/guides/testing-purchases). Without it, your products will not load.
+
+This is true regardless of SDK type, native iOS, Flutter, and Expo all need to configure a StoreKit config file **in Xcode** in order to load products on iOS simulator.
+
+Because StoreKit config files supply products _directly_ and not from Apple servers, we recommend checking that your products are set up correctly at least once by running from **TestFlight**.
+
+Still Not Working?
+==================
+
+When using a StoreKit config file, products are loaded _directly_ from there into the app based on the product id, not from Apple or Superwall servers. If your products are still not loading, it is because one of these two issues
+
+1.  Double check that the scheme being run has a StoreKit config correctly set
+    
+2.  Check that the product ids on your paywall in the Superwall Dashboard **exactly** match what's in your StoreKit config file
+    
+
+Support
+=======
+
+Please check **all** steps before contacting support.
+
+We have covered all known causes for this issue, and aim to make this a completely comprehensive guide. If you have any thoughts on how to improve or know of any other causes, please leave feedback below!

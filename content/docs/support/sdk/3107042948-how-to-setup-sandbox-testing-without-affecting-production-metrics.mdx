@@ -1,0 +1,40 @@
+---
+title: "How to setup sandbox testing without affecting production metrics"
+---
+
+
+Setup Sandbox Testing
+=====================
+
+Superwall automatically detects whether your app is running in sandbox mode (Xcode, Simulator, TestFlight) vs production (App Store) without requiring separate API keys or projects. Here's how to set it up properly:
+
+1.  Use the same single API key for both sandbox and production environments
+    
+2.  Create a "Sandbox Users" audience in your Superwall dashboard with the filter:
+    
+    *   `isSandbox` → `is` → `true`
+        
+3.  Place this sandbox audience above your production audiences in the campaign list (Superwall evaluates audiences from top to bottom)
+    
+4.  Assign a test paywall to the sandbox audience
+    
+5.  Configure your production audiences below the sandbox audience
+    
+
+Note: Only create separate dashboard projects if you have different bundle IDs (e.g., `com.myapp` vs `com.myapp.dev`). If you're using the same bundle ID for TestFlight and production, stick with one project.
+
+Usage
+=====
+
+With this setup:
+
+*   Users on TestFlight, Xcode, or Simulator will automatically match the sandbox audience and see your test paywalls
+    
+*   Production App Store users will skip the sandbox audience and see your live campaigns
+    
+*   Your conversion rates and analytics remain clean and unaffected by test data
+    
+*   You can safely test different paywall configurations without impacting production metrics
+    
+
+The SDK handles the sandbox detection automatically at initialization, so no additional code changes are required on your end.

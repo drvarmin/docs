@@ -1,0 +1,16 @@
+---
+title: "How do I disable Streamlined Purchasing for iOS apps?"
+---
+
+
+Context
+-------
+
+Streamlined Purchasing is an iOS feature that allows users to manage their subscriptions and switch between subscription tiers directly through the App Store. Some developers may want to disable this feature to maintain more control over subscription changes, particularly when running A/B tests with different pricing tiers.
+
+Answer
+------
+
+The Superwall SDK does not currently include built-in support for the StoreKit APIs required to [disable Streamlined Purchasing](https://developer.apple.com/help/app-store-connect/manage-subscriptions/manage-streamlined-purchasing/?utm_source=chatgpt.com). If you want to disable this feature, you will need to implement the necessary StoreKit APIs directly in your iOS app.
+
+Note: Disabling Streamlined Purchasing is generally uncommon among Superwall customers, as most end users rarely attempt to switch to cheaper subscriptions outside of the app.

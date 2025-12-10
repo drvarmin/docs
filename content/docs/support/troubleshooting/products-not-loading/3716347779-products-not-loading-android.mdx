@@ -1,0 +1,56 @@
+---
+title: "Products Not Loading: Android"
+---
+
+
+This is a guide to getting products to load on Android, if you're having issues with products loading elsewhere please reference the [Products Not Loading: Troubleshooting Guide](/support/troubleshooting/products-not-loading).
+
+* * *
+
+Symptoms
+========
+
+*   Prices not showing on paywall
+    
+*   Tapping purchase button on paywall doesn't do anything
+    
+*   Error logs saying products not loading
+    
+
+Debugging Steps
+===============
+
+Products not loading is a common issue when first setting up any app with subscriptions. This is a tried and true, all encompassing list of steps to debug.
+
+Please double check every step, they are all required and _any_ misconfiguration can cause your products to not load.
+
+Superwall Dashboard
+-------------------
+
+*   The paywall you're trying to open has a product added to it
+    
+*   All of your products are added in the [products tab](https://superwall.com/applications/:applicationId/products/v2)
+    
+
+Google Play Store
+-----------------
+
+*   Ensure the device/emulator has the Play Store and is signed in.
+    
+*   Check that your `applicationId` matches what’s set in your project.
+    
+*   You've pushed at least one build with `com.android.vending.BILLING` to at least to one of your test tracks
+    
+*   You’ve linked a Google payments merchant account in the Play Console
+    
+*   Users in Russia and Belarus don’t have access to Google Billing.
+    
+    *   In this instance, products won’t load and paywalls won’t show. The `onErrorPaywallPresentationHandler` handler will get called.
+        
+
+Support
+=======
+
+We have covered all known causes for this issue, and aim to make this a completely comprehensive guide. If you have any thoughts on how to improve or know of any other causes, please leave feedback below!
+
+Please check **all** steps before contacting support.

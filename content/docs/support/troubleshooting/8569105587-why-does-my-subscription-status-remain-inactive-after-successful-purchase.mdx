@@ -1,0 +1,31 @@
+---
+title: "Why does my subscription status remain INACTIVE after successful purchase?"
+---
+
+
+Context
+-------
+
+When implementing subscriptions in your iOS app with Superwall, you might notice that the subscription status remains INACTIVE even after a successful purchase transaction. This can affect your app's flow and user access to premium features.
+
+Answer
+------
+
+If you are using Superwall for purchase handling:
+
+*   You need to configure [Entitlements](https://superwall.com/docs/dashboard/products#entitlements) for all of your products in the Superwall dashboard:
+    
+    *   Navigate to the Products tab in your Superwall dashboard
+        
+    *   Add Entitlements to all of your products
+        
+
+If you are **not** using Superwall for purchase handling, and you're using a [PurchaseController](https://superwall.com/docs/using-revenuecat#using-revenuecat):
+
+*   Your PurchaseController is in charge of setting the user's subscription status
+    
+    *   Check that your implementation matches our [example code](https://superwall.com/docs/using-revenuecat#using-revenuecat)
+        
+    *   Check that syncSubscriptionStatus is called on launch
+        
+    *   Check that all of your products are listed on both the Superwall and RevenueCat dashboards, and they all have entitlements, and the entitlements match **exactly**

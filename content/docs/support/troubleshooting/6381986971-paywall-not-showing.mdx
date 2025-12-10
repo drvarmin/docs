@@ -1,0 +1,67 @@
+---
+title: "Paywall Not Showing"
+---
+
+## Issue
+Any unexpected paywall presentation behavior, including:
+
+- Paywall is not showing when it should
+- Paywall is showing when it shouldn't
+- Paywall is showing but loading indefinitely
+
+## Debugging Steps
+### Check your subscription status logic.
+
+<Info>
+  This only applies if you're using a PurchaseController. If you're using Superwall to handle all purchase logic (the default) you can skip this
+</Info>
+
+- Important: When using a `PurchaseController` (such as with RevenueCat), the subscription status starts as `.unknown` by default. Your app must manually set it to either `.active()` or `.inactive()` on app launch - the SDK will not automatically determine this for you. Paywalls will not show if the subscription status is unknown
+
+### Test device considerations.
+If you’ve previously purchased a subscription, the paywall won’t show again. On iOS, if you’re using a local StoreKit config file, delete and reinstall the app to reset the device’s subscription state.
+
+When basic app deletion doesn't resolve test subscription persistence, consider the following:
+
+- Cross-account subscription persistence: Test subscription status persists at the device level even when switching between different app accounts within the same app. If you've made a test purchase on one account, it affects paywall presentation for all accounts on that device.
+
+- Hidden test purchases: Test purchases made through StoreKit may not appear in your iPhone's standard Settings > Apple ID > Subscriptions list, making them impossible to cancel manually. This is normal behavior for sandbox/test purchases.
+
+- Alternative reset methods: For production App Store testing when app deletion isn't sufficient, use a different physical device or fresh simulator instance that hasn't made the test purchase.
+
+### Review your campaign configuration.
+Confirm your placement name is spelled correctly and that all necessary properties are passed to match the audience filter. Also check for any holdout groups that might block the paywall.
+
+If you've recently updated your campaign, make sure to quit and re-open your app to fetch the latest configuration
+
+### Specific Campaign Configuration Considerations
+Be aware of the default entitlement settings for new campaigns. By default, campaigns are set to "For Unsubscribed Users Only" in the entitlements section. If you want to test paywalls while having an active subscription, change the entitlement dropdown to "For All Users."
+
+When encountering console errors, specifically "Skipped paywall presentation: no_rule_match," it indicates the user doesn't match the audience filters for that placement. This helps distinguish between configuration issues versus subscription status problems.
+
+For `noAudienceMatch` errors, systematically verify that your audience configuration includes the current user's specific attributes, subscription status, and any custom properties you're tracking.
+
+### Verify product configuration.
+If your paywall references unavailable or invalid product identifiers, you’ll see a console error. When using a StoreKit file, be sure to add your products before testing paywall presentation.
+
+## Paywall Loading Indefinitely
+Your paywall shows a white screen with gray placeholder boxes that never finish loading. This typically occurs on iOS when using Apple's `WKAppBoundDomains` feature in your app's `Info.plist`.
+
+### Cause
+WKAppBoundDomains is an iOS 14+ privacy feature that restricts WebView capabilities. When enabled, it disables WebView message handlers that Superwall requires for bridge communication between the native SDK and the paywall content. You may see this warning in the WebView console: 
+```
+[Warning] [WebKit] Unable to send message - WebKit message handler not available.
+```
+
+### Solution
+Remove the `WKAppBoundDomains` key from your app's `Info.plist` file:
+
+```
+<!-- Remove this section -->
+<key>WKAppBoundDomains</key>
+<array>
+    <string>example.com</string>
+</array>
+```
+
+After removing this configuration, rebuild and relaunch your app. The paywall should now load correctly. If you require WKAppBoundDomains for other parts of your app, please contact Superwall support to discuss alternative integration options.

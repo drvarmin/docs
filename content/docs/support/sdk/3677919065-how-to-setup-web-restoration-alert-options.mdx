@@ -1,0 +1,30 @@
+---
+title: "How to Setup Web Restoration Alert Options"
+---
+
+
+Setup Web Restoration Alert
+===========================
+
+To configure the web restoration alert behavior in your Superwall integration:
+
+1.  Access your application's PaywallOptions configuration
+    
+2.  Set the `shouldShowWebRestorationAlert` property to control when the alert appears:
+    
+        PaywallOptions.shouldShowWebRestorationAlert = false
+    
+
+Setting this property to false will suppress the web restoration alert, which is particularly useful when users already have an active StoreKit subscription.
+
+Usage
+=====
+
+The web restoration alert is designed to check for web-based subscriptions during the restore purchase flow. By default, this alert may appear even when users have an existing StoreKit subscription. To optimize the user experience:
+
+*   Disable the web restoration alert if your app primarily uses StoreKit subscriptions
+    
+*   Enable the alert only in scenarios where checking for web-based subscriptions is necessary
+    
+
+Note: The alert button text currently displays as "Okay" and cannot be customized. This is a standard part of the SDK's interface.

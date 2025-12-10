@@ -1,0 +1,24 @@
+---
+title: "Why isn't my free trial showing up in my paywall?"
+---
+
+
+When a free trial or introductory offer isn't appearing in your paywall, this is typically related to either offer eligibility or App Store Connect setup.
+
+Offer Eligibility
+-----------------
+
+If you've already subscribed to any subscription in a Subscription Group, then you will no longer be eligible for that Introductory Offer.
+
+To clear your state and continue testing the offer, you need to reset your eligibility in settings, follow Apple's guide here: [**Testing introductory offers**](https://developer.apple.com/documentation/storekit/testing-introductory-offers)
+
+App Store Connect Setup
+-----------------------
+
+Verify that the introductory offer is correctly set up in App Store Connect for your product ID.
+
+To check this, go to **App Store Connect → My Apps → Your App → In-App Purchases → \[Your Subscription\] → Subscription Prices → Introductory Offers**.
+
+Make sure the offer is active, properly configured for the right **base plan**, and that your app’s build uses the same **product identifier**.
+
+Superwall does not control whether a product has a free trial or not, Introductory offers are handled directly by Apple

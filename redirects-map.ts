@@ -440,11 +440,4 @@ export const externalRedirectsMap = {
   "troubleshooting-storekit-transaction-stuck": "https://support.superwall.com/collections/6437438776-troubleshooting",
   "troubleshooting-testflight-subscriptions": "https://support.superwall.com/collections/6437438776-troubleshooting",
   "troubleshooting-unexpected-paywall-behavior": "https://support.superwall.com/collections/6437438776-troubleshooting",
-  "sdk-troubleshooting/troubleshooting-debug-paywalls-production": "https://support.superwall.com/collections/6437438776-troubleshooting",
-  "sdk-troubleshooting/troubleshooting-paywall-memory-usage-on-iOS": "https://support.superwall.com/collections/6437438776-troubleshooting",
-  "sdk-troubleshooting/troubleshooting-products-not-loading": "https://support.superwall.com/collections/6437438776-troubleshooting",
-  "sdk-troubleshooting/troubleshooting-sandbox-free-trial-not-showing": "https://support.superwall.com/collections/6437438776-troubleshooting",
-  "sdk-troubleshooting/troubleshooting-storekit-transaction-stuck": "https://support.superwall.com/collections/6437438776-troubleshooting",
-  "sdk-troubleshooting/troubleshooting-testflight-subscriptions": "https://support.superwall.com/collections/6437438776-troubleshooting",
-  "sdk-troubleshooting/troubleshooting-unexpected-paywall-behavior": "https://support.superwall.com/collections/6437438776-troubleshooting",
 }

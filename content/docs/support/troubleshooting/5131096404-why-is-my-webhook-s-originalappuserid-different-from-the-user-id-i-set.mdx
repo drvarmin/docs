@@ -1,0 +1,38 @@
+---
+title: "Why is my webhook's originalAppUserId different from the user ID I set?"
+---
+
+
+Context
+-------
+
+When receiving webhook events from Superwall, you may notice that the originalAppUserId in the webhook payload doesn't match the user ID you set using the identify API. This is important for tracking user transactions and attributing payments correctly.
+
+Answer
+------
+
+To ensure the correct user ID appears in webhook events, you need to use a compatible SDK version:
+
+*   For iOS: SDK version 4.6.0 or higher
+    
+*   For Android: Use the latest SDK version and configure `passIdentifiersToPlayStore` in your `SuperwallOptions`
+    
+*   For Expo: expo-superwall version 0.2.7 or higher
+    
+
+**Timing Requirement:** You must call `identify()` with your custom user ID **before** any transactions are made. If you call `identify()` after a purchase has already occurred, the webhook will still contain the original alias ID (starting with `$superwallAlias:`) rather than your custom user ID.
+
+**Best Practice:** Call `identify()` immediately after user login or authentication in your app, before presenting any paywalls or allowing purchases. This ensures all subsequent transactions will be attributed to your custom user ID in webhook events.
+
+Important: For users who have already made transactions on a lower SDK version, the originalAppUserId will remain incorrect even after updating. This only affects historical transactions - new transactions from new users will show the correct ID after updating to the compatible SDK version.
+
+Additional Android Configuration
+--------------------------------
+
+For Android apps, you must also configure the SDK to pass user identifiers to the Play Store:
+
+    val options = SuperwallOptions()
+    options.passIdentifiersToPlayStore = true
+    Superwall.configure(applicationContext, "YOUR_API_KEY", options)
+
+Ensure your user IDs do not contain personally identifiable information (PII), as this could prevent transmission to the Play Store.

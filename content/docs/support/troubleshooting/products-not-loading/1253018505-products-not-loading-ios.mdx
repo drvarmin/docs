@@ -1,0 +1,79 @@
+---
+title: "Products Not Loading: iOS"
+---
+
+
+This is a guide to getting products to load on a real iOS device, meaning:
+
+*   ✅ From TestFlight
+    
+*   ✅ From App Store
+    
+*   ✅ Built from Xcode **without** [a StoreKit config file](https://superwall.com/docs/ios/guides/testing-purchases)
+    
+*   ❌ Built from Xcode **with** [a StoreKit config file](https://superwall.com/docs/ios/guides/testing-purchases)
+    
+*   ❌ [**iOS simulator**](/support/troubleshooting/products-not-loading/4739776203-products-not-loading-ios-simulator)
+    
+
+If you're having issues with products loading elsewhere please reference the [Products Not Loading: Troubleshooting Guide](/support/troubleshooting/products-not-loading).
+
+* * *
+
+Symptoms
+========
+
+*   Prices not showing on paywall
+    
+*   Tapping purchase button on paywall doesn't do anything
+    
+*   Error logs saying products not loading
+    
+
+Debugging Steps
+===============
+
+Products not loading is a common issue when first setting up any app with subscriptions. This is a tried and true, all encompassing list of steps to debug.
+
+Please double check every step, they are all required and _any_ misconfiguration can cause your products to not load.
+
+Xcode
+-----
+
+*   Your app’s bundle ID **exactly** matches to App Store Connect
+    
+*   In-App Purchase capability is added to the project
+    
+
+Superwall Dashboard
+-------------------
+
+*   The paywall you're trying to open has a product added to it
+    
+*   All of your products are added in the [products tab](https://superwall.com/applications/:applicationId/products/v2), and have an Active status
+    
+
+App Store Connect
+-----------------
+
+*   No products are in **“Missing Metadata”** status
+    
+*   You have valid Localization set for all your subscription products and the subscription group(s)
+    
+*   Product IDs match your paywall on the Superwall Dashboard **exactly**
+    
+*   All agreements are active, there are no unsigned agreements (Business -> Agreements)
+    
+*   Tax and banking info is completely set up
+    
+*   You've waited at least 15 minutes after creating the products
+    
+
+After first releasing your app with in-app products or subscriptions, it can take up to 72 hours for them to appear. This is a limitation on Apple's end we cannot override.
+
+Support
+=======
+
+We have covered all known causes for this issue, and aim to make this a completely comprehensive guide. If you have any thoughts on how to improve or know of any other causes, please leave feedback below!
+
+Please check **all** steps before contacting support.

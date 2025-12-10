@@ -1,0 +1,38 @@
+---
+title: "Products Not Loading: iOS Device with StoreKit config file"
+---
+
+
+This is a guide to getting products to load in:
+
+*   ✅ Built from Xcode **with a StoreKit config file**
+    
+*   ❌ [Built from Xcode, **without a StoreKit config file**](/support/troubleshooting/products-not-loading/1253018505-products-not-loading-ios)
+    
+*   ❌ [From TestFlight or App Store](/support/troubleshooting/products-not-loading/1253018505-products-not-loading-ios)
+    
+*   ❌ [**iOS simulator**](/support/troubleshooting/products-not-loading/4739776203-products-not-loading-ios-simulator)
+    
+
+If you're having issues with products loading elsewhere please reference the [Products Not Loading: Troubleshooting Guide](/support/troubleshooting/products-not-loading).
+
+* * *
+
+Because StoreKit config files supply products _directly_ and not from Apple servers, we recommend checking that your products are set up correctly at least once by running from **TestFlight**.
+
+Not Working?
+============
+
+When using a StoreKit config file, products are loaded _directly_ from there into the app based on the product id, not from Apple or Superwall servers. If your products are still not loading, it is because one of these two issues
+
+1.  Double check that the scheme being run has a StoreKit config correctly set
+    
+2.  Check that the product ids on your paywall in the Superwall Dashboard **exactly** match what's in your StoreKit config file
+    
+
+Support
+=======
+
+Please check **all** steps before contacting support.
+
+We have covered all known causes for this issue, and aim to make this a completely comprehensive guide. If you have any thoughts on how to improve or know of any other causes, please leave feedback below!

@@ -1,0 +1,28 @@
+---
+title: "Why am I not receiving webhook events?"
+---
+
+
+Context
+-------
+
+When using Superwall alongside RevenueCat, you may encounter situations where webhook events are not being received or displayed in the webhooks dashboard.
+
+Answer
+------
+
+There are two main scenarios where webhook events may not work correctly:
+
+*   Using RevenueCat in observer mode while relying on it for events
+    
+*   Testing with a StoreKit configuration file
+    
+
+To ensure webhook events are working properly:
+
+1.  Make sure you're sending real App Store events rather than only RevenueCat events
+    
+2.  Avoid using StoreKit configuration files for webhook testing
+    
+
+For accurate webhook testing, use real App Store transactions instead of RevenueCat events or StoreKit configuration files.

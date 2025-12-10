@@ -1,0 +1,30 @@
+---
+title: "Why are my products showing \"Unknown\" status in Superwall?"
+---
+
+![Products Unknown Status](/images/products-unknown-status.png)
+
+Products showing an "Unknown" status in the Products tab indicates an issue with Superwall's connection to App Store Connect, here's how to resolve it.
+
+Debugging Steps
+===============
+
+*   Set up the App Store Connect API configuration in your Superwall dashboard
+    
+
+*   **Product IDs**: check that they match **exactly** across Superwall and App Store Connect
+    
+*   **IDs in Settings / General**: check that the following are set correctly in the Superwall dashboard and match what's in App Store connect exactly:
+    
+    *   App ID
+        
+    *   Bundle ID
+        
+    *   Team ID
+        
+*   **App Store Connect API Key permissions**: check that your API key has the "App Manager" role and access to your app
+    
+*   **Unsigned agreements**: Check if your developer agreement needs to be re-approved in App Store Connect. Even with proper API configuration, products may show "Unknown" status if your developer agreement has expired or needs re-approval
+    
+
+**Important**: This is not _required_ for Superwall to work, but is strongly recommended to help keep track of your products status.

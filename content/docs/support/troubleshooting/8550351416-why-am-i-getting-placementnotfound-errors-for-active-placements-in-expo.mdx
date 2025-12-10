@@ -1,0 +1,20 @@
+---
+title: "Why am I getting PlacementNotFound errors for active placements in Expo?"
+---
+
+
+Answer
+------
+
+If you're seeing PlacementNotFound errors for placements that are active in your dashboard while using Expo, this is because the SDK doesn't automatically update to reflect your latest dashboard changes during development.
+
+To resolve this issue:
+
+1.  Completely quit your Expo development app
+    
+2.  Relaunch the app to load the updated placement configuration
+    
+
+The SDK requires a full restart to sync with any changes made in the dashboard, including newly created or modified placements.
+
+Hot reloading support is planned for future releases, but currently a full app restart is required after making any placement changes in the dashboard.

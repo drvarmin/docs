@@ -1,0 +1,36 @@
+---
+title: "Why aren't my transactions attributing to a placement/paywall?"
+---
+
+
+Only if you're using a PurchaseController, if you are using Superwall for subscription handling logic, this does not apply
+
+Symptoms
+--------
+
+![RevenueCat Attribution Issue Example](/images/rc-attribution-issue-example.png)
+
+*   In the Overview tab under recent transactions, you see transactions like the above, where "Placement" and "Paywall" are missing and not set
+    
+*   On a user page you see no "Transaction Complete"
+    
+
+This means that Superwall can't **attribute** this purchase event we received from the App Store / RevenueCat back to a purchase made through a Superwall paywall. If the purchase was made through a Superwall paywall, then it signals some disconnect between Superwall and App Store / RevenueCat.
+
+Debugging Steps
+---------------
+
+*   Update to the latest SDKs, we're always fixing bugs and improving features
+    
+*   Make sure only offering subscriptions/products through superwall paywalls. if available elsewhere then we won't be able to attribute back to placement/paywall
+    
+*   Check that you have Revenue Tracking properly set up, and you see events in Settings
+    
+*   Check that your PurchaseController code matches our example code [here](https://superwall.com/docs/sdk/guides/using-revenuecat)
+    
+
+### If Using RevenueCat:
+
+*   Check that all of your products are listed on both the Superwall and RevenueCat dashboards, and they all have entitlements, and the entitlements match **exactly**
+    
+*   Check that you're calling `Superwall.shared.identify` with the same user id that RevenueCat has

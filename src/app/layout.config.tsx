@@ -21,14 +21,8 @@ export const baseOptions: BaseLayoutProps = {
       </>
     ),
   },
-  // githubUrl: 'https://github.com/superwall',
+  githubUrl: 'https://github.com/superwall',
   links: [
-    // {
-    //   text: 'Documentation',
-    //   url: 'https://docs-v2.superwall.com/docs',
-    //   active: 'nested-url',
-    //   icon: <BookOpen />,
-    // },
     {
       text: 'Ask AI',
       url: '/ai',
@@ -36,29 +30,11 @@ export const baseOptions: BaseLayoutProps = {
       icon: <Sparkles />,
     },
     {
-      text: 'Help Center',
-      url: 'https://support.superwall.com',
-      active: 'none',
-      icon: <BookOpen />,
-    },
-    {
       text: 'Support',
       url: '/support',
       active: 'none',
       icon: <HelpCircle />,
     },
-    // {
-    //   text: 'Dashboard Docs',
-    //   url: '/dashboard',
-    //   active: 'none',
-    //   icon: <PanelsTopLeft />,
-    // },
-    // {
-    //   text: 'SDK Docs',
-    //   url: '/sdk/home',
-    //   active: 'none',
-    //   icon: <HammerIcon />,
-    // }
     // {
     //   text: 'Status',
     //   url: 'https://status.superwall.com',

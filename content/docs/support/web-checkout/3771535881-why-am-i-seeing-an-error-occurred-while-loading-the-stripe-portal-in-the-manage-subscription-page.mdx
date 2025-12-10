@@ -1,0 +1,20 @@
+---
+title: "Why am I seeing \"An error occurred while loading the Stripe Portal\" in the manage subscription page?"
+---
+
+![Stripe Portal Error](/images/stripe-portal-error.png)
+
+If you encounter an error when trying to access the "Manage Subscription" page Stripe Portal through a web2app redemption link, this typically means that the customer portal configuration for sandbox environment has not been set up in your Stripe account yet.
+
+To resolve this issue:
+
+1.  Go to your Stripe Dashboard's Customer Portal settings page: [https://dashboard.stripe.com/test/settings/billing/portal](https://dashboard.stripe.com/test/settings/billing/portal)
+    
+2.  Configure your customer portal settings for the sandbox/test environment
+    
+3.  Save your configuration
+    
+
+Once configured, the Stripe Portal should load correctly when accessing it through the redemption link.
+
+Note: Our team is working on automating this setup process to prevent this error from occurring in the future.

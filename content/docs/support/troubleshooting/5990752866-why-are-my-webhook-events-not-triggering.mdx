@@ -1,0 +1,23 @@
+---
+title: "Why are my webhook events not triggering?"
+---
+
+
+Context
+-------
+
+Webhook events may not trigger if certain requirements aren't met or if the configuration isn't properly set up. This article explains the common reasons and how to resolve them.
+
+Answer
+------
+
+The primary requirement for Webhooks to function properly is that they need to be configured with App Store events. Here's how to set this up and troubleshoot common issues:
+
+1.  Configure App Store Integration: - Go to Settings / Revenue Tracking
+    
+2.  Switch to App Store Connect for events and set up the integration
+    
+3.  Once events from the App Store are sending, you can then switch back to your preferred revenue tracking service (e.g., RevenueCat)
+    
+
+When testing on iOS using local StoreKit transactions (StoreKit Configuration file or StoreKitTest in Xcode), webhook events won't trigger as these don't generate App Store Server Notifications. Use TestFlight or a sandbox Apple ID for testing webhook delivery.

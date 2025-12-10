@@ -12,6 +12,7 @@
         "android",
         "expo",
         "flutter",
-        "react-native"
+        "react-native",
+        "support"
     ]
 }

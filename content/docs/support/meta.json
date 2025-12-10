@@ -1,0 +1,16 @@
+{
+    "title": "Support",
+    "icon": "CircleHelp",
+    "root": true,
+    "pages": [
+        "index",
+        "---",
+        "faq",
+        "troubleshooting",
+        "dashboard",
+        "paywall-editor",
+        "sdk",
+        "web-checkout",
+        "..."
+    ]
+}

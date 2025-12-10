@@ -1,0 +1,25 @@
+---
+title: "Why am I seeing 520 errors from the events API endpoint?"
+---
+
+
+Context
+-------
+
+When implementing Superwall's SDK, you may notice 520 error responses from the events API endpoint (https://collector.superwall.me/api/v1/events) appearing in your error tracking system.
+
+Answer
+------
+
+The 520 errors you're seeing from the events API endpoint are part of the expected behavior of the SDK's retry mechanism. Here's what you need to know:
+
+*   These errors are used by the SDK to identify which events need to be resent
+    
+*   The SDK implements a retry policy that ensures all events are eventually delivered successfully
+    
+*   No data is lost during this process, even when you see 520 errors
+    
+
+These errors commonly occur during high-traffic situations, such as when push notifications trigger multiple devices to wake up simultaneously, causing temporary rate limiting on the endpoint.
+
+If these errors are filling up your error tracking quota, you can safely configure your error tracking system to ignore 520 errors from the Superwall events endpoint, as they are handled automatically by the SDK's retry mechanism.

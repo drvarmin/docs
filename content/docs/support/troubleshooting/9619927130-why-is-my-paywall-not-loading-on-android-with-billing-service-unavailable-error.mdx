@@ -1,0 +1,24 @@
+---
+title: "Why is my paywall not loading on Android with Billing Service Unavailable?"
+---
+
+
+Context
+-------
+
+When implementing Superwall paywalls in Android, you may encounter issues where paywalls fail to show with the error `The entitlement status failed to change from "unknown"`.
+
+In order to properly evaluate your paywall presentation logic, the Superwall SDK **must** know the exact subscription status of the user, without it we cannot show paywalls.
+
+Answer
+------
+
+### If you're using a [PurchaseController](https://superwall.com/docs/ios/sdk-reference/PurchaseController) (advanced):
+
+When using a `PurchaseController`, you become responsible for setting the subscription status in the Superwall SDK on launch, and updating during the app session. This error means that the subscription status was never updated on launch.
+
+### If you're not using a [PurchaseController](https://superwall.com/docs/ios/sdk-reference/PurchaseController) (default):
+
+Android: Check that your device has access to Google Play Billing and is properly configured
+
+*   The Superwall SDK requires access to billing services to determine subscription status. When this service is unavailable, the subscription status remains "unknown," preventing paywalls from displaying.

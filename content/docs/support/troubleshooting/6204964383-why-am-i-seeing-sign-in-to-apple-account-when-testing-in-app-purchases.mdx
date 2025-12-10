@@ -1,0 +1,24 @@
+---
+title: "Why am I seeing \"Sign in to Apple Account\" when testing in-app purchases?"
+---
+
+
+The cause for this alert depends on the type of device you're using to test:
+
+iOS Simulator
+-------------
+
+iOS simulators cannot make real purchases or sign into real Apple accounts, you have to use a [local StoreKit configuration file](https://superwall.com/docs/ios/guides/testing-purchases). If you're seeing this alert on a simulator it means you're either not using a StoreKit config or it's not set on your current scheme correctly.
+
+Real Device
+-----------
+
+When testing in-app purchases in a development environment on a physical iOS device, you'll need to use a Sandbox Account to process test purchases.
+
+1.  Go to your device's Settings
+    
+2.  Navigate to App Store
+    
+3.  Select Sandbox Account
+    
+4.  Sign in with your Apple Sandbox Account credentials
