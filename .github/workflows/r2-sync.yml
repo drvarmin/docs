@@ -1,0 +1,48 @@
+name: Sync R2 (Docs)
+
+on:
+  push:
+    branches:
+      - main
+    paths:
+      - "content/**"
+  workflow_dispatch:
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: false
+
+jobs:
+  sync_r2:
+    # Runs in parallel with the docs deploy workflow on the same push
+    if: github.ref == 'refs/heads/main'
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+    env:
+      R2_ACCOUNT_ID: ${{ secrets.R2_ACCOUNT_ID }}
+      R2_BUCKET: ${{ secrets.R2_BUCKET }}
+      R2_ACCESS_KEY_ID: ${{ secrets.R2_ACCESS_KEY_ID }}
+      R2_SECRET_ACCESS_KEY: ${{ secrets.R2_SECRET_ACCESS_KEY }}
+    steps:
+      - name: Checkout repo
+        uses: actions/checkout@v4
+        with:
+          submodules: true
+
+      - name: Install Bun
+        uses: oven-sh/setup-bun@v2
+
+      - name: Use Node.js 20.x
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20.18.1
+
+      - name: Install dependencies
+        run: bun install --frozen-lockfile
+
+      - name: Generate md files
+        run: bun run generate:md
+
+      - name: Sync docs to R2
+        run: bun run sync:r2

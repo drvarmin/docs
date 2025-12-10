@@ -4,9 +4,12 @@
   "private": true,
   "type": "module",
   "scripts": {
-    "copy:docs-images": "node scripts/copy-docs-images.cjs",
+    "copy:docs-images": "bun run scripts/copy-docs-images.cjs",
     "watch:images": "tsx scripts/watch-docs-images.ts",
-    "build:prep": "tsx scripts/generate-title-map.ts && tsx scripts/generate-llm-files.ts && tsx scripts/generate-md-files.ts && bun run copy:docs-images",
+    "generate:md": "tsx scripts/generate-md-files.ts",
+    "generate:llm": "tsx scripts/generate-llm-files.ts",
+    "generate:title-map": "tsx scripts/generate-title-map.ts",
+    "build:prep": "bun run generate:title-map && bun run generate:llm && bun run generate:md && bun run copy:docs-images",
     "build": "bun run build:prep && fumadocs-mdx && bun run build:next",
     "build:next": "NEXT_PRIVATE_STANDALONE=true NEXT_PRIVATE_OUTPUT_TRACE_ROOT=$PWD next build --webpack",
     "build:cf": "bun run build && opennextjs-cloudflare build -- --skipNextBuild",
@@ -20,8 +23,8 @@
     "clear:cache": "tsx scripts/clear-cache.ts",
     "start": "next start",
     "download:references": "bun scripts/download-references.ts",
-    "postinstall": "patch-package",
-    "generate:test-wrangler": "bun scripts/generate-test-wrangler.ts"
+    "generate:test-wrangler": "bun scripts/generate-test-wrangler.ts",
+    "sync:r2": "bun scripts/sync-r2.ts"
   },
   "dependencies": {
     "@radix-ui/react-dialog": "^1.1.11",

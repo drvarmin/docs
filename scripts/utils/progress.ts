@@ -1,7 +1,7 @@
 import cliProgress from 'cli-progress'
 
 export type ProgressBar = {
-  increment: () => void
+  increment: (value?: number) => void
   stop: () => void
 } | null
 

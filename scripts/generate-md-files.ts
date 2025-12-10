@@ -1,6 +1,7 @@
 import fs from 'fs/promises'
 import path from 'path'
 import matter from 'gray-matter'
+import yaml from 'js-yaml'
 import { remark } from 'remark'
 import remarkMdx from 'remark-mdx'
 import remarkGfm from 'remark-gfm'
@@ -30,6 +31,8 @@ const processor = remark()
 const CONTENT = path.resolve(process.cwd(), 'content/docs')
 const OUT = path.resolve(process.cwd(), 'public')
 const BASEURL = 'https://superwall.com/docs'
+const parseFrontMatter = (input: string) =>
+  matter(input, { engines: { yaml: (s: string) => yaml.load(s) as object } })
 
 // Recursively gather all .mdx files
 async function walk(dir: string): Promise<string[]> {
@@ -56,7 +59,7 @@ async function main() {
   for (const filePath of allFiles) {
     try {
       const raw = await fs.readFile(filePath, 'utf8')
-      const { data, content } = matter(raw)  // extracts front-matter
+      const { data, content } = parseFrontMatter(raw)  // extracts front-matter
       const vfile = await processor.process({ path: filePath, value: content })
       const processedContent = String(vfile)
       
