@@ -32,11 +32,11 @@ Create a new app in Superwall for your web product in a new or existing project.
 
 ### 2. Configure Your Payment Provider
 
-Set up your Stripe or Paddle integration:
+Set up your Stripe:
 
 - [Stripe Setup](/web-checkout-configuring-stripe-keys-and-settings)
 
-<Note>Paddle is not currently supported this flow, but it does work in app to web scenarios.</Note>
+<Note>Paddle is not currently supported in this flow, but it does work in app to web scenarios.</Note>
 
 You can skip any iOS/Android related configuration sections since you won't be using a mobile app.
 
@@ -65,15 +65,15 @@ https://amazingwebproduct.com/welcome?
 
 When users land on your redirect URL, use the query parameters to:
 
-- Verify the purchase with your backend
-- Create or update the user's account
-- Grant access to your product
-- Show a success or onboarding page
+- Verify the purchase with your backend.
+- Create or update the user's account.
+- Grant access to your product.
+- Show a success or onboarding page.
 
 ## What's Next
 
 - [Creating Products](/web-checkout-adding-a-stripe-product) to add products to your checkout.
-- [Creating Campaigns](/web-checkout-creating-campaigns-to-show-paywalls) to show paywalls via  web checkout link. Remember, you use these URLs in any way you wish, but the checkout link itself is derived from two things:
+- [Creating Campaigns](/web-checkout-creating-campaigns-to-show-paywalls) to show paywalls via  web checkout links. Remember, you use these URLs in any way you wish, but the checkout link itself is derived from two things:
 
-1) The base URL you created for the web app (found in Settings).
+1) The web paywall domain you created for the web app (found in Settings -> General).
 2) And, the placement which is housed in a campaign.
