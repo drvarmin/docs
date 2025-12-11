@@ -61,6 +61,10 @@ This direct inspection is critical for:
 - Ensuring documentation matches the actual SDK implementation
 - Identifying any undocumented features or recent changes
 
+## AI SDK / AI SDK Elements
+
+- For any AI SDK or AI SDK Elements work, fetch the latest docs via Context7 MCP before making changes.
+
 ## Documentation Site Architecture
 
 ### Build System

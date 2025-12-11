@@ -82,13 +82,7 @@ function transformRagResults(ragResponse: any): SortedResult[] {
 
     // Get title from title map
     const title = getTitle(filePath);
-
-    if (IS_DEV) {
-      console.log(`\n[Transform] Processing: ${filePath}`);
-      console.log(`[Transform] URL: ${url}`);
-      console.log(`[Transform] Title: "${title}"`);
-    }
-
+    
     results.push({
       id: url,
       url,

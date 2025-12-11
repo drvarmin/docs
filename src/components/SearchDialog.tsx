@@ -143,7 +143,9 @@ interface SearchDialogWrapperInnerProps extends SharedProps {
 function SearchDialogWrapperInner(props: SearchDialogWrapperInnerProps) {
   const { selectedSdk, onSdkChange, ...dialogProps } = props;
   const [showSdkDropdown, setShowSdkDropdown] = useState(false);
+  const [sdkHighlight, setSdkHighlight] = useState(0);
   const dropdownRef = useRef<HTMLDivElement>(null);
+  const router = useRouter();
 
   const selectSdk = (sdkValue: string) => {
     onSdkChange(sdkValue);
@@ -154,6 +156,55 @@ function SearchDialogWrapperInner(props: SearchDialogWrapperInnerProps) {
     const found = SDK_OPTIONS.find(opt => opt.value === selectedSdk);
     return found || SDK_OPTIONS[0]; // Default to "None"
   };
+
+  useEffect(() => {
+    const idx = SDK_OPTIONS.findIndex(opt => opt.value === selectedSdk);
+    setSdkHighlight(idx >= 0 ? idx : 0);
+  }, [selectedSdk, showSdkDropdown]);
+
+  useEffect(() => {
+    const onKeyDown = (e: KeyboardEvent) => {
+      const isMeta = e.metaKey || e.ctrlKey;
+      if (isMeta && !e.shiftKey && e.key.toLowerCase() === 'i') {
+        e.preventDefault();
+        dialogProps.onOpenChange(false);
+        router.push('/ai');
+        return;
+      }
+
+      if (dialogProps.open && isMeta && e.shiftKey && e.key.toLowerCase() === 's') {
+        e.preventDefault();
+        setShowSdkDropdown(true);
+        const idx = SDK_OPTIONS.findIndex(opt => opt.value === selectedSdk);
+        setSdkHighlight(idx >= 0 ? idx : 0);
+        return;
+      }
+
+      if (showSdkDropdown) {
+        if (e.key === 'ArrowDown' || e.key === 'ArrowUp') {
+          e.preventDefault();
+          setSdkHighlight(prev => {
+            const delta = e.key === 'ArrowDown' ? 1 : -1;
+            return (prev + delta + SDK_OPTIONS.length) % SDK_OPTIONS.length;
+          });
+          return;
+        }
+        if (e.key === 'Enter') {
+          e.preventDefault();
+          const opt = SDK_OPTIONS[sdkHighlight];
+          if (opt) selectSdk(opt.value);
+          return;
+        }
+        if (e.key === 'Escape') {
+          setShowSdkDropdown(false);
+          return;
+        }
+      }
+    };
+
+    window.addEventListener('keydown', onKeyDown);
+    return () => window.removeEventListener('keydown', onKeyDown);
+  }, [dialogProps.open, selectedSdk, sdkHighlight, showSdkDropdown, router]);
 
   // Close dropdown when clicking outside
   useEffect(() => {
@@ -190,7 +241,7 @@ function SearchDialogWrapperInner(props: SearchDialogWrapperInnerProps) {
           </button>
 
           {showSdkDropdown && (
-            <div className="absolute top-full right-0 mt-1 w-32 bg-fd-popover border border-fd-border rounded shadow-lg z-50">
+            <div className="absolute top-full right-0 mt-1 w-32 overflow-hidden bg-fd-popover border border-fd-border rounded shadow-lg z-50">
               {SDK_OPTIONS.map((option) => (
                 <button
                   key={option.value}
@@ -262,10 +313,10 @@ export function SearchDialog({
 
   // Default links if none provided
   const defaultLinks: SearchLink[] = [
-    ['Welcome', '/docs'],
-    ['SDK Installation', '/docs/sdk-installation/installation-overview'],
-    ['Dashboard', '/docs/overview-metrics'],
-    ['Web Checkout', '/docs/web-checkout-overview'],
+    ['Support', '/docs/support'],
+    ['Dashboard', '/docs/dashboad'],
+    ['SDK Installation', '/docs/sdk/quickstart/install'],
+    ['Web Checkout', '/docs/web-checkout'],
   ];
 
   const displayLinks = links.length > 0 ? links : defaultLinks;
@@ -293,11 +344,10 @@ export function SearchDialog({
   // Handle AI redirect to AI page
   const { push } = useRouter();
   const handleAiSearch = () => {
-    if (!search.trim()) return;
-
-    const encodedQuery = encodeURIComponent(search.trim());
+    const trimmed = search.trim();
+    const destination = trimmed ? `/ai?search=${encodeURIComponent(trimmed)}` : '/ai';
     onOpenChange(false); // Close search dialog
-    push(`/ai?search=${encodedQuery}`);
+    push(destination);
   };
 
   return (

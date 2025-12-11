@@ -1,4 +1,3 @@
-import { DocsPage, DocsBody, DocsDescription, DocsTitle } from "fumadocs-ui/page";
 import { Suspense } from "react";
 import AIPageContent from "./AIPageContent";
 
@@ -9,14 +8,10 @@ export const metadata = {
 
 export default function AIPage() {
   return (
-    <DocsPage toc={[]} full={false}>
-      <DocsTitle>Ask AI</DocsTitle>
-      <DocsDescription>Get instant answers to your questions about Superwall.</DocsDescription>
-      <DocsBody>
-        <Suspense fallback={<div>Loading...</div>}>
-          <AIPageContent />
-        </Suspense>
-      </DocsBody>
-    </DocsPage>
+    <main className="mx-auto flex w-full max-w-4xl flex-1 flex-col min-h-[calc(100vh-var(--fd-nav-height,56px))]">
+      <Suspense fallback={<div>Loading...</div>}>
+        <AIPageContent />
+      </Suspense>
+    </main>
   );
 }
