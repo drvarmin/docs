@@ -106,6 +106,7 @@ The `data` field contains detailed information about the subscription or payment
 | `ts`                       | number            | Event timestamp (milliseconds)                                            |
 | `expirationReason`         | string (optional) | Reason for expiration (see [Cancel Reasons](#cancelexpiration-reasons))   |
 | `checkoutContext`          | object (optional) | Stripe-specific checkout context                                          |
+| `userAttributes`           | object (optional) | Custom user attributes set via the SDK (see [User Attributes](#user-attributes)) |
 
 **Note on Store field:** iOS and Android apps can receive events from any payment provider. For example, an iOS app can receive `STRIPE` or `PADDLE` events when users purchase through Superwall's App2Web features, which allow web-based checkout flows within mobile apps. The `store` field indicates where the payment was processed, not which platform the app runs on.
 
@@ -603,6 +604,26 @@ The `originalTransactionId` is Apple's terminology that acts like a subscription
   - Subscribe to products in different subscription groups
   - Let a subscription fully expire and re-subscribe later
 - **Cross-platform consistency**: While originally an Apple concept, we generate and maintain equivalent IDs for all payment providers to ensure consistent subscription tracking
+
+### User Attributes
+
+Any attributes you set using the [User Attributes API](/docs/ios/quickstart/setting-user-properties) are automatically included in your webhook payloads. This lets you correlate webhook events with your own user data. 
+
+For example, you could identify which user made a purchase or had a subscription expire.
+
+```json
+{
+  "data": {
+    // ... other fields ...
+    "userAttributes": {
+      "name": "Jane Doe",
+      "foo": "baz"
+    }
+  }
+}
+```
+
+The attributes included match whatever you've set via `Superwall.shared.setUserAttributes(_:)` (or the equivalent method on Android/Flutter/React Native). 
 
 ### Notes
 
