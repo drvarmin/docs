@@ -1,0 +1,156 @@
+---
+title: "Why is my paywall not updating after publishing?"
+description: "Troubleshoot why users may still see an outdated paywall after you've made and published updates in the Superwall dashboard"
+---
+
+## Quick Checklist
+
+Before diving into detailed troubleshooting, verify these common causes:
+
+- [ ] Have you **published** the paywall after making changes?
+- [ ] Is the user **assigned to a different paywall** in an A/B test?
+- [ ] Are you using **conditional visibility** (e.g., `hasIntroductoryOffer`) that shows different content?
+- [ ] Has the user's **trial eligibility** changed, showing a different UI state?
+
+---
+
+## Step 1: Verify the Paywall is Published
+
+Changes made in the paywall editor are saved locally but not live until published.
+
+**To check:**
+1. Open the paywall in the editor
+2. Look for the **Publish** button in the top-right
+3. If it's clickable, your changes haven't been published yet
+
+**Note:** Publishing a paywall doesn't automatically update users who have already been assigned to it in an experiment.
+
+---
+
+## Step 2: Check Campaign and Experiment Setup
+
+### Multiple Paywalls in a Campaign
+
+If your campaign has multiple paywalls (an A/B test), users are randomly assigned to one variant. The user seeing an "outdated" paywall may simply be assigned to a different variant than the one you updated.
+
+**To check:**
+1. Go to **Campaigns** → Select your campaign
+2. Look at the **Paywalls** tab for the relevant audience
+3. Verify which paywalls are active and their distribution percentages
+
+### Sticky Assignments
+
+**Important:** Superwall assignments are "sticky." Once a user is assigned to a paywall variant, they continue seeing that same paywall regardless of:
+- Changes you make to presentation percentages
+- Updates you publish to other paywalls
+- App reinstalls or calling `Superwall.reset()`
+
+This is by design. It ensures experiment integrity and allows you to keep existing users on an old pricing while testing new pricing with new users.
+
+---
+
+## Step 3: Check Conditional Visibility and Dynamic Values
+
+Paywalls often use **dynamic values** to show different content based on conditions. The most common scenario is **trial eligibility**.
+
+### Trial Eligibility (`products.hasIntroductoryOffer`)
+
+If your paywall has components with visibility controlled by `products.hasIntroductoryOffer`:
+- **True:** User is eligible for a free trial/intro offer
+- **False:** User has already used their trial (or the product has no trial)
+
+**Common issue:** Apple App Store reviewers often test with accounts that have already used trials, so `hasIntroductoryOffer` is `false` for them, showing different UI than you expect.
+
+**To check in the editor:**
+1. Open your paywall in the editor
+2. Click **Variables** in the floating toolbar
+3. Toggle `products.hasIntroductoryOffer` between true/false
+4. Observe which components appear/disappear
+
+### Other Dynamic Conditions
+
+Check if any components have visibility rules based on:
+- Selected product index
+- Device type
+- User attributes
+- Custom parameters
+
+Look for components that have the **gear icon** indicating dynamic values are set.
+
+---
+
+## Step 4: Verify Products Are Correctly Configured
+
+### Product Approval Status
+
+Products must be approved in App Store Connect before they can be properly displayed:
+- Products in "Waiting for Review" may not load correctly
+- Sandbox testing uses different product states than production
+
+**To check:**
+1. Go to App Store Connect → Your App → Subscriptions
+2. Verify all products show "Ready to Submit" or "Approved"
+
+### Product Assignment on Paywall
+
+Ensure the correct products are assigned to your paywall:
+1. Open the paywall in the editor
+2. Check the **Products** section on the left sidebar
+3. Verify the intended products are selected as Primary, Secondary, etc.
+
+---
+
+## Step 5: Understand Caching Behavior
+
+### Server-Side Caching
+
+Superwall's static configuration is cached by CDN for up to **1 hour**. After publishing changes:
+- New users get the update immediately (fresh cache)
+- Existing users may see cached content for up to 1 hour
+
+### Device-Side Caching
+
+If your paywall has **Cache on Device** enabled in settings:
+- The SDK stores the paywall locally for faster presentation
+- Reinstalling the app clears this cache
+- `Superwall.reset()` clears on-device data but NOT server-side assignments
+
+---
+
+## Step 6: Testing Checklist
+
+When testing paywall updates, follow this process:
+
+### For Fresh Testing
+1. Wait a few minutes for cache propagation
+2. Use a **new user ID** or test account
+3. Delete and reinstall the app
+4. Trigger the placement that shows the paywall
+
+### For App Store Review
+1. Remember reviewers may not be eligible for trials (trial already used)
+2. Test your paywall with `hasIntroductoryOffer = false` in the editor
+3. Ensure all UI states look correct for non-trial-eligible users
+
+---
+
+## Common Scenarios and Solutions
+
+| Scenario | Likely Cause | Solution |
+|----------|--------------|----------|
+| User sees old paywall copy | Sticky assignment to old variant | Wait for new users or use new test account |
+| User sees different products | Assigned to different A/B variant | Check which variant user is assigned to |
+| Trial text showing when user isn't eligible | `hasIntroductoryOffer` conditional visibility | Check dynamic values on text components |
+| Non-trial text showing for trial-eligible user | Same as above, inverted | Verify conditional logic in editor |
+| Changes not visible after publishing | CDN cache or device cache | Wait up to 1 hour, or reinstall app |
+| App Store reviewer sees wrong content | Reviewer's trial eligibility differs | Design for both trial/non-trial states |
+
+---
+
+## Related Documentation
+
+- [Publishing Paywalls](https://superwall.com/docs/dashboard/dashboard-creating-paywalls/paywall-editor-publishing)
+- [A/B Testing and Experiments](https://superwall.com/docs/campaigns/campaigns-starting-an-experiment)
+- [Dynamic Values](https://superwall.com/docs/dashboard/dashboard-creating-paywalls/paywall-editor-dynamic-values)
+- [Variables Reference](https://superwall.com/docs/dashboard/dashboard-creating-paywalls/paywall-editor-variables)
+- [Campaign Audiences](https://superwall.com/docs/campaigns/campaigns-audience)

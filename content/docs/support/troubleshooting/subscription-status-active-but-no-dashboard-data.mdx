@@ -1,0 +1,67 @@
+---
+title: "Why does my user show active subscription but no data in the dashboard?"
+description: "Understanding why a user may have an active subscription on device but no entitlements, Apple events, or webhooks in the Superwall dashboard"
+---
+
+## Understanding How Superwall Tracks Subscriptions
+
+Superwall uses two different sources of truth for subscription data:
+
+### 1. On-Device Subscription Status (SDK)
+
+The SDK determines subscription status by reading the **local Apple receipt** directly from StoreKit. This receipt is tied to the user's **Apple ID**, not their Superwall user ID.
+
+If there's a valid subscription receipt on the device, the SDK will report `subscriptionStatus = active`, regardless of which Superwall user ID is currently active.
+
+### 2. Dashboard Attribution (Server-Side)
+
+The dashboard displays subscription data (entitlements, Apple server events, webhooks, receipts) that is attributed to a specific **Superwall user ID**. This attribution happens at the time of purchase. Whichever user ID was active when the transaction occurred is the one that gets linked to the subscription data.
+
+## The Most Common Cause
+
+When you see an active subscription on device but nothing in the dashboard, it almost always means:
+
+**The subscription was purchased under a different Superwall user ID than the one you're currently looking at.**
+
+This can happen when a user:
+
+- Reinstalls the app (generates a new anonymous user ID)
+- Logs out and back in (may generate a new user ID depending on your implementation)
+- Switches accounts
+- Had their identity reset for any reason
+
+The subscription remains valid because Apple validates it against the user's Apple ID. But all the purchase events, webhooks, and server notifications are attributed to the **original** user ID that was active at purchase time.
+
+## Example Scenario
+
+1. User installs your app and gets assigned anonymous user ID `abc-123`
+2. User purchases a subscription. All events are attributed to `abc-123`
+3. User deletes and reinstalls the app
+4. User gets assigned a new anonymous user ID `xyz-789`
+5. The subscription is still valid (same Apple ID), so the SDK shows `active`
+6. But the dashboard shows nothing for `xyz-789` because the subscription belongs to `abc-123`
+
+## How to Verify This
+
+If you suspect this is happening:
+
+1. Check the "Customer Info" section in the dashboard for the user. If it shows subscription status as active but no entitlements, this confirms the SDK is reading a valid receipt
+2. The subscription data exists, it's just linked to a different user ID
+3. If you have access to your server logs or Apple's App Store Connect, you can try to find the original transaction and trace it back to the original user ID
+
+## How to Prevent This
+
+To maintain consistent attribution across user sessions:
+
+- Call `Superwall.shared.identify(userId:)` with a stable user ID from your own authentication system as early as possible, ideally before any purchases occur
+- Use the same user ID consistently across reinstalls and devices
+- If your app supports account creation, identify users immediately after they sign up or log in
+
+## Key Takeaways
+
+- **Active subscription + no dashboard data = purchased under a different user ID**
+- The subscription is valid and working correctly
+- This is expected behavior, not a Superwall bug
+- The SDK uses the Apple receipt (tied to Apple ID) for access control
+- The dashboard uses attribution data (tied to Superwall user ID) for reporting
+- These are intentionally separate to ensure users never lose access to their purchases

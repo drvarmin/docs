@@ -1,0 +1,50 @@
+---
+title: "How do I migrate to Superwall from another provider?"
+description: "Guide for migrating from Adapty, Qonversion, Glassfy, or other subscription SDKs to Superwall"
+---
+
+# How do I migrate to Superwall from another subscription provider?
+
+If you're currently using a subscription management provider like Adapty, Qonversion, Glassfy, or another SDK and want to migrate to Superwall, here's what you need to know.
+
+## Will My Existing Subscribers Keep Their Access?
+
+**Yes.** Superwall reads subscription status directly from the device's App Store (iOS) or Google Play (Android) records. This means:
+
+- Existing subscribers are automatically recognized when you switch SDKs
+- No manual migration of subscription data is required
+- Users won't experience any interruption to their access
+
+When a user opens your app with the new Superwall SDK, their active subscriptions are detected automatically, regardless of which SDK was used to originally make the purchase.
+
+## What Gets Migrated Automatically
+
+| Data | Migrated? |
+|------|-----------|
+| Active subscription status | ✅ Yes - read directly from the device |
+| Entitlement access | ✅ Yes - based on active subscriptions |
+| Cross-device sync (same Apple ID/Google account) | ✅ Yes |
+
+## What Does NOT Migrate
+
+| Data | Migrated? |
+|------|-----------|
+| Historical analytics and metrics | ❌ No |
+| Paywall designs and configurations | ❌ No - must be recreated in Superwall |
+| A/B test history and experiment data | ❌ No |
+| Custom user attributes from previous SDK | ❌ No - must be re-set via Superwall SDK |
+
+## Migration Steps
+
+1. Remove your current subscription SDK from your project
+2. Follow the [Superwall installation guide](/docs/getting-started-with-our-sdks) for your platform
+
+## Troubleshooting
+
+### Subscription status not detected
+
+If an existing subscriber isn't being recognized:
+
+1. Have them tap "Restore Purchases" on any paywall
+2. Ensure they're signed into the same App Store/Google Play account used for the original purchase
+3. Check that the subscription hasn't expired
