@@ -18,6 +18,21 @@ Stream<SubscriptionStatus> get subscriptionStatus
 ## Returns / State
 Returns a `Stream<SubscriptionStatus>` that emits values whenever the subscription status changes.
 
+## Convenience
+Use the `isActive` convenience property when you only need to know whether the user is subscribed:
+
+```dart
+Future<void> ensureAccess() async {
+  final status = await Superwall.shared.subscriptionStatus.first;
+
+  if (status.isActive) {
+    enablePremiumFeatures();
+  } else {
+    showUpgradePrompt();
+  }
+}
+```
+
 ## Usage
 
 Basic stream subscription:

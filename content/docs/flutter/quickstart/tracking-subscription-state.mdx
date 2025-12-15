@@ -54,6 +54,18 @@ The `SubscriptionStatus` enum has three possible values:
 - `SubscriptionStatus.active` - User has an active subscription
 - `SubscriptionStatus.inactive` - User has no active subscription
 
+Use the `isActive` convenience property when you only need to know if the user is subscribed:
+
+```dart
+Superwall.shared.subscriptionStatus.listen((status) {
+  if (status.isActive) {
+    _showPremiumContent();
+  } else {
+    _showFreeContent();
+  }
+});
+```
+
 ## Using SuperwallBuilder widget
 
 For reactive UI updates based on subscription status, use the `SuperwallBuilder` widget:
@@ -100,13 +112,14 @@ class PremiumFeatureButton extends StatelessWidget {
       stream: Superwall.shared.subscriptionStatus,
       builder: (context, snapshot) {
         final status = snapshot.data ?? SubscriptionStatus.unknown;
+        final isActive = status.isActive;
         
         return ElevatedButton(
-          onPressed: status == SubscriptionStatus.active
+          onPressed: isActive
               ? _accessPremiumFeature
               : _showPaywall,
           child: Text(
-            status == SubscriptionStatus.active
+            isActive
                 ? 'Access Premium Feature'
                 : 'Upgrade to Premium',
           ),
@@ -133,7 +146,7 @@ If you need to check the subscription status at a specific moment without listen
 Future<void> checkSubscription() async {
   // Note: You'll need to get the current value from the stream
   final subscription = Superwall.shared.subscriptionStatus.listen((status) {
-    if (status == SubscriptionStatus.active) {
+    if (status.isActive) {
       // User is subscribed
       enablePremiumFeatures();
     } else {

@@ -22,6 +22,7 @@ class PaywallOptions {
   bool shouldShowWebRestorationAlert = true;
   Map<String, String>? overrideProductsByName;
   bool shouldShowWebPurchaseConfirmationAlert = true;
+  void Function(PaywallInfo?)? onBackPressed;
 }
 
 class RestoreFailed {
@@ -49,6 +50,7 @@ enum TransactionBackgroundView { spinner, none }
 | `shouldShowWebRestorationAlert` | `bool` | Shows an alert asking the user to try restoring on the web if web checkout is enabled. Defaults to `true`. |
 | `overrideProductsByName` | `Map<String, String>?` | Overrides products on all paywalls using name→identifier mapping (e.g., `"primary"` → `"com.example.premium_monthly"`). |
 | `shouldShowWebPurchaseConfirmationAlert` | `bool` | Shows a localized alert confirming a successful web checkout purchase. Defaults to `true`. |
+| `onBackPressed` | `void Function(PaywallInfo?)?` | Android only. Invoked when the system back button is pressed while a paywall is visible. Call `Superwall.shared.dismiss()` inside if you want to close the paywall. |
 </ParamTable>
 
 ## Usage
@@ -64,7 +66,11 @@ final paywallOptions = PaywallOptions()
     'tertiary': 'com.example.premium_annual',
   }
   ..shouldShowWebRestorationAlert = true
-  ..shouldShowWebPurchaseConfirmationAlert = true;
+  ..shouldShowWebPurchaseConfirmationAlert = true
+  ..onBackPressed = (paywallInfo) {
+    // Android-only callback
+    Superwall.shared.dismiss();
+  };
 
 final options = SuperwallOptions(
   paywalls: paywallOptions,
