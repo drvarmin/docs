@@ -38,6 +38,29 @@ export default function App() {
 }
 ```
 
+<Warning>
+**Important:** The `onPurchase` and `onPurchaseRestore` callbacks communicate success or failure through how the Promise resolves:
+
+- **Promise resolves normally** → Superwall records a successful purchase (counts as a conversion)
+- **Promise throws an error** → Superwall records a failed/cancelled purchase
+
+You **must** throw an error for any non-successful outcome (user cancelled, payment failed, etc.). If your purchase function returns a status like `'cancelled'` or `'error'`, you need to check it and throw:
+
+```tsx
+onPurchase: async (params) => {
+  const result = await yourPurchaseFunction(params.productId);
+
+  if (result !== 'success') {
+    throw new Error(`Purchase ${result}`);
+  }
+
+  // Only reaches here on success
+},
+```
+
+**Why this matters:** If your callback resolves without throwing (even when the purchase failed), Superwall will incorrectly count it as a conversion.
+</Warning>
+
 ## Props
 
 ### `controller`
@@ -116,4 +139,3 @@ For a complete RevenueCat integration with error handling, subscription status s
 
 - The provider must wrap your app at a level where both the Superwall SDK and your purchase logic can access it
 - Purchase success/failure handling is automatic - you just need to perform the actual purchase
-- **Important:** The `onPurchase` and `onPurchaseRestore` callbacks should not return any values. Success is indicated by the Promise resolving normally, and failure by throwing an error
