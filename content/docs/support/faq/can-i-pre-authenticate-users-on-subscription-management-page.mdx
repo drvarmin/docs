@@ -1,0 +1,25 @@
+---
+title: "Can I pre-authenticate users on the subscription management page?"
+---
+
+
+Short Answer
+------------
+
+No: for security reasons, users always need to verify their email by clicking a magic link sent to their inbox.
+
+Pre-filling the Email Field
+---------------------------
+
+While full pre-authentication isn't possible, you can pre-fill the email field by passing it as a query parameter:
+
+```
+https://{your-app}.superwall.app/manage?email=user@example.com
+```
+
+This way, when users open the subscription management page from within your app, their email will already be populated. They just need to tap "Continue" and then click the link in their inbox to access their subscription details.
+
+Why Magic Link Verification is Required
+---------------------------------------
+
+The subscription management page gives users access to sensitive account information and the ability to modify their subscription. Email verification via magic link ensures that only the actual account owner can access these controls, even if someone else has access to the device.

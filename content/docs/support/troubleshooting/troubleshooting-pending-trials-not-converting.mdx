@@ -1,0 +1,28 @@
+---
+title: "Why are my trials still showing as pending after they should have converted?"
+---
+
+Understanding Pending Trials
+----------------------------
+
+If you're seeing trials that remain in "pending" status long after the trial period should have ended, this is usually expected behavior related to how Apple handles billing.
+
+Common Causes
+-------------
+
+### Billing Retry Period
+
+When a user has a billing issue (e.g., expired card, insufficient funds), Apple doesn't immediately cancel the subscription. Instead, Apple will **retry billing for up to 16 days**. During this entire period, the trial remains in "pending" status in Superwall.
+
+### Billing Grace Period
+
+Your billing grace period setting in App Store Connect affects how long users stay in pending status. This is configurable and can be tuned based on your preferences.
+
+What You Can Do
+---------------
+
+*   **Check App Store Connect** — Review your billing grace period settings and adjust if needed
+
+*   **Expect some delay** — It's normal to see a significant number of pending trials due to billing retries
+
+*   **Wait for resolution** — Most pending trials will resolve within 16 days as either converted or cancelled

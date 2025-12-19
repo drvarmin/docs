@@ -1,0 +1,31 @@
+---
+title: "Why is my Android app missing historical revenue data after setting up the Google Play integration?"
+---
+
+
+The Issue
+---------
+
+After setting up the Google Play integration for your Android app, you may notice that historical subscriber data, ARR, and MRR from before the integration aren't showing up. This is different from iOS, where historical data appears after connecting App Store Connect.
+
+Why This Happens
+----------------
+
+This is due to a fundamental platform difference between Apple and Google:
+
+### iOS (App Store Connect)
+
+Apple provides a **Transaction History API** that allows Superwall to retrieve historical purchases retroactively. This is why your iOS app shows data from before the integration was set up.
+
+### Android (Google Play)
+
+Google Play **does not offer an equivalent API**. Their system only sends real-time notifications going forward from when the integration is configured. There is no way to pull historical transaction data.
+
+What You Can Expect
+-------------------
+
+*   This is a Google platform limitation, not something Superwall can work around
+
+*   All new Android subscription events from the integration point forward will be tracked correctly
+
+*   Your metrics will become more complete over time as new events come in

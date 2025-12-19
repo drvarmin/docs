@@ -1,0 +1,36 @@
+---
+title: "How do I migrate my existing purchases to RevenueCat?"
+---
+
+
+Overview
+--------
+
+If you're migrating to RevenueCat, Superwall can help export your existing user and purchase data to facilitate the transition.
+
+What We Can Export
+------------------
+
+*   **User IDs**: Your Superwall app user identifiers
+
+*   **Original Transaction IDs**: Apple's unique subscription identifiers
+
+Note: We don't have access to receipts or receipt-type metadata, but RevenueCat has historically accepted original transaction IDs for migration purposes.
+
+The Process
+-----------
+
+1.  **Open a support ticket with RevenueCat**: They'll provide specific requirements for the data import
+
+2.  **Contact Superwall support**: Once RevenueCat confirms what they need, let us know and we'll coordinate the export
+
+3.  **Receive your CSV**: We'll provide a CSV with `app_user_id` and `store_transaction_id` columns
+
+RevenueCat recommends excluding sandbox transactions if appropriate, as sandbox volume can be very large.
+
+Pricing
+-------
+
+*   **First 1,000 users:** Free
+
+*   **Additional users:** $0.20 per exported subscription
